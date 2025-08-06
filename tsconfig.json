@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2023",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "paths": {
+      "@root/*": ["./*"],
+      "@src/*": ["src/*"],
+      "@ssl/*": ["ssl/*"],
+      "@extern_storage/*": ["storage/*"],
+      "@config/*" : ["src/config/*"],
+      "@storage/*" : ["src/storage/*"],
+      "@util/*" : ["src/util/*"],
+      "@type/*" : ["src/type/*"],
+      "@user/*" : ["src/user/*"],
+      "@preference/*" : ["src/preference/*"],
+      "@message/*" : ["src/message/*"],
+      "@encryption/*" : ["src/encryption/*"],
+      "@auth/*" : ["src/auth/*"],
+      "@jwt/*" : ["src/jwt/*"],
+      "@filter/*" : ["src/filter/*"],
+    },
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "noFallthroughCasesInSwitch": false
+  }
+}
