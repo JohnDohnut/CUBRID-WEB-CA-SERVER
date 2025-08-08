@@ -25,7 +25,7 @@
       "@encryption/*" : ["src/encryption/*"],
       "@auth/*" : ["src/auth/*"],
       "@jwt/*" : ["src/jwt/*"],
-      "@filter/*" : ["src/filter/*"],
+      "@filter/*" : ["src/error/*"],
     },
     "incremental": true,
     "skipLibCheck": true,
