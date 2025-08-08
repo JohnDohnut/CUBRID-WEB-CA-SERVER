@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@config/config.service';
 import * as crypto from 'crypto';
+import * as bcrypt from 'bcrypt'
 @Injectable()
 export class EncryptionService {
 
     constructor (private readonly configService : ConfigService) {}
-    private readonly algorithm = 'aes-256-cbc'
+    private readonly algorithm = 'aes-256-cbc';
+
     getHashedValue (plain : string | number)
     {
         const hash = crypto.createHash('sha256');

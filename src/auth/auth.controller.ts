@@ -1,20 +1,20 @@
 import { Body, Controller, Delete, Post, Put } from '@nestjs/common';
-import { CreateUserDTO } from './dto/create-user.dto';
+import { UserDTO } from './dto/create-user.dto';
 import { AuthService } from './auth.service';
-
+import { LoginResponse, CreateLoginResponse } from './response';
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authSerivce: AuthService) { }
 
     @Post('login')
-    login(createUserDTO: CreateUserDTO): { token: string } {
-        return { token: "test" };
+    async login(@Body() userDTO: UserDTO): Promise<LoginResponse> {
+        const token = await this.authSerivce.login(userDTO);
+        return CreateLoginResponse(token);
     }
 
     @Post('register')
-    async register(@Body() createUserDTO: CreateUserDTO)  {
-       await this.authSerivce.createUser(createUserDTO);
-       return {status : "success"};
+    async register(@Body() userDTO: UserDTO): Promise<void> {
+        this.authSerivce.register(userDTO);
     }
 
     @Delete('delete')

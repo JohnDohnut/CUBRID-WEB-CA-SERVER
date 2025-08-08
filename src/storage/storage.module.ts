@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@config/config.module';
 import { StorageService } from './storage.service';
-import { EncryptionModule } from '../encryption/encryption.module';
+import { SecurityModule } from '../security/security.module';
 
 @Module({    
-    imports : [ConfigModule, EncryptionModule],
+    imports : [ConfigModule, SecurityModule],
     exports : [StorageService],
     providers : [StorageService]
 })

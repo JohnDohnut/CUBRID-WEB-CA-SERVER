@@ -1,16 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDTO } from '@root/src/auth/dto/create-user.dto';
-import { EncryptionService } from '@root/src/encryption/encryption.service';
-import { ControllerErrorCode } from '@root/src/error/controller/controller-error-code';
-import { ControllerException } from '@root/src/error/controller/controller-exception';
+import { UserDTO } from '@auth/dto/create-user.dto';
+import { EncryptionService } from '@security/encryption/encryption.service';
+import { ControllerErrorCode } from '@error/controller/controller-error-code';
+import { ControllerException } from '@error/controller/controller-exception';
 import { StorageErrorCode, StorageException } from '@root/src/error/storage/storage-exception';
-import { StorageService } from '@root/src/storage/storage.service';
-import { User } from '@type/user';
+import { StorageService } from '@storage/storage.service';
+import { User } from '@type/index';
+import { PasswordService } from '@security/password/password.service';
 
 @Injectable()
 export class UserRepositoryService {
 
     constructor(private readonly encryptionService: EncryptionService,
+        private readonly passwordService : PasswordService,
         private readonly storageService: StorageService,
     ) { }
 
@@ -36,15 +38,14 @@ export class UserRepositoryService {
             throw err;
 
         }
-
     }
 
-    async createUser(dto: CreateUserDTO) {
+    async createUser(dto: UserDTO) {
         const hashedId = this.encryptionService.getHashedValue(dto.id);
         try {
             const userJson : User = {
                 id : dto.id,
-                password : dto.password,
+                password : await this.passwordService.getHashedValue(dto.password),
                 ha_mon_list : [],
                 resource_mon_list : [],
             }
@@ -91,7 +92,22 @@ export class UserRepositoryService {
     async updateUser(id : string, userJson : User){
         const hashedId = this.encryptionService.getHashedValue(id);
 
-
+        try{
+            await this.storageService.write(hashedId, JSON.stringify(userJson));
+        }
+        catch(err){
+            if(err instanceof StorageException){
+                const code = err.code;
+                switch(code){
+                    case StorageErrorCode.FILE_NOT_FOUND:
+                        throw new ControllerException(ControllerErrorCode.FORBIDDEN_REQUEST);
+                    case StorageErrorCode.PERMISSION_DENIED:
+                    case StorageErrorCode.UNKNOWN:
+                        throw new ControllerException(ControllerErrorCode.INTERNAL_ERROR);
+                    
+                }
+            }
+        }
     }
 
 }

@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { ControllerErrorCode } from './controller-error-code';
-import { ControllerErrorMap } from './controller-error-meta-map.js';
+import { ControllerErrorMap } from './controller-error-meta-map';
 
 
 export class ControllerException extends HttpException {
