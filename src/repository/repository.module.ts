@@ -1,8 +1,11 @@
 import { Module } from '@nestjs/common';
-import { RepositoryService } from './repository.service';
+import { EncryptionModule } from '../encryption/encryption.module';
+import { StorageModule } from '../storage/storage.module';
 import { UserRepositoryService } from './user-repository/user-repository.service';
 
 @Module({
-  providers: [RepositoryService, UserRepositoryService]
+  providers: [UserRepositoryService],
+  imports : [EncryptionModule, StorageModule],
+  exports : [UserRepositoryService]
 })
 export class RepositoryModule {}
