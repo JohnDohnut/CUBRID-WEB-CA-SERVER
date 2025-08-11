@@ -6,11 +6,4 @@ export enum ControllerErrorCode {
     FORBIDDEN_REQUEST = "FORBIDDEN_REQUEST",
     INTERNAL_ERROR = "INTERNAL_ERROR",
 
-
-    /**JWT ERRORS */
-    
-
-
- 
-
 }
