@@ -4,14 +4,14 @@ import * as crypto from 'crypto';
 
 
 @Injectable()
-export class ConfigService implements OnModuleInit{
+export class ConfigService{
 
     public seed! : string;
     public salt! : string;
     public secret_key!: string;
     
 
-    onModuleInit() {
+    constructor() {
         const args = parseArgs(process.argv.slice(2));
         
         this.seed = args.SEED;
@@ -24,7 +24,7 @@ export class ConfigService implements OnModuleInit{
         const derived = crypto.pbkdf2Sync(this.seed, this.salt, 100_000, 32, 'sha256');
         this.secret_key = derived.toString('hex');
 
-        
+
 
     }
 

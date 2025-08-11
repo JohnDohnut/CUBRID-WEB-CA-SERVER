@@ -26,6 +26,7 @@
       "@auth/*" : ["src/auth/*"],
       "@jwt/*" : ["src/jwt/*"],
       "@error/*" : ["src/error/*"],
+      "@repository/*" : ["src/repository/*"],
     },
     "incremental": true,
     "skipLibCheck": true,

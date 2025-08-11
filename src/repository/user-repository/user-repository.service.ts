@@ -45,13 +45,10 @@ export class UserRepositoryService {
       ha_mon_list: [],
       resource_mon_list: [],
     };
-
+    
     try {
       // 동시 생성 경쟁까지 막고 싶으면 이쪽이 안전
-      await this.storageService.createAndWrite(hashedId, JSON.stringify(userJson));
-      // 만약 분리하고 싶다면:
-      // const fn = await this.storageService.create(hashedId);
-      // await this.storageService.write(fn, JSON.stringify(userJson));
+      await this.storageService.createAndWrite(hashedId, this.encryptionService.encryptValue(JSON.stringify(userJson)));
     } catch (err) {
       if (err instanceof StorageException) {
         switch (err.code) {

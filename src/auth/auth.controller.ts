@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Post, Put } from '@nestjs/common';
 import { UserDTO } from './dto/create-user.dto';
 import { AuthService } from './auth.service';
 import { LoginResponse, CreateLoginResponse } from './response';
+import { User, WithToken } from '@type/index';
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authSerivce: AuthService) { }
@@ -17,9 +18,15 @@ export class AuthController {
         this.authSerivce.register(userDTO);
     }
 
-    @Delete('delete')
-    delete() {
+    @Post('validate')
+    async validate(@Body() request : WithToken ): Promise<boolean>{
+       return !!await this.authSerivce.validateToken(request.token);
+       
+    }
 
+    @Delete('delete')
+    async delete() {
+                
     }
 
     @Put('update')

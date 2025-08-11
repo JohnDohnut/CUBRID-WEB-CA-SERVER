@@ -5,15 +5,15 @@ import { ControllerErrorCode } from './controller-error-code';
 // Record<ErrorCode, {message: string, status: HttpStatus}>
 export const ControllerErrorMap: Record<ControllerErrorCode, {message: string, status: HttpStatus}> = {
     [ControllerErrorCode.USER_ALREADY_EXISTS]: {
-        message: "User already exists",
-        status: HttpStatus.CONFLICT
+        message: "Invalid credential",
+        status: HttpStatus.UNAUTHORIZED
     },
-    [ControllerErrorCode.EXPIRED_TOKEN]: {
+    [ControllerErrorCode.TOKEN_EXPIRED]: {
         message: "Token has expired",
         status: HttpStatus.UNAUTHORIZED
     },
     [ControllerErrorCode.INVALID_CREDENTIALS]: {
-        message: "Invalid credentials",
+        message: "Invalid credential;",
         status: HttpStatus.UNAUTHORIZED
     },
     
@@ -24,6 +24,10 @@ export const ControllerErrorMap: Record<ControllerErrorCode, {message: string, s
     [ControllerErrorCode.FORBIDDEN_REQUEST] : {
         message: "Forbidden Request",
         status: HttpStatus.FORBIDDEN
+    },
+    [ControllerErrorCode.NO_SUCH_USER] : {
+        message: "Invalid credential",
+        status: HttpStatus.UNAUTHORIZED
     }
 
 };

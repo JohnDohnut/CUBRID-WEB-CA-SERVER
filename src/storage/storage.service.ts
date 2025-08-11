@@ -96,6 +96,7 @@ export class StorageService {
   async createAndWrite(filename: string, data: string): Promise<string> {
     await this.withLock(filename, async () => {
       const filePath = this.resolvePath(filename);
+      console.log(data);
       await fs.writeFile(filePath, data, { flag: 'wx', encoding: 'utf-8' });
     }).catch((err: any) => {
       switch (err?.code) {
