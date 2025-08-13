@@ -33,15 +33,6 @@ export class AuthService {
   }
 
   async register(dto: UserDTO): Promise<void> {
-    const exists = await this.usersRepo.loadUserById(dto.id);
-    if (exists) {
-      throw new ControllerException(
-        ControllerErrorCode.USER_ALREADY_EXISTS ?? ControllerErrorCode.INVALID_CREDENTIALS,
-      );
-    }
-
-    const hashed = await this.password.getHashedValue(dto.password);
-    const toCreate = { id: dto.id, password: hashed };
-    await this.usersRepo.createUser(toCreate);
+    await this.usersRepo.createUser(dto);
   }
 }
