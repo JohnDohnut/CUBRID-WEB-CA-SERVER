@@ -13,10 +13,11 @@ import { PreferenceModule } from '@preference/preference.module';
 import { UserRepositoryModule } from './repository/repository.module';
 import { UserModule } from '@user/user.module';
 import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from '@security/jwt/jwt-auth.guard';
+import { JwtAuthGuard } from '@root/src/token/jwt-auth.guard';
+import { TokenModule } from './token/token.module';
 
 @Module({
-  imports: [ConfigModule, SecurityModule, StorageModule, AuthModule, PreferenceModule, UserRepositoryModule, UserModule],
+  imports: [ConfigModule, SecurityModule, StorageModule, AuthModule, PreferenceModule, UserRepositoryModule, UserModule, TokenModule],
   controllers: [AppController],
   providers: [AppService, ConfigService, EncryptionService, StorageService, PreferenceService, {provide : APP_GUARD, useClass : JwtAuthGuard}],
 })

@@ -1,12 +1,12 @@
 // src/modules/auth/auth.service.ts
+import { ControllerException } from '@error/controller/controller-exception';
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UserRepositoryService } from '../repository/user-repository/user-repository.service';
-import { UserDTO } from './dto/request-create-user.dto';
-import { User } from '@type/index';
-import { ControllerException } from '@error/controller/controller-exception';
 import { ControllerErrorCode } from '@root/src/error/controller/controller-error-code';
 import { PasswordService } from '@security/password/password.service';
+import { User } from '@type/index';
+import { UserRepositoryService } from '../repository/user-repository/user-repository.service';
+import { UserDTO } from './dto/request-create-user.dto';
 
 @Injectable()
 export class AuthService {

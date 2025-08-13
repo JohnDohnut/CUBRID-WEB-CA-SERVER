@@ -17,7 +17,7 @@ export const ControllerErrorMap: Record<ControllerErrorCode, {message: string, s
         status: HttpStatus.UNAUTHORIZED
     },
     [ControllerErrorCode.TOKEN_EXPIRED]: {
-        message: ControllerErrorMessage.TOKEN_EXPIRED,
+        message: ControllerErrorMessage.TOKEN_EXPIRED   ,
         status: HttpStatus.UNAUTHORIZED
     },
     [ControllerErrorCode.INVALID_CREDENTIALS]: {

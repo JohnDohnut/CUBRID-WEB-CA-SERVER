@@ -24,7 +24,7 @@
       "@message/*" : ["src/message/*"],
       "@security/*" : ["src/security/*"],
       "@auth/*" : ["src/auth/*"],
-      "@jwt/*" : ["src/jwt/*"],
+      "@jwt/*" : ["src/token/*"],
       "@error/*" : ["src/error/*"],
       "@repository/*" : ["src/repository/*"],
       "@common/*" : ["src/common/*"],

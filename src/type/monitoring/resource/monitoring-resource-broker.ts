@@ -1,6 +1,6 @@
 import { MonitoringResource } from "./monitoring-resource";
-import { metric_broker } from "./monitoring-resource-metrics";
+import { metric_broker, MetricByType } from "./monitoring-resource-metrics";
 
-export type MonitoringResourceBroker = MonitoringResource<metric_broker> & {
+export type MonitoringResourceBroker = MonitoringResource<'broker'> & {
     bname: string
 } 
