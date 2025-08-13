@@ -1,1 +1,1 @@
-export * from './change-monitoring-preference-response';
+export * from './change-monitoring-preference-response'
