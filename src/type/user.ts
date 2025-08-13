@@ -1,11 +1,10 @@
-import { MonitoringHA } from "./monitoring/ha/monitoring-ha";
-import { MonitoringResource } from "./monitoring/resource/monitoring-resource";
+import { MonitoringHa, MonitoringResource} from '.';
 
 export type User = {
     id: string;
     password: string;
 
-    ha_mon_list: MonitoringHA[];
+    ha_mon_list: MonitoringHa[];
     resource_mon_list: MonitoringResource[];
 }
 

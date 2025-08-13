@@ -75,7 +75,6 @@ export class StorageService {
     });
   }
 
-  /** 새 파일 만들기. 이미 있으면 에러. 성공 시 전달받은 filename을 그대로 반환 */
   async create(filename: string): Promise<string> {
     const filePath = this.resolvePath(filename);
     await fs.mkdir(this.storageDir, { recursive: true });

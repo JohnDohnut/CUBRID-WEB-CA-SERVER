@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserDTO } from '@auth/dto/create-user.dto';
+import { UserDTO } from '@root/src/auth/dto/request-create-user.dto';
 import { EncryptionService } from '@security/encryption/encryption.service';
 import { ControllerErrorCode } from '@error/controller/controller-error-code';
 import { ControllerException } from '@error/controller/controller-exception';
@@ -14,16 +14,20 @@ export class UserRepositoryService {
     private readonly encryptionService: EncryptionService,
     private readonly passwordService: PasswordService,
     private readonly storageService: StorageService,
-  ) {}
+  ) { }
 
   async loadUserById(id: string): Promise<User> {
     const hashedId = this.encryptionService.getHashedValue(id);
     try {
+
       const encrypted = await this.storageService.read(hashedId);
       const userJson: User = JSON.parse(this.encryptionService.decryptValue(encrypted));
       return userJson;
+
     } catch (err) {
+
       if (err instanceof StorageException) {
+
         switch (err.code) {
           case StorageErrorCode.FILE_NOT_FOUND:
             throw new ControllerException(ControllerErrorCode.INVALID_CREDENTIALS);
@@ -32,6 +36,7 @@ export class UserRepositoryService {
           case StorageErrorCode.UNKNOWN:
             throw new ControllerException(ControllerErrorCode.INTERNAL_ERROR);
         }
+
       }
       throw err;
     }
@@ -45,9 +50,8 @@ export class UserRepositoryService {
       ha_mon_list: [],
       resource_mon_list: [],
     };
-    
+
     try {
-      // 동시 생성 경쟁까지 막고 싶으면 이쪽이 안전
       await this.storageService.createAndWrite(hashedId, this.encryptionService.encryptValue(JSON.stringify(userJson)));
     } catch (err) {
       if (err instanceof StorageException) {

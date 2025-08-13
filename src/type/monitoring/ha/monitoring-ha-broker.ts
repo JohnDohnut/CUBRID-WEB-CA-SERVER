@@ -1,4 +1,4 @@
-export type MonitoringHABroker = {
-    alias: string;
-    bname: string;
-} 
+export type MonitoringHaBroker = {
+    alias : string,
+    bname : string,
+}

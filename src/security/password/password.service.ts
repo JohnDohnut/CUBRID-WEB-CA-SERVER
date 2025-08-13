@@ -6,7 +6,7 @@ export class PasswordService {
     private readonly HASH_ROUND = 10;
 
     async compareHash (plain:string, hash:string) : Promise<boolean>{
-        return await bcrypt.compare(plain, hash)
+        return await bcrypt.compare(plain, hash);
     }
 
     async getHashedValue(plain : string | number) : Promise<string>{

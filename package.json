@@ -117,6 +117,7 @@
     "@auth": "auth",
     "@jwt": "jwt",
     "@error": "error",
-    "@repository" : "repository"
+    "@repository" : "repository",
+    "@common" : "common"
   }
 }

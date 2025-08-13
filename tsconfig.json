@@ -27,6 +27,7 @@
       "@jwt/*" : ["src/jwt/*"],
       "@error/*" : ["src/error/*"],
       "@repository/*" : ["src/repository/*"],
+      "@common/*" : ["src/common/*"],
     },
     "incremental": true,
     "skipLibCheck": true,

@@ -38,3 +38,10 @@ export type metric_os =
 
 // Union of all possible metrics
 export type AllMetrics = metric_db | metric_vol | metric_broker | metric_os; 
+
+export type MetricByType = {
+  db : metric_db,
+  vol : metric_vol,
+  broker : metric_broker,
+  os: metric_os 
+}

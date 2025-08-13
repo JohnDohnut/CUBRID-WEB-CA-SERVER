@@ -4,24 +4,13 @@ import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@config/config.module';
 import { ConfigService } from '@config/config.service';
-import { RepositoryModule } from '@repository/repository.module';
+import { UserRepositoryModule } from '@repository/repository.module';
 import { SecurityModule } from '@security/security.module';
 
 @Module({
   controllers: [AuthController],
   providers: [AuthService],
   exports: [],
-  imports: [SecurityModule, ConfigModule, RepositoryModule, JwtModule.registerAsync({
-    imports: [ConfigModule],
-    inject: [ConfigService],
-    useFactory: async (configService: ConfigService) => {
-      console.log('[JWT Secret]', configService.getSecretKey()); // ← 여기서 값 확인
-      return {
-        secret: configService.getSecretKey(),
-        signOptions: { expiresIn: '1h' },
-      };
-    },
-  })
-  ]
+  imports: [SecurityModule, ConfigModule, UserRepositoryModule]
 })
 export class AuthModule { }

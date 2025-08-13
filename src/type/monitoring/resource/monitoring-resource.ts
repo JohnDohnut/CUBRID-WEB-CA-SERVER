@@ -1,10 +1,10 @@
 import { AddressInfo } from "@type/common/address-info"
-import { AllMetrics as AllMonitoringMetrics } from "./monitoring-resource-metrics";
+import { AllMetrics as AllMonitoringMetrics, MetricByType } from "./monitoring-resource-metrics";
 
-export type MonitoringResource<T = AllMonitoringMetrics> = {
+export type MonitoringResource<T extends keyof MetricByType = keyof MetricByType> = {
     cms: AddressInfo;
-    metric: T;
-    type: string;
+    metric: MetricByType[T];
+    type: T;
     interval: string;
 } 
 
