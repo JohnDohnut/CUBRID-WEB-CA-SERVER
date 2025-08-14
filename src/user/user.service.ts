@@ -25,6 +25,7 @@ export class UserService {
         }
 
         userJson.password = await this.password.getHashedValue(dto.newPassword);
+        
         this.repository.updateUser(userJson.id, userJson);
 
 

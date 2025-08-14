@@ -53,7 +53,8 @@
     "proper-lockfile": "^4.1.2",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "selfsigned": "^3.0.1"
+    "selfsigned": "^3.0.1",
+    "tsuml2": "^0.17.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -117,7 +118,7 @@
     "@auth": "auth",
     "@jwt": "jwt",
     "@error": "error",
-    "@repository" : "repository",
-    "@common" : "common"
+    "@repository": "repository",
+    "@common": "common"
   }
 }

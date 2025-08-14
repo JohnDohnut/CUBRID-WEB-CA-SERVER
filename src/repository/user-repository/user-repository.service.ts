@@ -90,7 +90,8 @@ export class UserRepositoryService {
   async updateUser(id: string, userJson: User) {
     const hashedId = this.encryptionService.getHashedValue(id);
     try {
-      await this.storageService.write(hashedId, JSON.stringify(userJson));
+      const encrypted = await this.encryptionService.encryptValue(JSON.stringify(userJson))
+      await this.storageService.write(hashedId, encrypted);
     } catch (err) {
       if (err instanceof StorageException) {
         switch (err.code) {
