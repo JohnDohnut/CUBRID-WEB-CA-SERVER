@@ -1,4 +1,4 @@
-import { MonitoringHa, MonitoringResource } from "@type/."
+import { MonitoringHa, MonitoringResource } from "@repository/user-repository/type"
 
 export type ChangeMonitoringPreferenceRequest = {
     ha_mon_list : MonitoringHa[];

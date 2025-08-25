@@ -1,5 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import * as minimist from 'minimist';
+import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
 
 

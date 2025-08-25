@@ -9,7 +9,8 @@ enum ControllerErrorMessage {
     INVALID_CREDENTIAL = "Invalid credential",
     INTERNAL_SERVER_ERROR = "Internal server error",
     FORBIDDEN = "Forbidden Request",
-    UNAUTHORIZED = ""
+    DUPLICATED_HOST = "Host already exists with the same address, port, and user",
+    UNAUTHORIZED = "Unauthorized Request"
 }
 export const ControllerErrorMap: Record<ControllerErrorCode, {message: string, status: HttpStatus}> = {
     [ControllerErrorCode.USER_ALREADY_EXISTS]: {
@@ -36,6 +37,10 @@ export const ControllerErrorMap: Record<ControllerErrorCode, {message: string, s
     [ControllerErrorCode.NO_SUCH_USER] : {
         message: ControllerErrorMessage.INVALID_CREDENTIAL,
         status: HttpStatus.UNAUTHORIZED
+    },
+    [ControllerErrorCode.DUPLICATED_HOST] : {
+        message : ControllerErrorMessage.DUPLICATED_HOST,
+        status : HttpStatus.CONFLICT
     }
 
 };

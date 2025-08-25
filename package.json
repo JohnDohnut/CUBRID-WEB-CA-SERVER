@@ -46,6 +46,7 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
+    "@types/uuid": "^10.0.0",
     "bcryptjs": "^3.0.2",
     "module-alias": "^2.2.3",
     "passport": "^0.7.0",
@@ -54,7 +55,8 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "selfsigned": "^3.0.1",
-    "tsuml2": "^0.17.1"
+    "tsuml2": "^0.17.1",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

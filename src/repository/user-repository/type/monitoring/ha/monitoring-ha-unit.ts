@@ -1,4 +1,4 @@
-import { CmsConnectionInfo } from '../../common';
+import { CmsConnectionInfo } from '../../../../../type/common';
 import { MonitoringHaBroker } from './monitoring-ha-broker';
 import { MonitoringHaDB } from './monitoring-ha-db';
 

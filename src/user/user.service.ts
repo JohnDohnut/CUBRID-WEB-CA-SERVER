@@ -3,7 +3,7 @@ import { UserRepositoryService } from '@repository/user-repository/user-reposito
 import { PasswordService } from '../security/password/password.service';
 import { ControllerException } from '../error/controller/controller-exception';
 import { ControllerErrorCode } from '../error/controller/controller-error-code';
-import { UserMonitoring } from '@type/.';
+import { User } from '@repository/user-repository/type';
 import { ChangePasswordRequest } from './request/change-password-request';
 
 @Injectable()
@@ -31,31 +31,9 @@ export class UserService {
 
     }
 
-    async getMonitoringPreference(userId : string) : Promise<UserMonitoring>{
-        const userJson = await this.repository.loadUserById(userId);
-        const rv : UserMonitoring= {
-            ha_mon_list : userJson.ha_mon_list,
-            resource_mon_list : userJson.resource_mon_list
-        }
-        return rv;
+    async getUserData (userId : string) : Promise<User> {
+        const user = await this.repository.loadUserById(userId)
+        return user;
     }
-
-    async updateMonitoringPreference(userId : string, newMonPref : UserMonitoring) : Promise<UserMonitoring>{
-
-        const userJson = await this.repository.loadUserById(userId);
-
-        userJson.ha_mon_list = newMonPref.ha_mon_list;
-        userJson.resource_mon_list = newMonPref.resource_mon_list;
-
-        await this.repository.updateUser(userId, userJson);
-        const newUserJson = await this.repository.loadUserById(userId);
-
-        const rv : UserMonitoring = {
-            ha_mon_list : newUserJson.ha_mon_list,
-            resource_mon_list : newUserJson.resource_mon_list
-        }
-        return rv;
-    }  
-        
   
 }
