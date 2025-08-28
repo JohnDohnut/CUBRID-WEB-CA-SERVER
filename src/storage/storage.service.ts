@@ -1,20 +1,14 @@
+import { StorageErrorCode, StorageException } from '@error/storage/storage-exception';
 import { Injectable } from '@nestjs/common';
+import { getStoragePath, resolveUserFilePath } from '@util/.';
 import * as fs from 'fs/promises';
-import * as path from 'path';
-import { StorageErrorCode, StorageException } from '../error/storage/storage-exception';
-import { LockService, FileLock } from '../lock/lock.service';
+import { LockService } from '../lock/lock.service';
 
 @Injectable()
 export class StorageService {
   constructor(private readonly lockService: LockService) {}
+  
 
-  private readonly storageDir = path.join(process.cwd(), 'storage');
-
-  private resolvePath(filename: string) {
-    return path.join(this.storageDir, filename);
-  }
-
-  /** 공통 에러 핸들러 */
   private handleFsError(err: any): never {
     switch (err?.code) {
       case 'ENOENT': throw new StorageException(StorageErrorCode.FILE_NOT_FOUND);
@@ -25,12 +19,12 @@ export class StorageService {
     }
   }
 
-  // -------------------------
-  // Low-level raw fs methods
-  // -------------------------
+  resolveFilePath(filename:string){
+    return resolveUserFilePath(filename);
+  }
 
   async readRaw(filename: string): Promise<string> {
-    const filePath = this.resolvePath(filename);
+    const filePath = resolveUserFilePath(filename);
     try {
       return await fs.readFile(filePath, 'utf-8');
     } catch (err) {
@@ -39,11 +33,11 @@ export class StorageService {
   }
 
   async writeRaw(filename: string, data: string): Promise<void> {
-    const filePath = this.resolvePath(filename);
+    const filePath = resolveUserFilePath(filename);
     const tmp = `${filePath}.tmp-${process.pid}-${Date.now()}`;
     try {
       await fs.writeFile(tmp, data, 'utf-8');
-      await fs.rename(tmp, filePath); // 원자 교체
+      await fs.rename(tmp, filePath); 
     } catch (err) {
       try { await fs.unlink(tmp); } catch {}
       this.handleFsError(err);
@@ -51,8 +45,8 @@ export class StorageService {
   }
 
   async createRaw(filename: string): Promise<void> {
-    const filePath = this.resolvePath(filename);
-    await fs.mkdir(this.storageDir, { recursive: true });
+    const filePath = resolveUserFilePath(filename);
+    await fs.mkdir(getStoragePath(), { recursive: true });
     try {
       await fs.writeFile(filePath, '', { flag: 'wx' });
     } catch (err) {
@@ -61,8 +55,8 @@ export class StorageService {
   }
 
   async createAndWriteRaw(filename: string, data: string): Promise<void> {
-    const filePath = this.resolvePath(filename);
-    await fs.mkdir(this.storageDir, { recursive: true });
+    const filePath = resolveUserFilePath(filename);
+    await fs.mkdir(getStoragePath(), { recursive: true });
     try {
       await fs.writeFile(filePath, data, { flag: 'wx', encoding: 'utf-8' });
     } catch (err) {
@@ -71,7 +65,7 @@ export class StorageService {
   }
 
   async deleteRaw(filename: string): Promise<void> {
-    const filePath = this.resolvePath(filename);
+    const filePath = resolveUserFilePath(filename);
     try {
       await fs.unlink(filePath);
     } catch (err) {
@@ -79,39 +73,42 @@ export class StorageService {
     }
   }
 
-  // -------------------------
-  // High-level lock wrapped API
-  // -------------------------
-
   async read(filename: string): Promise<string> {
-    return this.lockService.withLock(filename, async () => {
-      return this.readRaw(filename);
+    const filePath = resolveUserFilePath(filename);
+    return this.lockService.withLock(filePath, async () => {
+      return this.readRaw(filePath);
     });
   }
 
   async write(filename: string, data: string): Promise<void> {
-    return this.lockService.withLock(filename, async () => {
-      return this.writeRaw(filename, data);
+    const filePath = resolveUserFilePath(filename);
+    return this.lockService.withLock(filePath, async () => {
+      return this.writeRaw(filePath, data);
     });
   }
 
   async create(filename: string): Promise<string> {
-    return this.lockService.withLock(filename, async () => {
-      await this.createRaw(filename);
+    const filePath = resolveUserFilePath(filename);
+    return this.lockService.withLock(filePath, async () => {
+      await this.createRaw(filePath);
       return filename;
     });
   }
 
   async createAndWrite(filename: string, data: string): Promise<string> {
-    return this.lockService.withLock(filename, async () => {
-      await this.createAndWriteRaw(filename, data);
+    const filePath = resolveUserFilePath(filename);
+    return this.lockService.withLock(filePath, async () => {
+      await this.createAndWriteRaw(filePath, data);
       return filename;
     });
   }
 
   async delete(filename: string): Promise<void> {
-    return this.lockService.withLock(filename, async () => {
-      return this.deleteRaw(filename);
+    const filePath = resolveUserFilePath(filename);
+    return this.lockService.withLock(filePath, async () => {
+      return this.deleteRaw(filePath);
     });
   }
+
+ 
 }

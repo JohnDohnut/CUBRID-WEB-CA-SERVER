@@ -7,7 +7,7 @@ import { User } from './type';
 import { EncryptionService } from '@security/encryption/encryption.service';
 import { PasswordService } from '@security/password/password.service';
 import { StorageService } from '@storage/storage.service';
-import { LockService } from '@root/src/lock/lock.service';
+import { FileLock, LockService } from '@root/src/lock/lock.service';
 
 import { StorageException, StorageErrorCode } from '@root/src/error/storage/storage-exception';
 import { ControllerException } from '@error/controller/controller-exception';
@@ -20,17 +20,15 @@ export class UserRepositoryService {
     private readonly passwordService: PasswordService,
     private readonly storageService: StorageService,
     private readonly lockService: LockService,
-  ) {}
+  ) { }
 
-  private handleStorageError(err: any, notFoundCode: ControllerErrorCode, alreadyExistsCode?: ControllerErrorCode): never {
+  private handleStorageError(err: any): never {
     if (err instanceof StorageException) {
       switch (err.code) {
         case StorageErrorCode.FILE_NOT_FOUND:
-          throw new ControllerException(notFoundCode);
+          throw new ControllerException(ControllerErrorCode.NO_SUCH_USER);
         case StorageErrorCode.FILE_ALREADY_EXISTS:
-          if (alreadyExistsCode) {
-            throw new ControllerException(alreadyExistsCode);
-          }
+          throw new ControllerException(ControllerErrorCode.USER_ALREADY_EXISTS);
           break;
         case StorageErrorCode.PERMISSION_DENIED:
         case StorageErrorCode.FILE_LOCKED:
@@ -38,7 +36,7 @@ export class UserRepositoryService {
           throw new ControllerException(ControllerErrorCode.INTERNAL_ERROR);
       }
     }
-    throw err; // 예상 못한 에러는 그대로 throw
+    throw err;
   }
 
   async loadUserById(id: string): Promise<User> {
@@ -48,7 +46,7 @@ export class UserRepositoryService {
       const userJson: User = JSON.parse(this.encryptionService.decryptValue(encrypted));
       return userJson;
     } catch (err) {
-      this.handleStorageError(err, ControllerErrorCode.INVALID_CREDENTIALS);
+      this.handleStorageError(err);
     }
   }
 
@@ -68,7 +66,7 @@ export class UserRepositoryService {
     try {
       await this.storageService.createAndWrite(hashedId, this.encryptionService.encryptValue(JSON.stringify(userJson)));
     } catch (err) {
-      this.handleStorageError(err, ControllerErrorCode.INTERNAL_ERROR, ControllerErrorCode.USER_ALREADY_EXISTS);
+      this.handleStorageError(err);
     }
   }
 
@@ -77,7 +75,7 @@ export class UserRepositoryService {
     try {
       await this.storageService.delete(hashedId);
     } catch (err) {
-      this.handleStorageError(err, ControllerErrorCode.FORBIDDEN_REQUEST);
+      this.handleStorageError(err);
     }
   }
 
@@ -87,7 +85,26 @@ export class UserRepositoryService {
       const encrypted = this.encryptionService.encryptValue(JSON.stringify(userJson));
       await this.storageService.write(hashedId, encrypted);
     } catch (err) {
-      this.handleStorageError(err, ControllerErrorCode.FORBIDDEN_REQUEST);
+      this.handleStorageError(err);
+    }
+  }
+
+  async updateUserRaw(id: string, userJson: User): Promise<void> {
+    const hashedId = this.encryptionService.getHashedValue(id);
+    try {
+      const encryted = this.encryptionService.encryptValue(JSON.stringify(userJson));
+      await this.storageService.writeRaw(hashedId, encryted);
+    } catch (err) {
+      this.handleStorageError(err);
+    }
+  }
+
+  async deleteRaw(id: string): Promise<void> {
+    const hashedId = this.encryptionService.getHashedValue(id);
+    try {
+      await this.storageService.deleteRaw(hashedId);
+    } catch (err) {
+      this.handleStorageError(err);
     }
   }
 }

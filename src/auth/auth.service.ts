@@ -1,4 +1,3 @@
-// src/modules/auth/auth.service.ts
 import { ControllerException } from '@error/controller/controller-exception';
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';

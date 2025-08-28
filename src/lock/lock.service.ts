@@ -3,58 +3,69 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as lockfile from 'proper-lockfile';
 import { StorageException, StorageErrorCode } from '../error/storage/storage-exception';
+import { LockErrorCode, LockException } from '../error/lock/lock-exception';
+
+
+
 
 export interface FileLock {
-  filePath: string;
-  release: () => Promise<void>;
+    filePath: string;
+    release: () => Promise<void>;
 }
 
 @Injectable()
 export class LockService {
-  private readonly storageDir = path.join(process.cwd(), 'storage');
+    private readonly storageDir = path.join(process.cwd(), 'storage');
 
-  private resolvePath(filename: string) {
-    return path.join(this.storageDir, filename);
-  }
-
-  private async acquireInternal(filename: string): Promise<FileLock> {
-    const filePath = this.resolvePath(filename);
-    await fs.mkdir(path.dirname(filePath), { recursive: true });
-
-    try {
-      const release = await lockfile.lock(filePath, {
-        stale: 30_000,
-        realpath: false,
-        retries: { retries: 10, factor: 1.5, minTimeout: 100, maxTimeout: 1000 },
-      });
-      return { filePath, release };
-    } catch (err: any) {
-      const msg = String(err?.message ?? '');
-      if (msg.includes('already being held')) {
-        throw new StorageException(StorageErrorCode.FILE_LOCKED, msg);
-      }
-      throw new StorageException(StorageErrorCode.UNKNOWN, msg);
+    private handleFsError(err: any): never {
+        switch (err?.code) {
+            case 'ENOENT': throw new LockException(LockErrorCode.FILE_NOT_FOUND);
+            case 'EEXIST':
+            case 'ELOCKED': throw new LockException(LockErrorCode.LOCK_ALREADY_HELD);
+            case 'EACCES':
+            case 'EPERM': throw new LockException(LockErrorCode.PERMISSION_DENIED);
+            default: throw new LockException(LockErrorCode.UNKNOWN, err?.message ?? String(err));
+        }
     }
-  }
 
-  async acquire(filename: string): Promise<FileLock> {
-    return this.acquireInternal(filename);
-  }
-
-  async release(lock: FileLock): Promise<void> {
-    try {
-      await lock.release();
-    } catch {
-      // release 실패는 무시하거나 로깅
+    private resolvePath(filename: string) {
+        return path.join(this.storageDir, filename);
     }
-  }
 
-  async withLock<T>(filename: string, work: () => Promise<T>): Promise<T> {
-    const lock = await this.acquireInternal(filename);
-    try {
-      return await work();
-    } finally {
-      await this.release(lock);
+    private async acquireInternal(filename: string): Promise<FileLock> {
+        const filePath = this.resolvePath(filename);
+        await fs.mkdir(path.dirname(filePath), { recursive: true });
+
+        try {
+            const release = await lockfile.lock(filePath, {
+                stale: 30_000,
+                realpath: false,
+                retries: { retries: 10, factor: 1.5, minTimeout: 100, maxTimeout: 1000 },
+            });
+            return { filePath, release };
+        } catch (err: any) {
+            this.handleFsError(err);
+        }
     }
-  }
+
+    async acquire(filename: string): Promise<FileLock> {
+        return this.acquireInternal(filename);
+    }
+
+    async release(lock: FileLock): Promise<void> {
+        try {
+            await lock.release();
+        } catch {
+            // release 실패는 무시하거나 로깅
+        }
+    }
+
+    async withLock<T>(filename: string, work: () => Promise<T>): Promise<T> {
+        const lock = await this.acquireInternal(filename);
+        try {
+            return await work();
+        } finally {
+            await this.release(lock);
+        }
+    }
 }
