@@ -1,16 +1,15 @@
-import { ControllerErrorCode, ControllerException, LockException, StorageException } from '@error/.';
+
 import { Injectable } from '@nestjs/common';
 import { HostInfo, User } from '@repository/user-repository/type';
 import { UserRepositoryService } from '@repository/user-repository/user-repository.service';
 import { omitPasswordArray } from '@util/.';
 import { v4 as uuidv4 } from 'uuid';
-import { HostErrorCode, HostException } from '../error/host/host-exception';
+import { HostError } from '../error/host/host-error';
 import { LockService } from '../lock/lock.service';
 import { EncryptionService } from '../security/encryption/encryption.service';
-import { AddHostRequest } from './type/request/add-host-request';
-import { AddHostResponse } from './type/response/add-host-response';
-import { GetHostsResponse } from './type/response/get-hosts-response';
 import { HostDTO } from './type/dto/host-dto';
+import { AddHostRequest } from './type/request/add-host-request';
+import { GetHostsResponse } from './type/response/get-hosts-response';
 @Injectable()
 export class HostService {
 
@@ -21,17 +20,6 @@ export class HostService {
     ) { }
 
     handleError(error: any) {
-        if (error === typeof (LockException)) {
-            switch (error.code) {
-                
-            }
-        }
-        else if (error === typeof (StorageException)) {
-
-        }
-        else {
-            throw new ControllerException(ControllerErrorCode.INTERNAL_ERROR);
-        }
     }
 
     async getHostList(userId: string): Promise<GetHostsResponse> {
@@ -51,7 +39,7 @@ export class HostService {
             const lock = await this.lockService.acquire(this.encrytionService.getHashedValue(userId));
             const user: User = await this.repository.loadUserById(userId);
             if (user.host_list.length > 50) {
-                throw new HostException(HostErrorCode.MAX_HOSTS);
+                throw HostError.ExceedMaxHosts();
             }
             const uidv4 = uuidv4();
             const duplicate = user.host_list.find(
@@ -62,7 +50,7 @@ export class HostService {
             );
 
             if (duplicate) {
-                throw new HostException(HostErrorCode.DUPLICATED_HOST);
+                throw HostError.DuplicatedHost(duplicate.id);
             }
 
             const newHost: HostInfo = {
@@ -75,17 +63,13 @@ export class HostService {
 
             this.lockService.release(lock);
             const hosts: HostDTO[] = omitPasswordArray<HostInfo>(user.host_list);
-         
+
             return hosts;
 
         } catch (error) {
-            this.handleError(error);
+            throw HostError.InternalError();
         }
 
-
-
     }
-
-
 
 }

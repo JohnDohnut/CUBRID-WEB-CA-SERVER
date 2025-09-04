@@ -2,7 +2,7 @@ export type ErrorKind = 'AUTH'
 | 'STORAGE' // file operation errors 
 | 'LOCK'  // lock operation errors
 | 'RESOURCE'  // resource policy (max length of host list, monitoring list, etc.)
-| ''
+| 'STORAGE' // File IO Errors 
 | 'INTERNAL'; // unhandled server error, which must be monitored by operator
 
 export class AppError extends Error {

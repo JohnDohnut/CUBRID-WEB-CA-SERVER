@@ -2,8 +2,7 @@ import { Injectable } from '@nestjs/common';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as lockfile from 'proper-lockfile';
-import { StorageException, StorageErrorCode } from '../error/storage/storage-exception';
-import { LockErrorCode, LockException } from '../error/lock/lock-exception';
+import { LockError, LockErrorCode } from '../error/lock/lock-error';
 
 
 
@@ -19,11 +18,11 @@ export class LockService {
 
     private handleFsError(err: any): never {
         switch (err?.code) {
-            case 'ENOENT': throw new LockException(LockErrorCode.FILE_NOT_FOUND);
+            case 'ENOENT': throw LockError.LockNotFound();
             case 'EEXIST':
-            case 'ELOCKED': throw new LockException(LockErrorCode.LOCK_ALREADY_HELD);
+            case 'ELOCKED': throw LockError.LockAlreadyHeld();
             case 'EACCES':
-            case 'EPERM': throw new LockException(LockErrorCode.PERMISSION_DENIED);
+            case 'EPERM': throw LockError.PermissionDenied();
             default: throw new LockException(LockErrorCode.UNKNOWN, err?.message ?? String(err));
         }
     }
@@ -47,6 +46,8 @@ export class LockService {
             this.handleFsError(err);
         }
     }
+
+    
 
     async acquire(filename: string): Promise<FileLock> {
         return this.acquireInternal(filename);

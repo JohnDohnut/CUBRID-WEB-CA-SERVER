@@ -7,12 +7,3 @@ export enum LockErrorCode {
     UNKNOWN = 'UNKNOWN',
   }
   
-  export class LockException extends Error {
-    constructor(
-      public readonly code: LockErrorCode,
-      message?: string,
-    ) {
-      super(message ?? code);
-      this.name = 'LockException';
-    }
-  }

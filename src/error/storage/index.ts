@@ -1,1 +1,1 @@
-export * from './storage-exception'
+export * from './storage-error'
