@@ -8,8 +8,5 @@ export * from './storage/storage-error'
 export * from './lock/lock-error'
 export * from './user/user-error'
 
-// Controller errors
-export * from './controller'
-
 // Global error handling
 export * from './global-filter'

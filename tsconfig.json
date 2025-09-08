@@ -28,6 +28,10 @@
       "@error/*" : ["src/error/*"],
       "@repository/*" : ["src/repository/*"],
       "@common/*" : ["src/common/*"],
+      "@lock/*" : ["src/lock/*"],
+      "@host/*" : ["src/host/*"],
+      "@monitoring/*" : ["src/monitoring/*"],
+      "@broker/*" : ["src/broker/*"]
     },
     "incremental": true,
     "skipLibCheck": true,

@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as lockfile from 'proper-lockfile';
-import { LockError, LockErrorCode } from '@error';
-import { AppError } from '@error';
+import { LockError, LockErrorCode } from '@error/lock/lock-error';
+import { AppError } from '@error/app-error';
 
 export interface LockErrorDetails {
     message: string;

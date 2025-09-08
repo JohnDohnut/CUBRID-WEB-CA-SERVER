@@ -41,10 +41,34 @@ export class AppError extends Error {
     private getHttpStatus(): number {
         switch (this.kind) {
             case 'AUTH': return 401;
-            case 'RESOURCE': return 400;
+            case 'RESOURCE': 
+                // RESOURCE 에러를 세분화
+                switch (this.code) {
+                    case 'EXCEED_MAX_HOSTS':
+                    case 'INVALID_FORMAT':
+                        return 400; 
+                    case 'DUPLICATED_HOST':
+                        return 409; // Conflict - 리소스 충돌
+                    case 'INTERNAL_ERROR':
+                        return 500; // Internal Server Error
+                    default:
+                        return 400;
+                }
+            case 'USER': 
+                switch (this.code) {
+                    case 'USER_NOT_FOUND':
+                    case 'USER_ALREADY_EXISTS':
+                        return 401; // 인증/인가 관련
+                    case 'DATA_SAVE_FAILED':
+                    case 'DATA_LOAD_FAILED':
+                    case 'DATA_DELETE_FAILED':
+                    case 'DATA_UPDATE_FAILED':
+                        return 500; // 서버 내부 에러
+                    default:
+                        return 500;
+                }
             case 'STORAGE': 
             case 'LOCK': 
-            case 'USER':
             case 'INTERNAL': return 500;
             default: return 500;
         }

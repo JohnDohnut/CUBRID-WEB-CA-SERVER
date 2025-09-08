@@ -1,10 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
-import { ConfigService } from "@root/src/config/config.service";
+import { ConfigService } from "@config/config.service";
 import { UserRepositoryService } from "@repository/user-repository/user-repository.service";
 import { ExtractJwt, Strategy } from "passport-jwt";
-import { ControllerException } from "@root/src/error/controller/controller-exception";
-import { ControllerErrorCode } from "@root/src/error/controller/controller-error-code";
+import { UserError } from "@error/user/user-error";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -23,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const userId = payload.sub;
     const userJsonString = await this.userRepository.loadUserById(userId);
 
-    if(!userJsonString) throw new ControllerException(ControllerErrorCode.NO_SUCH_USER);
+    if(!userJsonString) throw UserError.UserNotFound({ userId });
 
     return {sub : payload.sub};
   }

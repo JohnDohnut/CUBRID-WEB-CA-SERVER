@@ -1,11 +1,10 @@
-import { ControllerException } from '@error/controller/controller-exception';
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ControllerErrorCode } from '@root/src/error/controller/controller-error-code';
 import { PasswordService } from '@security/password/password.service';
-import { User } from '@type';
+import { User } from '@type/user';
 import { UserRepositoryService } from '../repository/user-repository/user-repository.service';
-import { UserDTO } from '@type';
+import { UserDTO } from '@type/dto/user.dto';
+import { UserError } from '@error/user/user-error';
 
 @Injectable()
 export class AuthService {
@@ -18,12 +17,12 @@ export class AuthService {
   async login(dto: UserDTO): Promise<string> {
     const user: User | null = await this.usersRepo.loadUserById(dto.id);
     if (!user) {
-      throw new ControllerException(ControllerErrorCode.INVALID_CREDENTIALS);
+      throw UserError.UserNotFound({ userId: dto.id });
     }
 
     const ok = await this.password.compareHash(dto.password, user.password);
     if (!ok) {
-      throw new ControllerException(ControllerErrorCode.INVALID_CREDENTIALS);
+      throw UserError.UserNotFound({ userId: dto.id });
     }
 
     const payload = { sub: user.id };

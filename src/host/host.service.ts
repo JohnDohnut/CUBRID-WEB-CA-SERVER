@@ -1,15 +1,16 @@
 
 import { Injectable } from '@nestjs/common';
-import { HostInfo, User } from '@type';
+import { HostInfo } from '@type/host-info';
+import { User } from '@type/user';
 import { UserRepositoryService } from '@repository/user-repository/user-repository.service';
-import { omitPasswordArray } from '@util/.';
+import { omitPasswordArray } from '@util/omit_password';
 import { v4 as uuidv4 } from 'uuid';
-import { HostError } from '@error';
+import { HostError } from '@error/host/host-error';
 import { LockService } from '../lock/lock.service';
-import { EncryptionService } from '../security/encryption/encryption.service';
-import { HostDTO } from '@type';
-import { AddHostRequest } from '@type';
-import { GetHostsResponse } from '@type';
+import { EncryptionService } from '@security/encryption/encryption.service';
+import { HostDTO } from '@type/dto/host.dto';
+import { AddHostRequest } from '@type/request/add-host-request';
+import { GetHostsResponse } from '@type/response/get-hosts-response';
 @Injectable()
 export class HostService {
 

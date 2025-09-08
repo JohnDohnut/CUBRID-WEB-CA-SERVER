@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { UserRepositoryService } from '@repository/user-repository/user-repository.service';
-import { PasswordService } from '../security/password/password.service';
-import { ControllerException } from '../error/controller/controller-exception';
-import { ControllerErrorCode } from '../error/controller/controller-error-code';
-import { User } from '@type';
-import { ChangePasswordRequest } from '@type';
+import { PasswordService } from '@security/password/password.service';
+import { User } from '@type/user';
+import { ChangePasswordRequest } from '@type/request/change-password-request';
+import { UserError } from '@error/user/user-error';
+import { AuthError } from '@error/auth/auth-error';
+import { AppError } from '@error/app-error';
 
 @Injectable()
 export class UserService {
@@ -16,24 +17,41 @@ export class UserService {
     ){}
 
     async changePassword(userId : string, dto : ChangePasswordRequest){
-
-        const userJson = await this.repository.loadUserById(userId);
-        
-        const ok = await this.password.compareHash(dto.oldPassword, userJson.password);
-        if(!ok){
-            throw new ControllerException(ControllerErrorCode.INVALID_CREDENTIALS);
+        try {
+            const userJson = await this.repository.loadUserById(userId);
+            if (!userJson) {
+                throw UserError.UserNotFound({ userId });
+            }
+            
+            const ok = await this.password.compareHash(dto.oldPassword, userJson.password);
+            if(!ok){
+                throw AuthError.InvalidCredentials({ userId });
+            }
+    
+            userJson.password = await this.password.getHashedValue(dto.newPassword);
+            
+            await this.repository.updateUser(userJson.id, userJson);
+        } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            }
+            throw UserError.DataUpdateFailed({ userId }, error);
         }
-
-        userJson.password = await this.password.getHashedValue(dto.newPassword);
-        
-        this.repository.updateUser(userJson.id, userJson);
-
-
     }
 
     async getUserData (userId : string) : Promise<User> {
-        const user = await this.repository.loadUserById(userId)
-        return user;
+        try {
+            const user = await this.repository.loadUserById(userId);
+            if (!user) {
+                throw UserError.UserNotFound({ userId });
+            }
+            return user;
+        } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            }
+            throw UserError.DataLoadFailed({ userId }, error);
+        }
     }
   
 }

@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, Request } from '@nestjs/common';
-import { User } from '@type';
-import { ChangePasswordRequest } from '@type';
+import { User } from '@type/user';
+import { ChangePasswordRequest } from '@type/request/change-password-request';
 import { UserService } from './user.service';
 
 @Controller('user')

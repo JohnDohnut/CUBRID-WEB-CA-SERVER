@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
-import { UserDTO } from '@type';
-import { User, HostInfo, DBInfo } from '@type';
+import { UserDTO } from '@type/dto/user.dto';
+import { User } from '@type/user';
 
+import { LockService } from '@lock/lock.service';
 import { EncryptionService } from '@security/encryption/encryption.service';
 import { PasswordService } from '@security/password/password.service';
 import { StorageService } from '@storage/storage.service';
-import { LockService } from '@root/src/lock/lock.service';
 
 
-import { UserError, UserErrorCode } from '@error';
-import { StorageError, StorageErrorCode } from '@error';
+import { StorageError, StorageErrorCode } from '@error/storage/storage-error';
+import { UserError } from '@error/user/user-error';
 
 @Injectable()
 export class UserRepositoryService {
@@ -45,6 +45,7 @@ export class UserRepositoryService {
       return userJson;
     } catch (err) {
       this.handleStorageError(err, id);
+
     }
   }
 
@@ -86,23 +87,5 @@ export class UserRepositoryService {
       this.handleStorageError(err, id);
     }
   }
-
-  async updateUserRaw(id: string, userJson: User): Promise<void> {
-    const hashedId = this.encryptionService.getHashedValue(id);
-    try {
-      const encryted = this.encryptionService.encryptValue(JSON.stringify(userJson));
-      await this.storageService.writeRaw(hashedId, encryted);
-    } catch (err) {
-      this.handleStorageError(err, id);
-    }
-  }
-
-  async deleteRaw(id: string): Promise<void> {
-    const hashedId = this.encryptionService.getHashedValue(id);
-    try {
-      await this.storageService.deleteRaw(hashedId);
-    } catch (err) {
-      this.handleStorageError(err, id);
-    }
-  }
+  
 }
