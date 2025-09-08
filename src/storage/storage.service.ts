@@ -1,4 +1,4 @@
-import { StorageErrorCode, StorageException } from '@error/storage/storage-exception';
+import { StorageErrorCode, StorageError } from '@error';
 import { Injectable } from '@nestjs/common';
 import { getStoragePath, resolveUserFilePath } from '@util/.';
 import * as fs from 'fs/promises';
@@ -11,11 +11,18 @@ export class StorageService {
 
   private handleFsError(err: any): never {
     switch (err?.code) {
-      case 'ENOENT': throw new StorageException(StorageErrorCode.FILE_NOT_FOUND);
-      case 'EEXIST': throw new StorageException(StorageErrorCode.FILE_ALREADY_EXISTS);
+      case 'ENOENT': 
+        throw StorageError.NotFound({ filePath: err.path }, err);
+      case 'EEXIST': 
+        throw StorageError.AlreadyExists({ filePath: err.path }, err);
       case 'EACCES':
-      case 'EPERM':  throw new StorageException(StorageErrorCode.PERMISSION_DENIED);
-      default:       throw new StorageException(StorageErrorCode.UNKNOWN, err?.message ?? String(err));
+      case 'EPERM':  
+        throw StorageError.PermissionDenied({ filePath: err.path }, err);
+      default:       
+        throw StorageError.Unknown({ 
+          originalCode: err?.code,
+          originalMessage: err?.message 
+        }, err);
     }
   }
 

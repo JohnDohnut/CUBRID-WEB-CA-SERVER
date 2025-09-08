@@ -3,8 +3,8 @@ import { UserRepositoryService } from '@repository/user-repository/user-reposito
 import { PasswordService } from '../security/password/password.service';
 import { ControllerException } from '../error/controller/controller-exception';
 import { ControllerErrorCode } from '../error/controller/controller-error-code';
-import { User } from '@repository/user-repository/type';
-import { ChangePasswordRequest } from './request/change-password-request';
+import { User } from '@type';
+import { ChangePasswordRequest } from '@type';
 
 @Injectable()
 export class UserService {

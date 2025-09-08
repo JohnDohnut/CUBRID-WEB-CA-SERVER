@@ -2,7 +2,20 @@ import { Injectable } from '@nestjs/common';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as lockfile from 'proper-lockfile';
-import { LockError, LockErrorCode } from '../error/lock/lock-error';
+import { LockError, LockErrorCode } from '@error';
+import { AppError } from '@error';
+
+export interface LockErrorDetails {
+    message: string;
+    code: string;
+    stack?: string;
+}
+
+export interface LockServiceDetails {
+    lockReleaseFailed?: boolean;
+    lockReleaseError?: LockErrorDetails;
+    [key: string]: unknown;
+}
 
 
 
@@ -18,12 +31,27 @@ export class LockService {
 
     private handleFsError(err: any): never {
         switch (err?.code) {
-            case 'ENOENT': throw LockError.LockNotFound();
-            case 'EEXIST':
-            case 'ELOCKED': throw LockError.LockAlreadyHeld();
+            // 파일 시스템 에러
+            case 'ENOENT': 
+                throw LockError.LockNotFound({ filePath: err.path }, err);
             case 'EACCES':
-            case 'EPERM': throw LockError.PermissionDenied();
-            default: throw new LockException(LockErrorCode.UNKNOWN, err?.message ?? String(err));
+            case 'EPERM': 
+                throw LockError.PermissionDenied({ filePath: err.path }, err);
+            case 'EEXIST': 
+                throw LockError.LockAlreadyHeld({ filePath: err.path }, err);
+            
+            // proper-lockfile library error
+            case 'ELOCKED': 
+                throw LockError.LockAlreadyHeld({ filePath: err.file }, err);
+            case 'ENOTACQUIRED': 
+                throw LockError.LockNotFound({ filePath: err.file }, err);
+            case 'ECOMPROMISED': 
+                throw LockError.Unknown({ reason: 'Lock compromised', filePath: err.file }, err);
+            case 'ERELEASED': 
+                throw LockError.LockNotFound({ reason: 'Lock already released', filePath: err.file }, err);
+            
+            default: 
+                throw LockError.Unknown({ originalCode: err?.code }, err);
         }
     }
 
@@ -56,17 +84,61 @@ export class LockService {
     async release(lock: FileLock): Promise<void> {
         try {
             await lock.release();
-        } catch {
-            // release 실패는 무시하거나 로깅
+        } catch (error) {
+            this.handleFsError(error);
         }
     }
 
     async withLock<T>(filename: string, work: () => Promise<T>): Promise<T> {
         const lock = await this.acquireInternal(filename);
+        let workerError: any = null;
+        
         try {
             return await work();
+        } catch (error) {
+            // worker 메서드에서 발생한 에러를 저장하고 다시 던짐
+            workerError = error;
+            throw error;
         } finally {
-            await this.release(lock);
+            // lock 해제는 항상 시도하되, 실패해도 worker 에러를 덮어쓰지 않음
+            try {
+                await this.release(lock);
+            } catch (releaseError) {
+                // worker 에러가 있었다면 두 에러를 모두 보존
+                if (workerError) {
+                    // AppError인 경우 additionalData에 lock 해제 실패 정보 추가
+                    if (workerError instanceof AppError) {
+                        // 새로운 AppError 생성 (기존 에러 정보 + lock 해제 실패 정보)
+                        const enhancedError = new AppError(
+                            workerError.kind,
+                            workerError.code,
+                            {
+                                ...workerError.additionalData,
+                                lockReleaseFailed: true,
+                                lockReleaseError: {
+                                    message: releaseError.message,
+                                    code: releaseError.code || 'UNKNOWN',
+                                    stack: releaseError.stack
+                                }
+                            },
+                            workerError.originalError
+                        );
+                        
+                        // 원본 에러의 메시지와 이름 유지
+                        enhancedError.message = workerError.message;
+                        enhancedError.name = workerError.name;
+                        
+                        throw enhancedError;
+                    } else {
+                        // 일반 Error인 경우 기존 방식 사용
+                        workerError.suppressedError = releaseError;
+                        workerError.message += ` (Lock release also failed: ${releaseError.message})`;
+                    }
+                } else {
+                    // worker 에러가 없었다면 lock 해제 에러를 던짐
+                    this.handleFsError(releaseError);
+                }
+            }
         }
     }
 }

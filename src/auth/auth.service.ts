@@ -3,9 +3,9 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ControllerErrorCode } from '@root/src/error/controller/controller-error-code';
 import { PasswordService } from '@security/password/password.service';
-import { User } from '@repository/user-repository/type';
+import { User } from '@type';
 import { UserRepositoryService } from '../repository/user-repository/user-repository.service';
-import { UserDTO } from './dto/request-create-user.dto';
+import { UserDTO } from '@type';
 
 @Injectable()
 export class AuthService {

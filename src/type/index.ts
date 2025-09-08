@@ -1,5 +1,8 @@
-// Common types
-export * from './common'
+// DTOs
+export * from './dto'
 
-// Monitoring Resource base types
-// Monitoring Resource metrics types
+// Requests
+export * from './request'
+
+// Responses
+export * from './response'

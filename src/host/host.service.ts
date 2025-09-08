@@ -1,15 +1,15 @@
 
 import { Injectable } from '@nestjs/common';
-import { HostInfo, User } from '@repository/user-repository/type';
+import { HostInfo, User } from '@type';
 import { UserRepositoryService } from '@repository/user-repository/user-repository.service';
 import { omitPasswordArray } from '@util/.';
 import { v4 as uuidv4 } from 'uuid';
-import { HostError } from '../error/host/host-error';
+import { HostError } from '@error';
 import { LockService } from '../lock/lock.service';
 import { EncryptionService } from '../security/encryption/encryption.service';
-import { HostDTO } from './type/dto/host-dto';
-import { AddHostRequest } from './type/request/add-host-request';
-import { GetHostsResponse } from './type/response/get-hosts-response';
+import { HostDTO } from '@type';
+import { AddHostRequest } from '@type';
+import { GetHostsResponse } from '@type';
 @Injectable()
 export class HostService {
 
@@ -50,7 +50,7 @@ export class HostService {
             );
 
             if (duplicate) {
-                throw HostError.DuplicatedHost(duplicate.id);
+                throw HostError.DuplicatedHost({duplicatedHost : duplicate.id});
             }
 
             const newHost: HostInfo = {

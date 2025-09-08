@@ -14,13 +14,12 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from '@root/src/token/jwt-auth.guard';
 import { TokenModule } from './token/token.module';
 import { MonitoringModule } from './monitoring/monitoring.module';
-import { DatabaseModule } from './database/database.module';
 import { BrokerModule } from './broker/broker.module';
 import { HostModule } from './host/host.module';
 import { LockModule } from './lock/lock.module';
 
 @Module({
-  imports: [ConfigModule, SecurityModule, StorageModule, AuthModule,  UserRepositoryModule, UserModule, TokenModule, MonitoringModule, DatabaseModule, BrokerModule, HostModule, LockModule],
+  imports: [ConfigModule, SecurityModule, StorageModule, AuthModule,  UserRepositoryModule, UserModule, TokenModule, MonitoringModule, BrokerModule, HostModule, LockModule],
   controllers: [AppController],
   providers: [AppService, ConfigService, EncryptionService, StorageService, {provide : APP_GUARD, useClass : JwtAuthGuard}],
 })

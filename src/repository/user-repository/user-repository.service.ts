@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
-import { UserDTO } from '@root/src/auth/dto/request-create-user.dto';
-import { User } from './type';
+import { UserDTO } from '@type';
+import { User, HostInfo, DBInfo } from '@type';
 
 import { EncryptionService } from '@security/encryption/encryption.service';
 import { PasswordService } from '@security/password/password.service';
 import { StorageService } from '@storage/storage.service';
-import { FileLock, LockService } from '@root/src/lock/lock.service';
+import { LockService } from '@root/src/lock/lock.service';
 
-import { StorageException, StorageErrorCode } from '@root/src/error/storage/storage-exception';
-import { ControllerException } from '@error/controller/controller-exception';
-import { ControllerErrorCode } from '@error/controller/controller-error-code';
+
+import { UserError, UserErrorCode } from '@error';
+import { StorageError, StorageErrorCode } from '@error';
 
 @Injectable()
 export class UserRepositoryService {
@@ -22,18 +22,16 @@ export class UserRepositoryService {
     private readonly lockService: LockService,
   ) { }
 
-  private handleStorageError(err: any): never {
-    if (err instanceof StorageException) {
+  private handleStorageError(err: any, userId?: string): never {
+    if (err instanceof StorageError) {
       switch (err.code) {
         case StorageErrorCode.FILE_NOT_FOUND:
-          throw new ControllerException(ControllerErrorCode.NO_SUCH_USER);
+          throw UserError.UserNotFound({ userId }, err);
         case StorageErrorCode.FILE_ALREADY_EXISTS:
-          throw new ControllerException(ControllerErrorCode.USER_ALREADY_EXISTS);
-          break;
+          throw UserError.UserAlreadyExists({ userId }, err);
         case StorageErrorCode.PERMISSION_DENIED:
-        case StorageErrorCode.FILE_LOCKED:
         case StorageErrorCode.UNKNOWN:
-          throw new ControllerException(ControllerErrorCode.INTERNAL_ERROR);
+          throw UserError.Unknown({ userId, storageError: err.code }, err);
       }
     }
     throw err;
@@ -46,7 +44,7 @@ export class UserRepositoryService {
       const userJson: User = JSON.parse(this.encryptionService.decryptValue(encrypted));
       return userJson;
     } catch (err) {
-      this.handleStorageError(err);
+      this.handleStorageError(err, id);
     }
   }
 
@@ -66,7 +64,7 @@ export class UserRepositoryService {
     try {
       await this.storageService.createAndWrite(hashedId, this.encryptionService.encryptValue(JSON.stringify(userJson)));
     } catch (err) {
-      this.handleStorageError(err);
+      this.handleStorageError(err, dto.id);
     }
   }
 
@@ -75,7 +73,7 @@ export class UserRepositoryService {
     try {
       await this.storageService.delete(hashedId);
     } catch (err) {
-      this.handleStorageError(err);
+      this.handleStorageError(err, id);
     }
   }
 
@@ -85,7 +83,7 @@ export class UserRepositoryService {
       const encrypted = this.encryptionService.encryptValue(JSON.stringify(userJson));
       await this.storageService.write(hashedId, encrypted);
     } catch (err) {
-      this.handleStorageError(err);
+      this.handleStorageError(err, id);
     }
   }
 
@@ -95,7 +93,7 @@ export class UserRepositoryService {
       const encryted = this.encryptionService.encryptValue(JSON.stringify(userJson));
       await this.storageService.writeRaw(hashedId, encryted);
     } catch (err) {
-      this.handleStorageError(err);
+      this.handleStorageError(err, id);
     }
   }
 
@@ -104,7 +102,7 @@ export class UserRepositoryService {
     try {
       await this.storageService.deleteRaw(hashedId);
     } catch (err) {
-      this.handleStorageError(err);
+      this.handleStorageError(err, id);
     }
   }
 }
