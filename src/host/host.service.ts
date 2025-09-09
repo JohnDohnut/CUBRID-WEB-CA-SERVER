@@ -58,14 +58,8 @@ export class HostService {
                 ...hostDTO,
                 uid: uidv4,
             }
-
-            user.host_list = [...user.host_list, newHost];
-            this.repository.updateUserRaw(userId, user);
-
-            this.lockService.release(lock);
-            const hosts: HostDTO[] = omitPasswordArray<HostInfo>(user.host_list);
-
-            return hosts;
+            
+            //TDL : fill the rest of feature using atomic update user 
 
         } catch (error) {
             throw HostError.InternalError();

@@ -7,6 +7,8 @@ export enum UserErrorCode {
     DATA_LOAD_FAILED = 'DATA_LOAD_FAILED',
     DATA_DELETE_FAILED = 'DATA_DELETE_FAILED',
     DATA_UPDATE_FAILED = 'DATA_UPDATE_FAILED',
+    RESOURCE_LOCKED = 'RESOURCE_LOCKED',
+    LOCK_OPERATION_FAILED = 'LOCK_OPERATION_FAILED',
     UNKNOWN = 'UNKNOWN',
 }
 
@@ -36,8 +38,17 @@ export class UserError extends AppError {
         return new UserError("USER", UserErrorCode.DATA_UPDATE_FAILED, additionalData, originalError);
     }
 
+    static ResourceLocked(additionalData?: Record<string, any>, originalError?: Error) {
+        return new UserError("USER", UserErrorCode.RESOURCE_LOCKED, additionalData, originalError);
+    }
+
+    static LockOperationFailed(additionalData?: Record<string, any>, originalError?: Error) {
+        return new UserError("USER", UserErrorCode.LOCK_OPERATION_FAILED, additionalData, originalError);
+    }
+
     static Unknown(additionalData?: Record<string, any>, originalError?: Error) {
         return new UserError("USER", UserErrorCode.UNKNOWN, additionalData, originalError);
     }
 
 }
+

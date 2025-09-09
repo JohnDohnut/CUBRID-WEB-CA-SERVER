@@ -40,7 +40,7 @@ export class StorageService {
   // The content of the temporary file, once renamed, becomes the final content of the file.
   // Additionally, the non-Raw function internally calls the corresponding Raw function as a callback to the withLock function, ensuring synchronization and safe file access.
 
-  private async readUnsafe(filename: string): Promise<string> {
+  async readUnsafe(filename: string): Promise<string> {
     const filePath = resolveUserFilePath(filename);
     try {
       return await fs.readFile(filePath, 'utf-8');
@@ -56,7 +56,7 @@ export class StorageService {
     });
   }
 
-  private async writeUnsafe(filename: string, data: string): Promise<void> {
+  async writeUnsafe(filename: string, data: string): Promise<void> {
     const filePath = resolveUserFilePath(filename);
     const tmp = `${filePath}.tmp-${process.pid}-${Date.now()}`;
     try {
@@ -75,7 +75,7 @@ export class StorageService {
     });
   }
 
-  private async createUnsafe(filename: string): Promise<void> {
+   async createUnsafe(filename: string): Promise<void> {
     const filePath = resolveUserFilePath(filename);
     await fs.mkdir(getStoragePath(), { recursive: true });
     try {
@@ -93,7 +93,7 @@ export class StorageService {
     });
   }
 
-  private async createAndWriteUnsafe(filename: string, data: string): Promise<void> {
+   async createAndWriteUnsafe(filename: string, data: string): Promise<void> {
     const filePath = resolveUserFilePath(filename);
     await fs.mkdir(getStoragePath(), { recursive: true });
     try {
@@ -111,7 +111,7 @@ export class StorageService {
     });
   }
 
-  private async deleteUnsafe(filename: string): Promise<void> {
+   async deleteUnsafe(filename: string): Promise<void> {
     const filePath = resolveUserFilePath(filename);
     try {
       await fs.unlink(filePath);

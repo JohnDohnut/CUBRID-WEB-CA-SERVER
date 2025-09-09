@@ -12,6 +12,7 @@ import { StorageService } from '@storage/storage.service';
 
 import { StorageError, StorageErrorCode } from '@error/storage/storage-error';
 import { UserError } from '@error/user/user-error';
+import { LockError, LockErrorCode } from '@root/src/error';
 
 @Injectable()
 export class UserRepositoryService {
@@ -32,6 +33,15 @@ export class UserRepositoryService {
         case StorageErrorCode.PERMISSION_DENIED:
         case StorageErrorCode.UNKNOWN:
           throw UserError.Unknown({ userId, storageError: err.code }, err);
+      }
+    }
+    else if (err instanceof LockError) {
+      switch (err.code) {
+        case LockErrorCode.PERMISSION_DENIED:
+        case LockErrorCode.UNKNOWN:
+          throw UserError.Unknown({ userId, lockError: err.code }, err);
+        case LockErrorCode.LOCK_ALREADY_HELD:
+          throw UserError.ResourceLocked
       }
     }
     throw err;
@@ -87,5 +97,27 @@ export class UserRepositoryService {
       this.handleStorageError(err, id);
     }
   }
-  
+
+
+  async atomicUpdateUser(id: string, modifierCallback: (user: User) => Promise<void> ): Promise<void> {
+
+    const hashedId = this.encryptionService.getHashedValue(id);
+    try {
+      this.lockService.withLock(hashedId, async () => {
+        const encrypted : string = await this.storageService.readUnsafe(hashedId);
+        const decrypted : string = await this.encryptionService.decryptValue(encrypted);
+        const userJson : User = await JSON.parse(decrypted);
+
+        await modifierCallback(userJson);
+
+        const newEncryted = await this.encryptionService.encryptValue(JSON.stringify(userJson));
+        await this.storageService.writeUnsafe(hashedId, newEncryted);
+
+      })
+    }
+    catch (error) {
+        
+    }
+  }
+
 }
