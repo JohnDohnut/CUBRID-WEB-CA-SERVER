@@ -1,4 +1,5 @@
 import { StorageError } from '@error/storage/storage-error';
+import { AppError } from '@root/src/error';
 
 export function HandleStorageFsErrors() {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
@@ -7,6 +8,9 @@ export function HandleStorageFsErrors() {
       try {
         return await originalMethod.apply(this, args);
       } catch (err) {
+        if(err instanceof AppError){
+          throw err;
+        }
         switch (err?.code) {
           case 'ENOENT': 
             throw StorageError.NotFound({ filePath: err.path }, err);

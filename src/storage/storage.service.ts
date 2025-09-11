@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { getStoragePath, resolveUserFilePath } from '@util/resolve-storage-path';
 import * as fs from 'fs/promises';
 import { LockService } from '../lock/lock.service';
+import { HandleStorageFsErrors } from '../common/decorators/handle-storage-fs-errors.decorator';
 
 @Injectable()
 export class StorageService {
@@ -40,32 +41,27 @@ export class StorageService {
   // The content of the temporary file, once renamed, becomes the final content of the file.
   // Additionally, the non-Raw function internally calls the corresponding Raw function as a callback to the withLock function, ensuring synchronization and safe file access.
 
+  @HandleStorageFsErrors()
   async readUnsafe(filename: string): Promise<string> {
     const filePath = resolveUserFilePath(filename);
-    try {
-      return await fs.readFile(filePath, 'utf-8');
-    } catch (err) {
-      this.handleFsError(err);
-    }
+    return await fs.readFile(filePath, 'utf-8');
   }
 
+  @HandleStorageFsErrors()
   async read(filename: string): Promise<string> {
     const filePath = resolveUserFilePath(filename);
-    return this.lockService.withLock(filePath, async () => {
-      return this.readUnsafe(filePath);
-    });
+    return this.readUnsafe(filePath);
   }
 
+  @HandleStorageFsErrors()
   async writeUnsafe(filename: string, data: string): Promise<void> {
     const filePath = resolveUserFilePath(filename);
     const tmp = `${filePath}.tmp-${process.pid}-${Date.now()}`;
-    try {
-      await fs.writeFile(tmp, data, 'utf-8');
-      await fs.rename(tmp, filePath);
-    } catch (err) {
-      try { await fs.unlink(tmp); } catch { }
-      this.handleFsError(err);
-    }
+
+    await fs.writeFile(tmp, data, 'utf-8');
+    await fs.rename(tmp, filePath);
+    await fs.rm(tmp, { force: true });
+
   }
 
   async write(filename: string, data: string): Promise<void> {
@@ -75,14 +71,11 @@ export class StorageService {
     });
   }
 
-   async createUnsafe(filename: string): Promise<void> {
+  @HandleStorageFsErrors()
+  async createUnsafe(filename: string): Promise<void> {
     const filePath = resolveUserFilePath(filename);
     await fs.mkdir(getStoragePath(), { recursive: true });
-    try {
-      await fs.writeFile(filePath, '', { flag: 'wx' });
-    } catch (err) {
-      this.handleFsError(err);
-    }
+    await fs.writeFile(filePath, '', { flag: 'wx' });
   }
 
   async create(filename: string): Promise<string> {
@@ -93,14 +86,12 @@ export class StorageService {
     });
   }
 
-   async createAndWriteUnsafe(filename: string, data: string): Promise<void> {
+  @HandleStorageFsErrors()
+  async createAndWriteUnsafe(filename: string, data: string): Promise<void> {
     const filePath = resolveUserFilePath(filename);
     await fs.mkdir(getStoragePath(), { recursive: true });
-    try {
-      await fs.writeFile(filePath, data, { flag: 'wx', encoding: 'utf-8' });
-    } catch (err) {
-      this.handleFsError(err);
-    }
+    await fs.writeFile(filePath, data, { flag: 'wx', encoding: 'utf-8' });
+
   }
 
   async createAndWrite(filename: string, data: string): Promise<string> {
@@ -111,13 +102,11 @@ export class StorageService {
     });
   }
 
-   async deleteUnsafe(filename: string): Promise<void> {
+  @HandleStorageFsErrors()
+  async deleteUnsafe(filename: string): Promise<void> {
     const filePath = resolveUserFilePath(filename);
-    try {
-      await fs.unlink(filePath);
-    } catch (err) {
-      this.handleFsError(err);
-    }
+    await fs.rm(filePath, {force : true});
+
   }
 
   async delete(filename: string): Promise<void> {

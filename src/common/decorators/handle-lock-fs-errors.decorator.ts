@@ -1,4 +1,5 @@
 import { LockError } from '@error/lock/lock-error';
+import { AppError } from '@root/src/error';
 
 export function HandleLockFsErrors() {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
@@ -8,6 +9,9 @@ export function HandleLockFsErrors() {
         return await originalMethod.apply(this, args);
       } catch (err) {
         // This logic is from LockService's handleFsError
+        if(err instanceof AppError){
+          throw err
+        }
         switch (err?.code) {
             case 'ENOENT': 
                 throw LockError.LockNotFound({ filePath: err.path }, err);
