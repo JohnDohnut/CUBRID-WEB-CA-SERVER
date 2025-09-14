@@ -118,7 +118,7 @@
     "@message": "src/message",
     "@security": "src/security",
     "@auth": "src/auth",
-    "@jwt": "src/token",
+    "@token": "src/token",
     "@error": "src/error",
     "@repository": "src/repository",
     "@common": "src/common",

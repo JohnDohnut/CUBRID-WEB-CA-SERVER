@@ -58,7 +58,7 @@ export class AppError extends Error {
                 switch (this.code) {
                     case 'USER_NOT_FOUND':
                     case 'USER_ALREADY_EXISTS':
-                        return 401; // 인증/인가 관련
+                        return 409; // 인증/인가 관련
                     case 'DATA_SAVE_FAILED':
                     case 'DATA_LOAD_FAILED':
                     case 'DATA_DELETE_FAILED':
@@ -68,7 +68,20 @@ export class AppError extends Error {
                         return 500;
                 }
             case 'STORAGE': 
+                switch(this.code) {
+                    case 'FILE_NOT_FOUND':
+                    case 'FILE_ALREADY_EXISTS':
+                        return 400;
+                    case 'PERMISSION_DENIED':
+                        return 403;
+                }
             case 'LOCK': 
+                switch(this.code) {
+                    case 'PERMISSION_DENIED':
+                        return 403;
+                    case 'LOCK_ALREADY_HELD':
+                        return 409;
+                }
             case 'INTERNAL': return 500;
             default: return 500;
         }

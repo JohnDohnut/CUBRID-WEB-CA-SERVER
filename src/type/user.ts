@@ -1,3 +1,4 @@
+import { DBInfo } from './db-info';
 import { HostInfo } from './host-info';
 
 export interface User {
@@ -5,6 +6,7 @@ export interface User {
     id: string;
     password: string;
     host_list: HostInfo[];
+    db_list : DBInfo[];
     ha_mon_list: any[];
     resource_mon_list: any[];
 }

@@ -12,8 +12,8 @@ import { StorageService } from '@storage/storage.service';
 
 import { StorageError, StorageErrorCode } from '@error/storage/storage-error';
 import { UserError } from '@error/user/user-error';
-import { LockError, LockErrorCode } from '@root/src/error';
-import { HandleUserRepoErrors } from '@root/src/common/decorators/handle-user-repo-errors.decorator';
+import { LockError, LockErrorCode } from '@error/lock/lock-error';
+import { HandleUserRepoErrors } from '@common/decorators/handle-user-repo-errors.decorator';
 
 @Injectable()
 export class UserRepositoryService {
@@ -42,7 +42,7 @@ export class UserRepositoryService {
         case LockErrorCode.UNKNOWN:
           throw UserError.Unknown({ userId, lockError: err.code }, err);
         case LockErrorCode.LOCK_ALREADY_HELD:
-          throw UserError.ResourceLocked
+          throw UserError.ResourceLocked();
       }
     }
     throw err;
@@ -67,6 +67,7 @@ export class UserRepositoryService {
       id: dto.id,
       password: await this.passwordService.getHashedValue(dto.password),
       host_list: [],
+      db_list: [],
       ha_mon_list: [],
       resource_mon_list: [],
     };

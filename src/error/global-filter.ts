@@ -22,7 +22,9 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
         if (exception instanceof HttpException) {
             status = exception.getStatus();
             response = exception.getResponse();
-        } else if (exception instanceof AppError) {
+        } 
+        
+        else if (exception instanceof AppError) {
             // RFC 7807 Problem Details 형식 사용
             const ctx = host.switchToHttp();
             const req = ctx.getRequest();
@@ -33,7 +35,10 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
             
             // RFC 7807 Content-Type 설정
             res.setHeader('Content-Type', 'application/problem+json');
-        } else {
+        }  
+
+        
+        else {
             status = HttpStatus.INTERNAL_SERVER_ERROR;
             response = { 
                 type: '/errors/internal/unknown',

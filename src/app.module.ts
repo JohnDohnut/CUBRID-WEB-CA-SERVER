@@ -11,7 +11,7 @@ import { AuthModule } from '@auth/auth.module';
 import { UserRepositoryModule } from './repository/repository.module';
 import { UserModule } from '@user/user.module';
 import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from '@root/src/token/jwt-auth.guard';
+import { JwtAuthGuard } from '@token/jwt-auth.guard';
 import { TokenModule } from './token/token.module';
 import { MonitoringModule } from './monitoring/monitoring.module';
 import { BrokerModule } from './broker/broker.module';

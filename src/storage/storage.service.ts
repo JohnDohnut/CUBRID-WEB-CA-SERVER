@@ -49,8 +49,9 @@ export class StorageService {
 
   @HandleStorageFsErrors()
   async read(filename: string): Promise<string> {
-    const filePath = resolveUserFilePath(filename);
-    return this.readUnsafe(filePath);
+    return this.lockService.withLock(filename, async () => {
+      return this.readUnsafe(filename);
+    });
   }
 
   @HandleStorageFsErrors()
@@ -79,9 +80,8 @@ export class StorageService {
   }
 
   async create(filename: string): Promise<string> {
-    const filePath = resolveUserFilePath(filename);
-    return this.lockService.withLock(filePath, async () => {
-      await this.createUnsafe(filePath);
+    return this.lockService.withLock(filename, async () => {
+      await this.createUnsafe(filename);
       return filename;
     });
   }
@@ -95,9 +95,8 @@ export class StorageService {
   }
 
   async createAndWrite(filename: string, data: string): Promise<string> {
-    const filePath = resolveUserFilePath(filename);
-    return this.lockService.withLock(filePath, async () => {
-      await this.createAndWriteUnsafe(filePath, data);
+    return this.lockService.withLock(filename, async () => {
+      await this.createAndWriteUnsafe(filename, data);
       return filename;
     });
   }
