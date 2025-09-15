@@ -12,7 +12,7 @@ export class AppError extends Error {
         this.name = new.target.name;
     }
 
-    // RFC 7807 Problem Details 생성
+    // RFC 7807 Problem Details 생성 (클라이언트 응답용 - 내부 정보 제외)
     toProblemDetails(requestUrl?: string) {
         return {
             type: `/errors/${this.kind.toLowerCase()}/${this.code.toLowerCase()}`,
@@ -25,7 +25,25 @@ export class AppError extends Error {
             kind: this.kind,
             code: this.code,
             timestamp: new Date().toISOString(),
-            // 추가 데이터를 Problem Details에 직접 포함
+            // 추가 데이터를 Problem Details에 직접 포함 (민감한 정보 제외)
+            ...(this.additionalData || {})
+        };
+    }
+
+    // 로깅용 상세 정보 (내부 시스템 정보 포함)
+    toLogDetails(requestUrl?: string) {
+        return {
+            type: `/errors/${this.kind.toLowerCase()}/${this.code.toLowerCase()}`,
+            title: this.code.split('_').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+            ).join(' '),
+            status: this.getHttpStatus(),
+            detail: this.message,
+            instance: requestUrl || '',
+            kind: this.kind,
+            code: this.code,
+            timestamp: new Date().toISOString(),
+            // 모든 추가 데이터 포함
             ...(this.additionalData || {}),
             // 원본 에러 정보 (디버깅용)
             ...(this.originalError ? { 

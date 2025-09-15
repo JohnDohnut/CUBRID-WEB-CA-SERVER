@@ -58,8 +58,9 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 #output
 /storage
 /ssl
-.exe
+*.exe
 
 #
 out.svg
 /gemini
+
