@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Post, Put, Request } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { UserDTO } from '@type/dto/user.dto';
 import { AuthService } from './auth.service';
 import { LoginResponse, CreateLoginResponse } from '@type/response/login-response';
 import { Public } from '../common/decorators/public.decorator';
+
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) { }
@@ -19,10 +20,4 @@ export class AuthController {
     async register(@Body() userDTO: UserDTO): Promise<void> {
         await this.authService.register(userDTO);
     }
-
-    @Post('validate')
-    async validate(@Body() reqBody : any, @Request() request ): Promise<boolean>{
-        return !!request.user;
-    }
-
 }

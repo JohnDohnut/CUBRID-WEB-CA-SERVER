@@ -1,15 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ConfigService } from "@config/config.service";
-import { UserRepositoryService } from "@repository/user-repository/user-repository.service";
 import { ExtractJwt, Strategy } from "passport-jwt";
-import { UserError } from "@error/user/user-error";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly config: ConfigService,
-    private readonly userRepository : UserRepositoryService    
 ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -19,11 +16,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    const userId = payload.sub;
-    const userJsonString = await this.userRepository.loadUserById(userId);
-
-    if(!userJsonString) throw UserError.UserNotFound({ userId });
-
-    return {sub : payload.sub};
+    // JWT 토큰이 유효하면 페이로드만 반환
+    // 사용자 존재 여부는 필요할 때만 별도로 확인
+    return payload;
   }
 }
