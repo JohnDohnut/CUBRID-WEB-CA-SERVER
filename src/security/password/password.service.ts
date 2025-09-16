@@ -5,7 +5,7 @@ export class PasswordService {
     
     private readonly HASH_ROUND = 10;
 
-    async compareHash (plain:string, hash:string) : Promise<boolean>{
+    async comparePlainAndHash (plain:string, hash:string) : Promise<boolean>{
         return await bcrypt.compare(plain, hash);
     }
 

@@ -8,15 +8,15 @@ import { SecurityModule } from '@security/security.module';
 import { StorageService } from '@storage/storage.service';
 import { StorageModule } from '@storage/storage.module';
 import { AuthModule } from '@auth/auth.module';
-import { UserRepositoryModule } from './repository/repository.module';
+import { UserRepositoryModule } from '@repository/repository.module';
 import { UserModule } from '@user/user.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from '@token/jwt-auth.guard';
-import { TokenModule } from './token/token.module';
-import { MonitoringModule } from './monitoring/monitoring.module';
-import { BrokerModule } from './broker/broker.module';
-import { HostModule } from './host/host.module';
-import { LockModule } from './lock/lock.module';
+import { TokenModule } from '@token/token.module';
+import { MonitoringModule } from '@monitoring/monitoring.module';
+import { BrokerModule } from '@broker/broker.module';
+import { HostModule } from '@host/host.module';
+import { LockModule } from '@lock/lock.module';
 
 @Module({
   imports: [ConfigModule, SecurityModule, StorageModule, AuthModule,  UserRepositoryModule, UserModule, TokenModule, MonitoringModule, BrokerModule, HostModule, LockModule],

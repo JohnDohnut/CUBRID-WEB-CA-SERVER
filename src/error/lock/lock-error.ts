@@ -1,12 +1,7 @@
-import { AppError } from "../app-error";
+import { AppError } from '@error/app-error';
+import { LockErrorCode } from '@error/lock/lock-error-code';
 
-export enum LockErrorCode {
-    LOCK_NOT_FOUND = 'LOCK_NOT_FOUND',
-    PERMISSION_DENIED = 'PERMISSION_DENIED',
-    LOCK_ALREADY_HELD = 'LOCK_ALREADY_HELD',
-    STALE_LOCK = 'STALE_LOCK',            
-    UNKNOWN = 'UNKNOWN',
-  }
+export { LockErrorCode };
   
 export class LockError extends AppError {
 

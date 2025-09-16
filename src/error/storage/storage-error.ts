@@ -1,11 +1,7 @@
-import { AppError } from "../app-error";
+import { AppError } from '@error/app-error';
+import { StorageErrorCode } from '@error/storage/storage-error-code';
 
-export enum StorageErrorCode {
-    FILE_NOT_FOUND = 'FILE_NOT_FOUND',
-    PERMISSION_DENIED = 'PERMISSION_DENIED',
-    FILE_ALREADY_EXISTS = 'FILE_ALREADY_EXISTS',
-    UNKNOWN = 'UNKNOWN',
-}
+export { StorageErrorCode };
 
 
 export class StorageError extends AppError {

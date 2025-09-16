@@ -15,7 +15,7 @@ export function HandleAuthErrors() {
                     switch (err.code) {
                         case UserErrorCode.USER_ALREADY_EXISTS:
                         case UserErrorCode.USER_NOT_FOUND:
-                            throw AuthError.InvalidCredentials({ userId: args[0] }, err);
+                            throw AuthError.InvalidCredentials({ userId: args[0].id }, err);
                         case UserErrorCode.DATA_DELETE_FAILED:
                         case UserErrorCode.DATA_LOAD_FAILED:
                         case UserErrorCode.DATA_SAVE_FAILED:

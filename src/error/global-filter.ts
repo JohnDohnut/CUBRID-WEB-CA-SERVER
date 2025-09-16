@@ -28,6 +28,7 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
             
             // HttpException 로깅
             this.logger.error(
+                'HttpException',
                 `HTTP Exception: ${exception.message}`,
                 exception.stack,
                 `${req.method} ${req.url}`
@@ -47,6 +48,7 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
             // AppError 로깅 (내부 정보 포함)
             const logDetails = exception.toLogDetails(req.url);
             this.logger.error(
+                'App Error',
                 `App Error [${exception.kind}:${exception.code}]: ${exception.message}`,
                 JSON.stringify(logDetails, null, 2),
                 `${req.method} ${req.url}`
@@ -67,7 +69,9 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
             res.setHeader('Content-Type', 'application/problem+json');
             
             // 알 수 없는 에러 로깅 (스택 정보 포함)
+            const logDetails = exception.toProblemDetails(req.url);
             this.logger.error(
+                'Other Errors',
                 `Unknown Error: ${exception?.message || 'No message'}`,
                 exception?.stack || 'No stack trace',
                 `${req.method} ${req.url}`

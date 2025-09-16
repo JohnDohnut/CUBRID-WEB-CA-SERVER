@@ -1,16 +1,7 @@
-import { AppError } from "../app-error";
+import { AppError } from '@error/app-error';
+import { UserErrorCode } from '@error/user/user-error-code';
 
-export enum UserErrorCode {
-    USER_NOT_FOUND = 'USER_NOT_FOUND',
-    USER_ALREADY_EXISTS = 'USER_ALREADY_EXISTS',
-    DATA_SAVE_FAILED = 'DATA_SAVE_FAILED',
-    DATA_LOAD_FAILED = 'DATA_LOAD_FAILED',
-    DATA_DELETE_FAILED = 'DATA_DELETE_FAILED',
-    DATA_UPDATE_FAILED = 'DATA_UPDATE_FAILED',
-    RESOURCE_LOCKED = 'RESOURCE_LOCKED',
-    LOCK_OPERATION_FAILED = 'LOCK_OPERATION_FAILED',
-    UNKNOWN = 'UNKNOWN',
-}
+export { UserErrorCode };
 
 export class UserError extends AppError {
 
@@ -42,8 +33,17 @@ export class UserError extends AppError {
         return new UserError("USER", UserErrorCode.RESOURCE_LOCKED, additionalData, originalError);
     }
 
+
     static LockOperationFailed(additionalData?: Record<string, any>, originalError?: Error) {
         return new UserError("USER", UserErrorCode.LOCK_OPERATION_FAILED, additionalData, originalError);
+    }
+
+    static OldPasswordMismatch(additionalData?: Record<string, any>, originalError?: Error) {
+        return new UserError("USER", UserErrorCode.OLD_PASSWORD_MISMATCH, additionalData, originalError);
+    }
+
+    static BadNewPassword(additionalData?: Record<string, any>, originalError?: Error) {
+        return new UserError("USER", UserErrorCode.BAD_NEW_PASSWORD, additionalData, originalError);
     }
 
     static Unknown(additionalData?: Record<string, any>, originalError?: Error) {

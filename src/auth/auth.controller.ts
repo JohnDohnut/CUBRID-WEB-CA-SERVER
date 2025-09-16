@@ -2,7 +2,7 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { UserDTO } from '@type/dto/user.dto';
 import { AuthService } from './auth.service';
 import { LoginResponse, CreateLoginResponse } from '@type/response/login-response';
-import { Public } from '../common/decorators/public.decorator';
+import { Public } from '@decorators/public.decorator';
 
 @Controller('auth')
 export class AuthController {

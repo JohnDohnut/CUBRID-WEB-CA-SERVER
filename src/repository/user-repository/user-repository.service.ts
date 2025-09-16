@@ -13,7 +13,7 @@ import { StorageService } from '@storage/storage.service';
 import { StorageError, StorageErrorCode } from '@error/storage/storage-error';
 import { UserError } from '@error/user/user-error';
 import { LockError, LockErrorCode } from '@error/lock/lock-error';
-import { HandleUserRepoErrors } from '@common/decorators/handle-user-repo-errors.decorator';
+import { HandleUserRepoErrors } from '@decorators/handle-user-repo-errors.decorator';
 
 @Injectable()
 export class UserRepositoryService {
@@ -23,30 +23,6 @@ export class UserRepositoryService {
     private readonly storageService: StorageService,
     private readonly lockService: LockService,
   ) { }
-
-  private handleError(err: any, userId?: string): never {
-    if (err instanceof StorageError) {
-      switch (err.code) {
-        case StorageErrorCode.FILE_NOT_FOUND:
-          throw UserError.UserNotFound({ userId }, err);
-        case StorageErrorCode.FILE_ALREADY_EXISTS:
-          throw UserError.UserAlreadyExists({ userId }, err);
-        case StorageErrorCode.PERMISSION_DENIED:
-        case StorageErrorCode.UNKNOWN:
-          throw UserError.Unknown({ userId, storageError: err.code }, err);
-      }
-    }
-    else if (err instanceof LockError) {
-      switch (err.code) {
-        case LockErrorCode.PERMISSION_DENIED:
-        case LockErrorCode.UNKNOWN:
-          throw UserError.Unknown({ userId, lockError: err.code }, err);
-        case LockErrorCode.LOCK_ALREADY_HELD:
-          throw UserError.ResourceLocked();
-      }
-    }
-    throw err;
-  }
 
   @HandleUserRepoErrors()
   async loadUserById(id: string): Promise<User> {

@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { SecurityModule } from '../security/security.module';
-import { StorageModule } from '../storage/storage.module';
+import { SecurityModule } from '@security/security.module';
+import { StorageModule } from '@storage/storage.module';
 import { UserRepositoryService } from './user-repository/user-repository.service';
-import { LockModule } from '../lock/lock.module';
+import { LockModule } from '@lock/lock.module';
 
 @Module({
   providers: [UserRepositoryService],

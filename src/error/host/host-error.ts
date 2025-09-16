@@ -1,11 +1,7 @@
-import { AppError } from "../app-error";
+import { AppError } from '@error/app-error';
+import { HostErrorCode } from '@error/host/host-error-code';
 
-export enum HostErrorCode {
-    EXCEED_MAX_HOSTS = "EXCEED_MAX_HOSTS",
-    INVALID_FORMAT = "INVALID_FORMAT",
-    DUPLICATED_HOST = "DUPLICATED_HOST",
-    INTERNAL_ERROR = "INTERNAL_ERROR"
-}
+export { HostErrorCode };
 
 export class HostError extends AppError {
 

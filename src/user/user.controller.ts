@@ -11,14 +11,15 @@ export class UserController {
     ){}
 
     @Get()
-    async getUserData(@Request() req) : Promise<User>{
+    async getUserData(@Request() req) : Promise<Omit<User, "password">>{
         const payload = req.user;
-        return await this.userService.getUserData(payload);
+        return await this.userService.getUserData(payload.sub);
     }
 
     @Post('credential')
     async changePassword(@Body() dto : ChangePasswordRequest, @Request() req) : Promise<void>{
         const payload = req.user;
+        console.log(payload);
         await this.userService.changePassword(payload.sub, dto);
 
     }

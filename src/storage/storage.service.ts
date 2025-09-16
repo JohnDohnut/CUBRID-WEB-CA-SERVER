@@ -2,8 +2,8 @@ import { StorageErrorCode, StorageError } from '@error/storage/storage-error';
 import { Injectable } from '@nestjs/common';
 import { getStoragePath, resolveUserFilePath } from '@util/resolve-storage-path';
 import * as fs from 'fs/promises';
-import { LockService } from '../lock/lock.service';
-import { HandleStorageFsErrors } from '../common/decorators/handle-storage-fs-errors.decorator';
+import { LockService } from '@lock/lock.service';
+import { HandleStorageFsErrors } from '@decorators/handle-storage-fs-errors.decorator';
 
 @Injectable()
 export class StorageService {
@@ -50,7 +50,7 @@ export class StorageService {
   @HandleStorageFsErrors()
   async read(filename: string): Promise<string> {
     return this.lockService.withLock(filename, async () => {
-      return this.readUnsafe(filename);
+      return await this.readUnsafe(filename);
     });
   }
 

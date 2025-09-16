@@ -3,7 +3,7 @@ import { UserController } from './user.controller';
 import { UserRepositoryModule } from '@repository/repository.module';
 import { SecurityModule } from '@security/security.module';
 import { UserService } from './user.service';
-import { TokenModule } from '../token/token.module';
+import { TokenModule } from '@token/token.module';
 
 @Module({
   controllers: [UserController],
