@@ -17,8 +17,14 @@ export class HostError extends AppError {
         return new HostError("RESOURCE", HostErrorCode.DUPLICATED_HOST, additionalData, originalError);
     }
     
+    static NoSuchHost(additionalData?: Record<string, any>, originalError? : Error) {
+        return new HostError("RESOURCE", HostErrorCode.NO_SUCH_HOST, additionalData, originalError);
+    }
+
     static InternalError(additionalData?: Record<string, any>, originalError?: Error) {
         return new HostError("RESOURCE", HostErrorCode.INTERNAL_ERROR, additionalData, originalError);
     }
+
+    
 
 }

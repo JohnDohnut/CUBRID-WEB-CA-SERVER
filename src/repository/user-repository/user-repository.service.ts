@@ -42,10 +42,10 @@ export class UserRepositoryService {
       uuid,
       id: dto.id,
       password: await this.passwordService.getHashedValue(dto.password),
-      host_list: [],
-      db_list: [],
-      ha_mon_list: [],
-      resource_mon_list: [],
+      department : "default",
+      host_list: {},
+      ha_mon_list: {},
+      resource_mon_list: {},
     };
     await this.storageService.createAndWrite(hashedId, this.encryptionService.encryptValue(JSON.stringify(userJson)));
 

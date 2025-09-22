@@ -51,7 +51,8 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
                 'App Error',
                 `App Error [${exception.kind}:${exception.code}]: ${exception.message}`,
                 JSON.stringify(logDetails, null, 2),
-                `${req.method} ${req.url}`
+                `${req.method} ${req.url}`,
+                
             );
         }  
 

@@ -5,8 +5,8 @@ export interface User {
     uuid: string;
     id: string;
     password: string;
-    host_list: HostInfo[];
-    db_list : DBInfo[];
-    ha_mon_list: any[];
-    resource_mon_list: any[];
+    department : string;
+    host_list: { [uid: string]: HostInfo };
+    ha_mon_list: { [uid: string]: any };
+    resource_mon_list: { [uid: string]: any };
 }

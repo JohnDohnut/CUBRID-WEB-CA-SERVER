@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Request } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Request } from '@nestjs/common';
 import { User } from '@type/user';
 import { ChangePasswordRequest } from '@type/request/change-password-request';
 import { UserService } from './user.service';
@@ -24,6 +24,14 @@ export class UserController {
 
     }
 
+    @Delete('account')
+    async deleteUser(@Request() req) : Promise<boolean> {
+        await this.userService.deleteUser(req.user.sub);
+        return true;
+    }
     
-    
+    @Post('account')
+    async updateUser(@Request() req, @Body() body : Omit<User, "password" | "id">){
+    }
+
 }

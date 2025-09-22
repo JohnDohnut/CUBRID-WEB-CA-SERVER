@@ -7,6 +7,7 @@ import { UserError } from '@error/user/user-error';
 import { passwordValidityChecker } from '@util/password-validity-checker';
 import { HandleUserErrors } from '@decorators/handle-user-errors.decorator';
 import { omitPassword } from '../util';
+import { UpdateUserInfoRequest } from '../type/request/update-user-info-request';
 
 @Injectable()
 export class UserService {
@@ -45,4 +46,18 @@ export class UserService {
 
     }
 
+    @HandleUserErrors()
+    async deleteUser(userId: string) : Promise<void> {
+        await this.repository.deleteUser(userId);
+    }
+
+    @HandleUserErrors()
+    async updateUser(userId: string, update: UpdateUserInfoRequest) : Promise<User>{
+        return await this.repository.atomicUpdateUser(userId, async (user: User) => {
+            Object.entries(update).forEach(([key, value]) => {
+                (user as any)[key] = value;
+            });
+            return user;
+        });
+    }
 }

@@ -17,9 +17,10 @@ import { MonitoringModule } from '@monitoring/monitoring.module';
 import { BrokerModule } from '@broker/broker.module';
 import { HostModule } from '@host/host.module';
 import { LockModule } from '@lock/lock.module';
+import { CmsModule } from './cms/cms.module';
 
 @Module({
-  imports: [ConfigModule, SecurityModule, StorageModule, AuthModule,  UserRepositoryModule, UserModule, TokenModule, MonitoringModule, BrokerModule, HostModule, LockModule],
+  imports: [ConfigModule, SecurityModule, StorageModule, AuthModule,  UserRepositoryModule, UserModule, TokenModule, MonitoringModule, BrokerModule, HostModule, LockModule, CmsModule],
   controllers: [AppController],
   providers: [AppService, ConfigService, EncryptionService, StorageService, {provide : APP_GUARD, useClass : JwtAuthGuard}],
 })

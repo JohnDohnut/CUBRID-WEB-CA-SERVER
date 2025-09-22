@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Request } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PasswordService } from '@security/password/password.service';
 import { User } from '@type/user';
@@ -35,4 +35,5 @@ export class AuthService {
   async register(dto: UserDTO): Promise<void> {
     await this.usersRepo.createUser(dto);
   }
+
 }
