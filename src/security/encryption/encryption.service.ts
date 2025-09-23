@@ -1,6 +1,16 @@
 import { ConfigService } from '@config/config.service';
 import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
+
+/**
+ * Service for encryption and decryption operations.
+ * 
+ * Provides functionality for data encryption, decryption, and hashing.
+ * Uses AES-256-CBC encryption and SHA-256 hashing algorithms.
+ * 
+ * @category Services/Infrastructure Services
+ * @since 1.0.0
+ */
 @Injectable()
 export class EncryptionService {
 

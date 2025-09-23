@@ -4,7 +4,7 @@ import { LockErrorCode } from '@error/lock/lock-error-code';
 import { HostErrorCode } from '@error/host/host-error-code';
 import { UserErrorCode } from '@error/user/user-error-code';
 
-export type ErrorKind = 'AUTH' | 'STORAGE' | 'LOCK' | 'RESOURCE' | 'USER' | 'INTERNAL';
+export type ErrorKind = 'AUTH' | 'STORAGE' | 'LOCK' | 'RESOURCE' | 'USER' | 'INTERNAL' | "CMS" ;
 
 export class AppError extends Error {
 
@@ -141,6 +141,7 @@ export class AppError extends Error {
                         return 500;
                 }
             case 'INTERNAL': return 500;
+            case 'CMS' : return 500;
             default: return 500;
         }
     }

@@ -3,25 +3,36 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@config/config.module';
 import { ConfigService } from '@config/config.service';
-import { EncryptionService } from '@security/encryption/encryption.service';
-import { SecurityModule } from '@security/security.module';
-import { StorageService } from '@storage/storage.service';
-import { StorageModule } from '@storage/storage.module';
-import { AuthModule } from '@auth/auth.module';
-import { UserRepositoryModule } from '@repository/repository.module';
-import { UserModule } from '@user/user.module';
+import { EncryptionService, SecurityModule } from '@security';
+import { StorageService, StorageModule } from '@storage';
+import { AuthModule } from '@auth';
+import { UserRepositoryModule } from '@repository';
+import { UserModule } from '@user';
 import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from '@token/jwt-auth.guard';
-import { TokenModule } from '@token/token.module';
-import { MonitoringModule } from '@monitoring/monitoring.module';
-import { BrokerModule } from '@broker/broker.module';
-import { HostModule } from '@host/host.module';
-import { LockModule } from '@lock/lock.module';
-import { CmsModule } from './cms/cms.module';
+import { JwtAuthGuard, TokenModule } from '@token';
+import { MonitoringModule } from '@monitoring';
+import { BrokerModule } from '@broker';
+import { HostModule } from '@host';
+import { LockModule } from '@lock';
+import { CmsModule } from '@cms';
 
+/**
+ * Root application module that configures all feature modules and global providers.
+ * 
+ * This module serves as the main entry point for the WebCA server application,
+ * importing all necessary feature modules and configuring global providers
+ * including JWT authentication guard.
+ * 
+ * @module AppModule
+ * @since 1.0.0
+ */
 @Module({
   imports: [ConfigModule, SecurityModule, StorageModule, AuthModule,  UserRepositoryModule, UserModule, TokenModule, MonitoringModule, BrokerModule, HostModule, LockModule, CmsModule],
   controllers: [AppController],
   providers: [AppService, ConfigService, EncryptionService, StorageService, {provide : APP_GUARD, useClass : JwtAuthGuard}],
 })
 export class AppModule {}
+
+// Export controllers and services for documentation
+export { AppController } from './app.controller';
+export { AppService } from './app.service';

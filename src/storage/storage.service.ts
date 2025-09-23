@@ -5,6 +5,15 @@ import * as fs from 'fs/promises';
 import { LockService } from '@lock/lock.service';
 import { HandleStorageFsErrors } from '@decorators/handle-storage-fs-errors.decorator';
 
+/**
+ * Service for managing file storage operations.
+ * 
+ * Provides functionality for file storage, retrieval, and management.
+ * Handles file system operations and storage path resolution.
+ * 
+ * @category Infrastructure Services
+ * @since 1.0.0
+ */
 @Injectable()
 export class StorageService {
   constructor(private readonly lockService: LockService) { }

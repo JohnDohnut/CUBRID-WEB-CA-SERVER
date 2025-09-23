@@ -1,0 +1,46 @@
+{
+  "entryPoints": [
+    "src/index.ts"
+  ],
+  "out": "docs",
+  "name": "WebCA Server API Documentation",
+  "includeVersion": true,
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeExternals": true,
+  "readme": "README.md",
+  "theme": "default",
+  "sort": ["source-order"],
+  "categorizeByGroup": true,
+  "defaultCategory": "Other",
+  "categoryOrder": [
+    "Business Services",
+    "Infrastructure Services",
+    "Controllers",
+    "Utilities",
+    "Types",
+    "Errors"
+  ],
+  "navigation": {
+    "includeCategories": true,
+    "includeGroups": true
+  },
+  "searchInComments": true,
+  "cleanOutputDir": true,
+  "plugin": [],
+  "tsconfig": "tsconfig.json",
+  "exclude": [
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "dist/**/*",
+    "node_modules/**/*"
+  ],
+  "groupOrder": [
+    "Business Services",
+    "Infrastructure Services",
+    "Controllers",
+    "Utilities",
+    "Types",
+    "Errors"
+  ]
+}

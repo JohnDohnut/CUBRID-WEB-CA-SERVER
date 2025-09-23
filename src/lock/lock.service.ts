@@ -5,6 +5,16 @@ import * as lockfile from 'proper-lockfile';
 import { LockError, LockErrorCode } from '@error/lock/lock-error';
 import { AppError } from '@error/app-error';
 
+/**
+ * Service for managing file locking operations.
+ * 
+ * Provides functionality for file locking using proper-lockfile library.
+ * Handles lock acquisition, release, and stale lock detection.
+ * 
+ * @category Services/Infrastructure Services
+ * @since 1.0.0
+ */
+
 export interface LockErrorDetails {
     message: string;
     code: string;

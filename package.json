@@ -26,7 +26,10 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "pkg:win": "pkg . --targets node18-win-x64 --output dist/webca-server-win.exe",
     "pkg:linux": "pkg . --targets node18-linux-x64 --output dist/webca-server-linux",
-    "pkg:all": "pkg . --targets node18-win-x64,node18-linux-x64 --output dist/webca-server"
+    "pkg:all": "pkg . --targets node18-win-x64,node18-linux-x64 --output dist/webca-server",
+    "docs": "typedoc",
+    "docs:build": "typedoc --out docs",
+    "docs:serve": "typedoc --out docs --watch"
   },
   "pkg": {
     "scripts": [
@@ -90,6 +93,7 @@
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "typedoc": "^0.28.13",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
   },
@@ -111,25 +115,26 @@
     "testEnvironment": "node"
   },
   "_moduleAliases": {
-    "@auth": "src/auth",
-    "@broker": "src/broker",
-    "@common": "src/common",
+    "@auth": "src/auth/index",
+    "@broker": "src/broker/index",
+    "@common": "src/common/index",
     "@config": "src/config",
+    "@cms": "src/cms/index",
     "@decorators": "src/common/decorators",
     "@error": "src/error",
     "@extern_storage": "storage",
-    "@host": "src/host",
-    "@lock": "src/lock",
-    "@monitoring": "src/monitoring",
-    "@repository": "src/repository",
+    "@host": "src/host/index",
+    "@lock": "src/lock/index",
+    "@monitoring": "src/monitoring/index",
+    "@repository": "src/repository/index",
     "@root": ".",
-    "@security": "src/security",
+    "@security": "src/security/index",
     "@ssl": "ssl",
     "@src": "src",
-    "@storage": "src/storage",
-    "@token": "src/token",
+    "@storage": "src/storage/index",
+    "@token": "src/token/index",
     "@type": "src/type",
-    "@user": "src/user",
-    "@util": "src/util"
+    "@user": "src/user/index",
+    "@util": "src/util/index"
   }
 }

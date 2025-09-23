@@ -1,5 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
+
+/**
+ * Service for password hashing and verification operations.
+ * 
+ * Provides functionality for password hashing using bcrypt and
+ * password verification for authentication purposes.
+ * 
+ * @category Services/Infrastructure Services
+ * @since 1.0.0
+ */
 @Injectable()
 export class PasswordService {
     

@@ -1,10 +1,20 @@
 import { Module } from '@nestjs/common';
 import { HostController } from './host.controller';
 import { HostService } from './host.service';
-import { UserRepositoryModule } from '@repository/repository.module';
-import { SecurityModule } from '@security/security.module';
-import { LockModule } from '@lock/lock.module';
+import { UserRepositoryModule } from '@repository';
+import { SecurityModule } from '@security';
+import { LockModule } from '@lock';
 
+/**
+ * Host management module for handling host-related operations.
+ * 
+ * This module provides host management functionality including host list
+ * retrieval, adding new hosts, and host validation. It integrates with
+ * the security module for encryption and the lock module for concurrency control.
+ * 
+ * @module HostModule
+ * @since 1.0.0
+ */
 @Module({
   controllers: [HostController],
   providers: [HostService],
@@ -12,3 +22,7 @@ import { LockModule } from '@lock/lock.module';
   
 })
 export class HostModule {}
+
+// Export controllers and services for documentation
+export { HostController } from './host.controller';
+export { HostService } from './host.service';
