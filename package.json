@@ -29,7 +29,7 @@
     "pkg:all": "pkg . --targets node18-win-x64,node18-linux-x64 --output dist/webca-server",
     "docs": "typedoc",
     "docs:build": "typedoc --out docs",
-    "docs:serve": "typedoc --out docs --watch"
+    "docs:serve": "typedoc --out docs --watch --serve --port 7777"
   },
   "pkg": {
     "scripts": [

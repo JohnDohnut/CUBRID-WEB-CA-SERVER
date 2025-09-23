@@ -16,7 +16,7 @@ import { UpdateUserInfoRequest } from '@type/request/update-user-info-request';
  * user data retrieval, account deletion, and user information updates.
  * All operations are wrapped with error handling decorators.
  * 
- * @category Services/Business Services
+ * @category Business Services
  * @since 1.0.0
  */
 @Injectable()
