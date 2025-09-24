@@ -3,6 +3,12 @@ import { LockErrorCode } from '@error/lock/lock-error-code';
 
 export { LockErrorCode };
   
+/**
+ * Error class for lock-related operations.
+ * 
+ * @category Errors
+ * @since 1.0.0
+ */
 export class LockError extends AppError {
 
     static LockNotFound(additionalData?: Record<string, any>, originalError?: Error) {

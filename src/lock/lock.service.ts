@@ -11,7 +11,7 @@ import { AppError } from '@error/app-error';
  * Provides functionality for file locking using proper-lockfile library.
  * Handles lock acquisition, release, and stale lock detection.
  * 
- * @category Services/Infrastructure Services
+ * @category Infrastructure Services
  * @since 1.0.0
  */
 

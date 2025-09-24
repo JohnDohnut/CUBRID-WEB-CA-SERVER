@@ -3,6 +3,12 @@ import { UserErrorCode } from '@error/user/user-error-code';
 
 export { UserErrorCode };
 
+/**
+ * Error class for user-related operations.
+ * 
+ * @category Errors
+ * @since 1.0.0
+ */
 export class UserError extends AppError {
 
     static UserNotFound(additionalData?: Record<string, any>, originalError?: Error) {

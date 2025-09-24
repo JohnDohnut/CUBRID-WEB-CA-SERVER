@@ -6,6 +6,12 @@ import { UserErrorCode } from '@error/user/user-error-code';
 
 export type ErrorKind = 'AUTH' | 'STORAGE' | 'LOCK' | 'RESOURCE' | 'USER' | 'INTERNAL' | "CMS" ;
 
+/**
+ * Base error class for all application errors.
+ * 
+ * @category Errors
+ * @since 1.0.0
+ */
 export class AppError extends Error {
 
     constructor(

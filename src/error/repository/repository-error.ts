@@ -5,6 +5,12 @@ export enum RepositoryErrorCode {
     USER_ALREADY_EXISTS = "USER_ALREADY_EXISTS",
 }
 
+/**
+ * Error class for repository-related operations.
+ * 
+ * @category Errors
+ * @since 1.0.0
+ */
 export class RepositoryError extends AppError {
 
     static UserNotFound(additionalData?: Record<string, any>, originalError?: Error) {

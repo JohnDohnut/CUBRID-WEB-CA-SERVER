@@ -11,15 +11,18 @@
   "readme": "README.md",
   "theme": "default",
   "sort": ["source-order"],
-  "categorizeByGroup": true,
+  "categorizeByGroup": false,
   "defaultCategory": "Other",
   "categoryOrder": [
     "Business Services",
-    "Infrastructure Services",
+    "Infrastructure Services", 
     "Controllers",
-    "Utilities",
     "Types",
-    "Errors"
+    "DTOs",
+    "Errors",
+    "Requests",
+    "Responses",
+    "Utilities"
   ],
   "navigation": {
     "includeCategories": true,
@@ -33,7 +36,12 @@
     "**/*.spec.ts",
     "**/*.test.ts",
     "dist/**/*",
-    "node_modules/**/*"
+    "node_modules/**/*",
+    "src/util/**/*",
+    "src/common/**/*",
+    "src/error/**/*error-code.ts",
+    "src/error/**/*error.ts",
+    "src/error/global-filter.ts"
   ],
   "groupOrder": [
     "Business Services",

@@ -3,6 +3,12 @@ import { HostErrorCode } from '@error/host/host-error-code';
 
 export { HostErrorCode };
 
+/**
+ * Error class for host-related operations.
+ * 
+ * @category Errors
+ * @since 1.0.0
+ */
 export class HostError extends AppError {
 
     static ExceedMaxHosts(additionalData?: Record<string, any>, originalError?: Error) {

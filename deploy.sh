@@ -43,21 +43,15 @@ run_command() {
 kill_servers() {
     echo "Checking for existing servers on ports 7777 and 8080..."
     ssh "$USER@$TARGET_HOST" "
-        if lsof -i :7777 >/dev/null 2>&1; then
+        if pgrep -f 'http-server.*7777' >/dev/null 2>&1; then
             echo 'Stopping existing documentation server on port 7777...'
-            PID=\$(lsof -ti :7777)
-            if [ ! -z \"\$PID\" ]; then
-                kill \$PID
-                sleep 1
-            fi
+            pkill -f 'http-server.*7777'
+            sleep 1
         fi
-        if lsof -i :8080 >/dev/null 2>&1; then
+        if pgrep -f 'webca-server.*8080' >/dev/null 2>&1; then
             echo 'Stopping existing WebCA server on port 8080...'
-            PID=\$(lsof -ti :8080)
-            if [ ! -z \"\$PID\" ]; then
-                kill \$PID
-                sleep 1
-            fi
+            pkill -f 'webca-server.*8080'
+            sleep 1
         fi
     "
 }

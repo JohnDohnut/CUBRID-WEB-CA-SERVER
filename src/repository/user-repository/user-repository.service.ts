@@ -21,7 +21,7 @@ import { HandleUserRepoErrors } from '@decorators/handle-user-repo-errors.decora
  * Provides low-level data access operations for user management including
  * CRUD operations, file-based storage, and data persistence.
  * 
- * @category Services/Infrastructure Services
+ * @category Infrastructure Services
  * @since 1.0.0
  */
 @Injectable()

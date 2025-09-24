@@ -6,7 +6,7 @@ import { Injectable } from '@nestjs/common';
  * This service contains basic methods that can be used across the application
  * for simple operations and health checks.
  * 
- * @category Services
+ * @category Business Services
  * @since 1.0.0
  */
 @Injectable()

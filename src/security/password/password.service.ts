@@ -7,7 +7,7 @@ import * as bcrypt from 'bcryptjs';
  * Provides functionality for password hashing using bcrypt and
  * password verification for authentication purposes.
  * 
- * @category Services/Infrastructure Services
+ * @category Infrastructure Services
  * @since 1.0.0
  */
 @Injectable()

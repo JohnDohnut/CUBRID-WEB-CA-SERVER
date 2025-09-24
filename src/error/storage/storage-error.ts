@@ -4,6 +4,12 @@ import { StorageErrorCode } from '@error/storage/storage-error-code';
 export { StorageErrorCode };
 
 
+/**
+ * Error class for storage-related operations.
+ * 
+ * @category Errors
+ * @since 1.0.0
+ */
 export class StorageError extends AppError {
 
     static NotFound(additionalData?: Record<string, any>, originalError?: Error) {

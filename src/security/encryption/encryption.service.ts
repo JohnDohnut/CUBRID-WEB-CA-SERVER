@@ -8,7 +8,7 @@ import * as crypto from 'crypto';
  * Provides functionality for data encryption, decryption, and hashing.
  * Uses AES-256-CBC encryption and SHA-256 hashing algorithms.
  * 
- * @category Services/Infrastructure Services
+ * @category Infrastructure Services
  * @since 1.0.0
  */
 @Injectable()

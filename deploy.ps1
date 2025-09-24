@@ -56,21 +56,24 @@ try {
             Invoke-Command "npm run pkg:linux" "Packaging for Linux"
             Test-FileExists $ArtLinux
             Write-Host "Deploying Linux binary to ${User}@${TargetHost}:${RemoteBinLinux}"
-            scp.exe $ArtLinux "${User}@${TargetHost}:${RemoteBinLinux}"
+            ssh.exe "$User@$TargetHost" "rm -f $RemoteBinLinux"
+            scp.exe $ArtLinux "${User}@${TargetHost}:${RemoteBaseDir}/"
         }
         "win" {
             Invoke-Command "npm run pkg:win" "Packaging for Windows"
             Test-FileExists $ArtWin
             Write-Host "Deploying Windows binary to ${User}@${TargetHost}:${RemoteBinWin}"
-            scp.exe $ArtWin "${User}@${TargetHost}:${RemoteBinWin}"
+            ssh.exe "$User@$TargetHost" "rm -f $RemoteBinWin"
+            scp.exe $ArtWin "${User}@${TargetHost}:${RemoteBaseDir}/"
         }
         "both" {
             Invoke-Command "npm run pkg:all" "Packaging for both platforms"
             Test-FileExists $ArtLinux
             Test-FileExists $ArtWin
             Write-Host "Deploying both binaries to ${User}@${TargetHost}:${RemoteBaseDir}"
-            scp.exe $ArtLinux "${User}@${TargetHost}:${RemoteBinLinux}"
-            scp.exe $ArtWin "${User}@${TargetHost}:${RemoteBinWin}"
+            ssh.exe "$User@$TargetHost" "rm -f $RemoteBinLinux $RemoteBinWin"
+            scp.exe $ArtLinux "${User}@${TargetHost}:${RemoteBaseDir}/"
+            scp.exe $ArtWin "${User}@${TargetHost}:${RemoteBaseDir}/"
         }
     }
 
@@ -80,8 +83,10 @@ try {
 
     # --- Remote Server Management (Common Steps for Linux Target) ---
     Write-Host "Checking for existing servers on ports 7777 and 8080..."
-    $StopCommand = "if lsof -i :7777 >/dev/null 2>&1; then echo 'Stopping docs server...'; kill `lsof -ti :7777`; fi; if lsof -i :8080 >/dev/null 2>&1; then echo 'Stopping WebCA server...'; kill `lsof -ti :8080`; fi"
-    ssh.exe "$User@$TargetHost" $StopCommand
+    $StopDocsCommand = "if pgrep -f 'http-server.*7777' >/dev/null 2>&1; then echo 'Stopping docs server...'; pkill -f 'http-server.*7777'; fi"
+    $StopServerCommand = "if pgrep -f 'webca-server-linux.*8080' >/dev/null 2>&1; then echo 'Stopping WebCA server...'; pkill -f 'webca-server-linux.*8080'; fi"
+    ssh.exe "$User@$TargetHost" $StopDocsCommand
+    ssh.exe "$User@$TargetHost" $StopServerCommand
     
     Write-Host "Adding execute permission to Linux binary..."
     ssh.exe "$User@$TargetHost" "chmod +x $RemoteBinLinux"
