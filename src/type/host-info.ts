@@ -7,9 +7,10 @@
  * @category Types
  * @since 1.0.0
  */
-export interface HostInfo {
+export type HostInfo = {
     uid: string;
     id: string;
+    token : string;
     address: string;
     port: number;
     password: string;

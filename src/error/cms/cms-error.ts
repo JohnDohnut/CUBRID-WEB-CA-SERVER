@@ -8,6 +8,7 @@ export enum CmsErrorCode {
 
 export class CmsError extends AppError {
 
+
     static RequestFailed(additionalData?: Record<string, any>, originalError?: Error) {
         return new CmsError("CMS", CmsErrorCode.REQUEST_FAILED, additionalData, originalError);
     }

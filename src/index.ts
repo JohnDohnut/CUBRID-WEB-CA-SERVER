@@ -19,7 +19,6 @@ export { AuthService } from './auth/auth.service';
 export { UserController } from './user/user.controller';
 export { UserService } from './user/user.service';
 export { HostService } from './host/host.service';
-export { CmsService } from './cms/cms.service';
 export { BrokerService } from './broker/broker.service';
 export { StorageService } from './storage/storage.service';
 export { LockService } from './lock/lock.service';
