@@ -1,11 +1,13 @@
+import { SafeHostList } from "../collections";
+
 /**
  * Response interface for getting hosts list.
  * 
- * Contains an array of host information returned from the server.
+ * Contains a hashmap of host information returned from the server.
  * 
  * @category Responses
  * @since 1.0.0
  */
-export interface GetHostsResponse {
-    hosts: any[];
+export type GetHostsResponse = {
+    host_list: SafeHostList;
 }

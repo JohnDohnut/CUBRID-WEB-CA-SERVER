@@ -2,9 +2,10 @@ import { Module } from '@nestjs/common';
 import { CmsAuthService } from './cms-auth.service';
 import { CmsAuthController } from './cms-auth.controller';
 import { CmsClientModule } from '../cms-client/cms-client.module';
+import { UserRepositoryModule } from '@repository';
 
 @Module({
-  imports: [CmsClientModule],
+  imports: [CmsClientModule, UserRepositoryModule],
   providers: [CmsAuthService],
   controllers: [CmsAuthController],
   exports: [CmsAuthService]

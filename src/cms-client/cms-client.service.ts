@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosRequestConfig } from 'axios';
 import { HandleCmsClientErrors } from '@decorators/handle-cms-client-errors.decorator';
-import { BaseCmsRequest } from '@type/cms-request/base-cms-request';
+import { BaseCmsRequest } from '@type/index';
+import * as https from 'https';
 
 @Injectable()
 export class CmsClientService {
@@ -12,7 +13,10 @@ export class CmsClientService {
       method: 'POST',
       url: url,
       headers: { 'Content-Type': 'application/json' },
-      data: data
+      data: data,
+      httpsAgent: new https.Agent({
+        rejectUnauthorized: false
+      })
     };
     Logger.log(config);
     const response = await axios<P>(config);
@@ -25,7 +29,10 @@ export class CmsClientService {
       method: 'POST',
       url: url,
       headers: { 'Content-Type': 'application/json' },
-      data: data
+      data: data,
+      httpsAgent: new https.Agent({
+        rejectUnauthorized: false
+      })
     };
     Logger.log(config);
     const response = await axios<P>(config);

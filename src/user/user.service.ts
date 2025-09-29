@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { UserRepositoryService } from '@repository';
 import { PasswordService } from '@security';
-import { ChangePasswordRequest } from '@type/request/change-password-request';
-import { User } from '@type/user';
 import { UserError } from '@error/user/user-error';
-import { passwordValidityChecker } from '@util';
+import { passwordValidityChecker, omitPassword } from '@util';
 import { HandleUserErrors } from '@common';
-import { omitPassword } from '@util';
-import { UpdateUserInfoRequest } from '@type/request/update-user-info-request';
+import { 
+    User,
+    ChangePasswordRequest, 
+    UpdateUserInfoRequest,
+    UserResponse 
+} from '@type/index';
 
 /**
  * Service for managing user-related operations.
@@ -75,7 +77,7 @@ export class UserService {
      * for security purposes before returning the data.
      * 
      * @param {string} userId - The unique identifier of the user
-     * @returns {Promise<Omit<User, "password">>} User data without password
+     * @returns {Promise<UserResponse>} User data without password
      * @throws {UserError} When user is not found
      * @example
      * ```typescript
@@ -85,7 +87,7 @@ export class UserService {
      * ```
      */
     @HandleUserErrors()
-    async getUserData(userId: string): Promise<Omit<User, "password">> {
+    async getUserData(userId: string): Promise<UserResponse> {
 
         return omitPassword(await this.repository.loadUserById(userId));
 

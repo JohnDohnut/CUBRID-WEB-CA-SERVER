@@ -1,8 +1,10 @@
 import { Body, Controller, Delete, Get, Post, Request } from '@nestjs/common';
-import { User } from '@type/user';
-import { ChangePasswordRequest } from '@type/request/change-password-request';
 import { UserService } from './user.service';
-import { UpdateUserInfoRequest } from '@type/request/update-user-info-request';
+import { 
+    ChangePasswordRequest, 
+    UpdateUserInfoRequest,
+    UserResponse 
+} from '@type/index';
 
 /**
  * Controller for handling user-related operations.
@@ -28,7 +30,7 @@ export class UserController {
      * The user ID is extracted from the JWT token in the request.
      * 
      * @param {any} req - Express request object containing JWT payload
-     * @returns {Promise<Omit<User, "password">>} User data without password
+     * @returns {Promise<UserResponse>} User data without password
      * @throws {UserError} When user is not found
      * @example
      * ```typescript
@@ -37,7 +39,7 @@ export class UserController {
      * ```
      */
     @Get()
-    async getUserData(@Request() req) : Promise<Omit<User, "password">>{
+    async getUserData(@Request() req): Promise<UserResponse> {
         const payload = req.user;
         return await this.userService.getUserData(payload.sub);
     }
@@ -59,7 +61,7 @@ export class UserController {
      * ```
      */
     @Post('credential')
-    async changePassword(@Body() dto : ChangePasswordRequest, @Request() req) : Promise<void>{
+    async changePassword(@Body() dto: ChangePasswordRequest, @Request() req): Promise<void> {
         const payload = req.user;
         console.log(payload);
         await this.userService.changePassword(payload.sub, dto);
@@ -82,7 +84,7 @@ export class UserController {
      * ```
      */
     @Delete('account')
-    async deleteUser(@Request() req) : Promise<boolean> {
+    async deleteUser(@Request() req): Promise<boolean> {
         await this.userService.deleteUser(req.user.sub);
         return true;
     }
@@ -104,7 +106,9 @@ export class UserController {
      * ```
      */
     @Post('account')
-    async updateUser(@Request() req, @Body() body : UpdateUserInfoRequest){
+    async updateUser(@Request() req, @Body() body: UpdateUserInfoRequest): Promise<void> {
+        const userId = req.user.sub;
+        await this.userService.updateUser(userId, body);
     }
 
 }

@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
-import { UserDTO } from '@type/dto/user.dto';
-import { User } from '@type/user';
+import { User, UserDTO } from '@type/index';
 
 import { LockService } from '@lock/lock.service';
 import { EncryptionService } from '@security/encryption/encryption.service';

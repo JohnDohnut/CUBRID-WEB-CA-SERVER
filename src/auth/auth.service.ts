@@ -1,9 +1,8 @@
 import { Injectable, Request } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PasswordService } from '@security';
-import { User } from '@type/user';
+import { User, UserDTO } from '@type/index';
 import { UserRepositoryService } from '@repository';
-import { UserDTO } from '@type/dto/user.dto';
 import { UserError } from '@error/user/user-error';
 import { HandleAuthErrors } from '@common';
 

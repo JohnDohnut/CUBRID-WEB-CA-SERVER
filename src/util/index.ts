@@ -8,7 +8,7 @@
  */
 
 // Export utility functions
-export { omitPassword, omitPasswordArray } from './omit_password';
+export { omitPassword, omitPasswordArray, omitPasswordHashMap } from './omit_password';
 export { passwordValidityChecker } from './password-validity-checker';
 export { getOrCreateSSLCert } from './ssl-util';
 export { getStoragePath, resolveUserFilePath } from './resolve-storage-path';

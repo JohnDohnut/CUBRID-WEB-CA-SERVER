@@ -8,6 +8,7 @@
  * @since 1.0.0
  */
 export interface DBInfo {
+    uid: string;
     id: string;
     password: string;
     host: string;
