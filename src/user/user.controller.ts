@@ -40,8 +40,8 @@ export class UserController {
      */
     @Get()
     async getUserData(@Request() req): Promise<UserResponse> {
-        const payload = req.user;
-        return await this.userService.getUserData(payload.sub);
+        const userId = req.user.sub;
+        return await this.userService.getUserData(userId);
     }
 
     /**
@@ -62,10 +62,8 @@ export class UserController {
      */
     @Post('credential')
     async changePassword(@Body() dto: ChangePasswordRequest, @Request() req): Promise<void> {
-        const payload = req.user;
-        console.log(payload);
-        await this.userService.changePassword(payload.sub, dto);
-
+        const userId = req.user.sub;
+        await this.userService.changePassword(userId, dto);
     }
 
     /**

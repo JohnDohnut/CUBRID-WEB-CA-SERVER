@@ -7,16 +7,33 @@ import { HandleStorageFsErrors } from '@decorators/handle-storage-fs-errors.deco
 
 /**
  * Service for managing file storage operations.
+ * 파일 스토리지 작업을 관리하는 서비스입니다.
  * 
  * Provides functionality for file storage, retrieval, and management.
  * Handles file system operations and storage path resolution.
+ * 
+ * 파일 스토리지, 검색, 관리 기능을 제공합니다.
+ * 파일 시스템 작업과 스토리지 경로 해결을 처리합니다.
  * 
  * @category Infrastructure Services
  * @since 1.0.0
  */
 @Injectable()
 export class StorageService {
-  constructor(private readonly lockService: LockService) { }
+  constructor(private readonly lockService: LockService) { 
+    this.initializeStorageDirectory();
+  }
+
+  private async initializeStorageDirectory(): Promise<void> {
+    try {
+      await fs.mkdir(getStoragePath(), { recursive: true });
+    } catch (err) {
+      // Ignore errors if directory already exists
+      if (err?.code !== 'EEXIST') {
+        console.warn('Failed to initialize storage directory:', err?.message);
+      }
+    }
+  }
 
 
   private handleFsError(err: any): never {

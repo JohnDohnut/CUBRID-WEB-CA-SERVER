@@ -11,9 +11,13 @@ import {
 
 /**
  * Controller for managing host-related operations.
+ * 호스트 관련 작업을 관리하는 컨트롤러입니다.
  * 
  * Handles HTTP requests for host management including adding, updating,
  * retrieving, and deleting hosts. All operations require user authentication.
+ * 
+ * 호스트 추가, 업데이트, 조회, 삭제를 포함한 호스트 관리를 위한 
+ * HTTP 요청을 처리합니다. 모든 작업은 사용자 인증이 필요합니다.
  * 
  * @category Controllers
  * @since 1.0.0
@@ -34,7 +38,7 @@ export class HostController {
      */
     @Post()
     async addHost(@Request() request, @Body() hostInfo: AddHostRequest): Promise<void> {
-        const userId = request.user;
+        const userId = request.user.sub;
         await this.hostService.addHost(userId, hostInfo);
     }
 
@@ -46,7 +50,7 @@ export class HostController {
      */
     @Get()
     async getHosts(@Request() request): Promise<GetHostsResponse> {
-        const userId = request.user;
+        const userId = request.user.sub;
         return await this.hostService.getHostList(userId);
     }
 
@@ -59,7 +63,7 @@ export class HostController {
      */
     @Get(':hostUid')
     async getHost(@Request() request, @Param('hostUid') hostUid: string): Promise<HostResponse> {
-        const userId = request.user;
+        const userId = request.user.sub;
         return await this.hostService.findHost(userId, hostUid);
     }
 
@@ -77,7 +81,7 @@ export class HostController {
         @Param('hostUid') hostUid: string, 
         @Body() hostInfo: UpdateHostRequest
     ): Promise<void> {
-        const userId = request.user;
+        const userId = request.user.sub;
         await this.hostService.updateHost(userId, hostUid, hostInfo);
     }
 
@@ -90,7 +94,7 @@ export class HostController {
      */
     @Delete(':hostUid')
     async deleteHost(@Request() request, @Param('hostUid') hostUid: string): Promise<SafeHostList> {
-        const userId = request.user;
+        const userId = request.user.sub;
         return await this.hostService.deleteHost(userId, hostUid);
     }
 

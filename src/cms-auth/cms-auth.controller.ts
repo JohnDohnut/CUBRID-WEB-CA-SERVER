@@ -9,8 +9,8 @@ export class CmsAuthController {
 
     @Post('login')
     async login(@Request() request: any, uid : string) {
-        const payload = request.user;
-        this.cmsAuthService.login(payload, uid);
+        const userId = request.user.sub;
+        this.cmsAuthService.login(userId, uid);
         
 
     }

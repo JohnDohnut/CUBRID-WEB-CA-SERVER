@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import axios, { AxiosRequestConfig } from 'axios';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 import { HandleCmsClientErrors } from '@decorators/handle-cms-client-errors.decorator';
 import { BaseCmsRequest } from '@type/index';
 import * as https from 'https';
@@ -7,35 +8,35 @@ import * as https from 'https';
 @Injectable()
 export class CmsClientService {
 
+  constructor(private readonly httpService: HttpService) {}
+
   @HandleCmsClientErrors()
   public async postPublic<T extends Omit<BaseCmsRequest, "token">, P>(url: string, data: T): Promise<P> {
-    const config: AxiosRequestConfig = {
-      method: 'POST',
-      url: url,
+    const config = {
       headers: { 'Content-Type': 'application/json' },
-      data: data,
       httpsAgent: new https.Agent({
         rejectUnauthorized: false
       })
     };
-    Logger.log(config);
-    const response = await axios<P>(config);
+    Logger.log({ url, data, config });
+    const response = await firstValueFrom(
+      this.httpService.post<P>(url, data, config)
+    );
     return response.data;
   }
 
   @HandleCmsClientErrors()
   public async postAuthenticated<T extends BaseCmsRequest, P>(url: string, data: T): Promise<P> {
-    const config: AxiosRequestConfig = {
-      method: 'POST',
-      url: url,
+    const config = {
       headers: { 'Content-Type': 'application/json' },
-      data: data,
       httpsAgent: new https.Agent({
         rejectUnauthorized: false
       })
     };
-    Logger.log(config);
-    const response = await axios<P>(config);
+    Logger.log({ url, data, config });
+    const response = await firstValueFrom(
+      this.httpService.post<P>(url, data, config)
+    );
     return response.data;
   }
 

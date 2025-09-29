@@ -17,12 +17,14 @@
     "Business Services",
     "Infrastructure Services", 
     "Controllers",
+    "Decorators",
     "Types",
     "DTOs",
     "Errors",
     "Requests",
     "Responses",
-    "Utilities"
+    "Utilities",
+    "Modules"
   ],
   "navigation": {
     "includeCategories": true,
@@ -37,18 +39,17 @@
     "**/*.test.ts",
     "dist/**/*",
     "node_modules/**/*",
-    "src/util/**/*",
-    "src/common/**/*",
-    "src/error/**/*error-code.ts",
-    "src/error/**/*error.ts",
     "src/error/global-filter.ts"
   ],
   "groupOrder": [
     "Business Services",
     "Infrastructure Services",
     "Controllers",
+    "Decorators",
     "Utilities",
     "Types",
-    "Errors"
+    "DTOs",
+    "Errors",
+    "Modules"
   ]
 }
