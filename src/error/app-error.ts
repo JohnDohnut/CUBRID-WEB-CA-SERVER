@@ -4,22 +4,28 @@ import { LockErrorCode } from '@error/lock/lock-error-code';
 import { HostErrorCode } from '@error/host/host-error-code';
 import { UserErrorCode } from '@error/user/user-error-code';
 
-export type ErrorKind = 'AUTH' | 'STORAGE' | 'LOCK' | 'RESOURCE' | 'USER' | 'INTERNAL' | "CMS" ;
+export type ErrorKind =
+    | 'AUTH'
+    | 'STORAGE'
+    | 'LOCK'
+    | 'RESOURCE'
+    | 'USER'
+    | 'INTERNAL'
+    | 'CMS';
 
 /**
  * Base error class for all application errors.
- * 
+ *
  * @category Errors
  * @since 1.0.0
  */
 export class AppError extends Error {
-
     constructor(
         public readonly kind: ErrorKind,
         public readonly code: string,
         public readonly additionalData?: Record<string, any>,
-        public readonly originalError?: Error
-    ) { 
+        public readonly originalError?: Error,
+    ) {
         super(code);
         this.name = new.target.name;
     }
@@ -28,16 +34,21 @@ export class AppError extends Error {
     toProblemDetails(requestUrl?: string) {
         return {
             type: `/errors/${this.kind.toLowerCase()}/${this.code.toLowerCase()}`,
-            title: this.code.split('_').map(word => 
-                word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-            ).join(' '),
+            title: this.code
+                .split('_')
+                .map(
+                    (word) =>
+                        word.charAt(0).toUpperCase() +
+                        word.slice(1).toLowerCase(),
+                )
+                .join(' '),
             status: this.getHttpStatus(),
             detail: this.message,
             instance: requestUrl || '',
             code: this.code,
             timestamp: new Date().toISOString(),
             // Include additional data directly in Problem Details (excluding sensitive information)
-            ...(this.additionalData || {})
+            ...(this.additionalData || {}),
         };
     }
 
@@ -45,9 +56,14 @@ export class AppError extends Error {
     toLogDetails(requestUrl?: string) {
         return {
             type: `/errors/${this.kind.toLowerCase()}/${this.code.toLowerCase()}`,
-            title: this.code.split('_').map(word => 
-                word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-            ).join(' '),
+            title: this.code
+                .split('_')
+                .map(
+                    (word) =>
+                        word.charAt(0).toUpperCase() +
+                        word.slice(1).toLowerCase(),
+                )
+                .join(' '),
             status: this.getHttpStatus(),
             detail: this.message,
             instance: requestUrl || '',
@@ -57,20 +73,22 @@ export class AppError extends Error {
             // Include all additional data
             ...(this.additionalData || {}),
             // Original error information (for debugging)
-            ...(this.originalError ? { 
-                originalError: {
-                    name: this.originalError.name,
-                    message: this.originalError.message,
-                    stack: this.originalError.stack
-                }
-            } : {})
+            ...(this.originalError
+                ? {
+                      originalError: {
+                          name: this.originalError.name,
+                          message: this.originalError.message,
+                          stack: this.originalError.stack,
+                      },
+                  }
+                : {}),
         };
     }
 
     private getHttpStatus(): number {
         switch (this.kind) {
-            case 'AUTH': 
-                switch(this.code) {
+            case 'AUTH':
+                switch (this.code) {
                     case AuthErrorCode.INVALID_CREDENTIALS:
                     case AuthErrorCode.INVALID_TOKEN:
                         return 401;
@@ -83,12 +101,12 @@ export class AppError extends Error {
                     default:
                         return 401;
                 }
-            case 'RESOURCE': 
+            case 'RESOURCE':
                 // Subdivide RESOURCE errors
                 switch (this.code) {
                     case HostErrorCode.EXCEED_MAX_HOSTS:
                     case HostErrorCode.INVALID_FORMAT:
-                        return 400; 
+                        return 400;
                     case HostErrorCode.DUPLICATED_HOST:
                         return 409; // Conflict - resource collision
                     case HostErrorCode.INTERNAL_ERROR:
@@ -96,7 +114,7 @@ export class AppError extends Error {
                     default:
                         return 400;
                 }
-            case 'USER': 
+            case 'USER':
                 switch (this.code) {
                     case UserErrorCode.USER_NOT_FOUND:
                     case UserErrorCode.USER_ALREADY_EXISTS:
@@ -115,12 +133,12 @@ export class AppError extends Error {
                         return 400; // Bad request
                     case UserErrorCode.UNKNOWN:
                         return 500; // Internal server error
-                    
+
                     default:
                         return 500;
                 }
-            case 'STORAGE': 
-                switch(this.code) {
+            case 'STORAGE':
+                switch (this.code) {
                     case StorageErrorCode.FILE_NOT_FOUND:
                     case StorageErrorCode.FILE_ALREADY_EXISTS:
                         return 400;
@@ -131,8 +149,8 @@ export class AppError extends Error {
                     default:
                         return 500;
                 }
-            case 'LOCK': 
-                switch(this.code) {
+            case 'LOCK':
+                switch (this.code) {
                     case LockErrorCode.LOCK_NOT_FOUND:
                         return 404; // Not Found
                     case LockErrorCode.PERMISSION_DENIED:
@@ -146,10 +164,12 @@ export class AppError extends Error {
                     default:
                         return 500;
                 }
-            case 'INTERNAL': return 500;
-            case 'CMS' : return 500;
-            default: return 500;
+            case 'INTERNAL':
+                return 500;
+            case 'CMS':
+                return 500;
+            default:
+                return 500;
         }
     }
-
 }

@@ -1,10 +1,10 @@
 /**
  * WebCA Server - Certificate Authority Management System
- * 
+ *
  * A comprehensive NestJS application for managing digital certificates,
  * user authentication, and host management with secure storage and
  * monitoring capabilities.
- * 
+ *
  * @module WebCAServer
  * @since 1.0.0
  */
@@ -24,7 +24,7 @@ export { BrokerController } from './broker/broker.controller';
 export { BrokerService } from './broker/broker.service';
 export { CmsAuthController } from './cms-auth/cms-auth.controller';
 export { CmsAuthService } from './cms-auth/cms-auth.service';
-export { CmsClientService } from './cms-client/cms-client.service';
+export { CmsHttpsClientService } from './cms-https-client/cms-https-client.service';
 export { StorageService } from './storage/storage.service';
 export { LockService } from './lock/lock.service';
 export { EncryptionService } from './security/encryption/encryption.service';
@@ -40,7 +40,7 @@ export { HaController } from './monitoring/ha/ha.controller';
 export { HandleStorageFsErrors } from './common/decorators/handle-storage-fs-errors.decorator';
 export { HandleUserErrors } from './common/decorators/handle-user-errors.decorator';
 export { HandleLockFsErrors } from './common/decorators/handle-lock-fs-errors.decorator';
-export { HandleCmsClientErrors } from './common/decorators/handle-cms-client-errors.decorator';
+export { HandleCmsHttpsClientErrors } from './common/decorators/handle-cms-https-client-errors.decorator';
 export { HandleHostErrors } from './common/decorators/handle-host-errors.decorator';
 export { HandleUserRepoErrors } from './common/decorators/handle-user-repo-errors.decorator';
 export { HandleAuthErrors } from './common/decorators/handle-auth-errors.decorator';

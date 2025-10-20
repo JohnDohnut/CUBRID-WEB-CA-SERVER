@@ -4,7 +4,7 @@ import { DBInfo } from './db-info';
 /**
  * Generic hashmap/dictionary type
  * 제네릭 해시맵/딕셔너리 타입입니다
- * 
+ *
  * @category Types
  * @since 1.0.0
  */
@@ -20,7 +20,7 @@ export type HostList = HashMap<HostInfo>;
  * Safe host list without password fields (for API responses)
  * 패스워드 필드가 없는 안전한 호스트 목록 (API 응답용)
  */
-export type SafeHostList = HashMap<Omit<HostInfo, "password">>;
+export type SafeHostList = HashMap<Omit<HostInfo, 'password' | 'token'>>;
 
 /**
  * Database list as a hashmap (internal use with passwords)
@@ -32,7 +32,7 @@ export type DbList = HashMap<DBInfo>;
  * Safe database list without password fields (for API responses)
  * 패스워드 필드가 없는 안전한 데이터베이스 목록 (API 응답용)
  */
-export type SafeDbList = HashMap<Omit<DBInfo, "password">>;
+export type SafeDbList = HashMap<Omit<DBInfo, 'password'>>;
 
 // Re-export commonly used types
 export type { HostInfo } from './host-info';

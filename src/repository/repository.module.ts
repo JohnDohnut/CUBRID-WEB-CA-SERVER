@@ -5,8 +5,8 @@ import { UserRepositoryService } from './user-repository/user-repository.service
 import { LockModule } from '@lock/lock.module';
 
 @Module({
-  providers: [UserRepositoryService],
-  imports : [SecurityModule, StorageModule, LockModule],
-  exports : [UserRepositoryService]
+    providers: [UserRepositoryService],
+    imports: [SecurityModule, StorageModule, LockModule],
+    exports: [UserRepositoryService],
 })
 export class UserRepositoryModule {}

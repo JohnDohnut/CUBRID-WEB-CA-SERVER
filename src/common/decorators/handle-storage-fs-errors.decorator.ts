@@ -31,28 +31,47 @@ i * 스토리지 메서드를 try...catch 블록으로 감싸는 메서드 데�
  * ```
  */
 export function HandleStorageFsErrors() {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    const originalMethod = descriptor.value;
-    descriptor.value = async function (...args: any[]) {
-      try {
-        return await originalMethod.apply(this, args);
-      } catch (err) {
-        if(err instanceof AppError){
-          throw err;
-        }
-        switch (err?.code) {
-          case 'ENOENT': 
-            throw StorageError.NotFound({ filePath: err.path }, err);
-          case 'EEXIST': 
-            throw StorageError.AlreadyExists({ filePath: err.path }, err);
-          case 'EACCES':
-          case 'EPERM':  
-            throw StorageError.PermissionDenied({ filePath: err.path }, err);
-          default:       
-            throw StorageError.Unknown({ originalCode: err?.code, originalMessage: err?.message }, err);
-        }
-      }
+    return function (
+        target: any,
+        propertyKey: string,
+        descriptor: PropertyDescriptor,
+    ) {
+        const originalMethod = descriptor.value;
+        descriptor.value = async function (...args: any[]) {
+            try {
+                return await originalMethod.apply(this, args);
+            } catch (err) {
+                if (err instanceof AppError) {
+                    throw err;
+                }
+                switch (err?.code) {
+                    case 'ENOENT':
+                        throw StorageError.NotFound(
+                            { filePath: err.path },
+                            err,
+                        );
+                    case 'EEXIST':
+                        throw StorageError.AlreadyExists(
+                            { filePath: err.path },
+                            err,
+                        );
+                    case 'EACCES':
+                    case 'EPERM':
+                        throw StorageError.PermissionDenied(
+                            { filePath: err.path },
+                            err,
+                        );
+                    default:
+                        throw StorageError.Unknown(
+                            {
+                                originalCode: err?.code,
+                                originalMessage: err?.message,
+                            },
+                            err,
+                        );
+                }
+            }
+        };
+        return descriptor;
     };
-    return descriptor;
-  };
 }

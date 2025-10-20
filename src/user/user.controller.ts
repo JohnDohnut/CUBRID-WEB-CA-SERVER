@@ -1,34 +1,31 @@
 import { Body, Controller, Delete, Get, Post, Request } from '@nestjs/common';
 import { UserService } from './user.service';
-import { 
-    ChangePasswordRequest, 
+import {
+    ChangePasswordRequest,
     UpdateUserInfoRequest,
-    UserResponse 
+    UserResponse,
 } from '@type/index';
 
 /**
  * Controller for handling user-related operations.
- * 
+ *
  * Provides endpoints for user data management including retrieving user information,
  * changing passwords, updating user details, and account deletion.
  * All endpoints require JWT authentication.
- * 
+ *
  * @category Controllers
  * @since 1.0.0
  */
 @Controller('user')
 export class UserController {
-
-    constructor(
-        private readonly userService : UserService,
-    ){}
+    constructor(private readonly userService: UserService) {}
 
     /**
      * Retrieves the current user's data.
-     * 
+     *
      * Returns user information excluding the password field for security.
      * The user ID is extracted from the JWT token in the request.
-     * 
+     *
      * @param {any} req - Express request object containing JWT payload
      * @returns {Promise<UserResponse>} User data without password
      * @throws {UserError} When user is not found
@@ -46,10 +43,10 @@ export class UserController {
 
     /**
      * Changes the user's password.
-     * 
+     *
      * Validates the old password and sets a new password if validation passes.
      * The new password must meet security requirements.
-     * 
+     *
      * @param {ChangePasswordRequest} dto - Password change request containing old and new passwords
      * @param {any} req - Express request object containing JWT payload
      * @returns {Promise<void>} No return value on success
@@ -61,17 +58,20 @@ export class UserController {
      * ```
      */
     @Post('credential')
-    async changePassword(@Body() dto: ChangePasswordRequest, @Request() req): Promise<void> {
+    async changePassword(
+        @Body() dto: ChangePasswordRequest,
+        @Request() req,
+    ): Promise<void> {
         const userId = req.user.sub;
         await this.userService.changePassword(userId, dto);
     }
 
     /**
      * Deletes the user's account.
-     * 
+     *
      * Permanently removes the user account and all associated data.
      * This operation cannot be undone.
-     * 
+     *
      * @param {any} req - Express request object containing JWT payload
      * @returns {Promise<boolean>} Always returns true on successful deletion
      * @throws {UserError} When user is not found
@@ -86,13 +86,13 @@ export class UserController {
         await this.userService.deleteUser(req.user.sub);
         return true;
     }
-    
+
     /**
      * Updates user information.
-     * 
+     *
      * Updates specific user fields based on the provided request body.
      * Only allowed fields can be updated (currently only department).
-     * 
+     *
      * @param {any} req - Express request object containing JWT payload
      * @param {UpdateUserInfoRequest} body - User information to update
      * @returns {Promise<void>} No return value on success
@@ -104,9 +104,11 @@ export class UserController {
      * ```
      */
     @Post('account')
-    async updateUser(@Request() req, @Body() body: UpdateUserInfoRequest): Promise<void> {
+    async updateUser(
+        @Request() req,
+        @Body() body: UpdateUserInfoRequest,
+    ): Promise<void> {
         const userId = req.user.sub;
         await this.userService.updateUser(userId, body);
     }
-
 }

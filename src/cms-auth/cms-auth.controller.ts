@@ -8,11 +8,10 @@ export class CmsAuthController {
     constructor(private readonly cmsAuthService: CmsAuthService) {}
 
     @Post('login')
-    async login(@Request() request: any, uid : string) {
+    async login(@Request() request: any, @Body() body : {uid : string}) {
         const userId = request.user.sub;
-        this.cmsAuthService.login(userId, uid);
-        
-
+        const rv = await this.cmsAuthService.login(userId, body.uid) ? true : false
+        return rv;
     }
     @Public()
     @Post('test-login')

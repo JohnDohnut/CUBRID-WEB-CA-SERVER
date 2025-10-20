@@ -1,9 +1,9 @@
 /**
  * Common module exports
- * 
+ *
  * Central export file for all common components
  * including decorators and shared utilities.
- * 
+ *
  * @module Common
  * @since 1.0.0
  */

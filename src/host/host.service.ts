@@ -3,15 +3,15 @@ import { HostError } from '@error/index';
 import { Injectable } from '@nestjs/common';
 import { UserRepositoryService } from '@repository';
 import { EncryptionService } from '@security';
-import { 
-    HashMap, 
-    SafeHostList, 
-    HostInfo, 
+import {
+    HashMap,
+    SafeHostList,
+    HostInfo,
     User,
-    AddHostRequest, 
+    AddHostRequest,
     UpdateHostRequest,
-    GetHostsResponse, 
-    HostResponse 
+    GetHostsResponse,
+    HostResponse,
 } from '@type/index';
 import { omitPassword, omitPasswordArray, omitPasswordHashMap } from '@util';
 import { v4 as uuidv4 } from 'uuid';
@@ -197,9 +197,9 @@ export class HostService {
         return omitPassword(host);
     }
     /**
-     * 
-     * @param {string} userId 
-     * @param {string} hostUid 
+     *
+     * @param {string} userId
+     * @param {string} hostUid
      * @returns {Promise<SafeHostList>}
      * @throws {HostError.NoSuchHost}
      */

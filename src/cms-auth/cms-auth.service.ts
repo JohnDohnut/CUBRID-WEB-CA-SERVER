@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { CmsClientService } from '../cms-client/cms-client.service';
-import { 
+import { Injectable, Logger } from '@nestjs/common';
+import { CmsHttpsClientService } from '../cms-https-client/cms-https-client.service';
+import {
     HostInfo,
     CheckFileCmsRequest,
     LoginCmsRequest,
-    LoginCmsResponse 
+    LoginCmsResponse,
+    User,
 } from '@type/index';
 import { UserRepositoryService } from '@repository';
 import { HostError } from '@error/index';
@@ -13,32 +14,41 @@ import { HostError } from '@error/index';
 export class CmsAuthService {
     constructor(
         //private readonly repository : UserRepositoryService,
-        private readonly client: CmsClientService,
-        private readonly repository : UserRepositoryService,
+        private readonly client: CmsHttpsClientService,
+        private readonly repository: UserRepositoryService,
     ) {}
-
-    public async login(userId: string, uid: string){
-
+    
+    public async login(userId: string, uid: string) {
         const user = await this.repository.loadUserById(userId);
-        const host : HostInfo = user.host_list[uid];
-        if(!host){
-            throw HostError.NoSuchHost({uid : uid});
+        Logger.log(uid);
+        const host: HostInfo = user.host_list[uid];
+        if (!host) {
+            throw HostError.NoSuchHost({ uid: uid });
         }
 
         const url = `https://${host.address}:${host.port}/cm_api`;
-        const request : LoginCmsRequest = {
-            task : 'login',
+        const request: LoginCmsRequest = {
+            task: 'login',
             host: host.address,
-            port : host.port.toString(),
+            port: host.port.toString(),
             id: host.id,
             password: host.password,
-            clientver : '11.4'
-        }
+            clientver: '11.4',
+        };
 
-        const response = await this.client.postPublic<LoginCmsRequest, LoginCmsResponse>(url, request);
+        const response = await this.client.postPublic<
+            LoginCmsRequest,
+            LoginCmsResponse
+        >(url, request);
+
+        // Store token in host info
+        host.token = response.token;
+        await this.repository.atomicUpdateUser(userId, async (user : User) => {
+            user.host_list[uid] = host
+            return user;
+        } );
 
         return response.token;
-
     }
 
     public async testLogin(host: HostInfo): Promise<string> {
@@ -59,26 +69,5 @@ export class CmsAuthService {
         >(url, requestData);
 
         return response.token;
-    }
-
-    public async checkFile(
-        host: HostInfo,
-        token: string,
-        filePath: string,
-    ): Promise<void> {
-        const url = `https://${host.address}:${host.port}/cm_api`;
-
-        const requestData: CheckFileCmsRequest = {
-            task: 'check_file',
-            path: filePath,
-            token: token,
-        };
-        console.log(
-            this.client.postAuthenticated<CheckFileCmsRequest, any>(
-                url,
-                requestData,
-            ),
-        );
-        return;
     }
 }

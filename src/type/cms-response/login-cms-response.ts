@@ -1,3 +1,3 @@
 export type LoginCmsResponse = {
-    token : string;
-}
+    token: string;
+};

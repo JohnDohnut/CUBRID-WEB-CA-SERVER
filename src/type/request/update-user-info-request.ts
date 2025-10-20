@@ -1,3 +1,3 @@
-import { User } from "../user";
+import { User } from '../user';
 
-export type UpdateUserInfoRequest = Pick<User, "department">
+export type UpdateUserInfoRequest = Pick<User, 'department'>;

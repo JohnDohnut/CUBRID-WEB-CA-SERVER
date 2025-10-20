@@ -6,19 +6,19 @@ import { ConfigService } from '@config/config.service';
 import { JwtStrategy } from './jwt-strategy';
 
 @Module({
-  imports: [
-    ConfigModule,
-    PassportModule,
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        secret: config.getSecretKey(),
-        signOptions: { expiresIn: '1h' },
-      }),
-    }),
-  ],
-  exports: [JwtModule, PassportModule],
-  providers: [JwtStrategy],
+    imports: [
+        ConfigModule,
+        PassportModule,
+        JwtModule.registerAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (config: ConfigService) => ({
+                secret: config.getSecretKey(),
+                signOptions: { expiresIn: '1h' },
+            }),
+        }),
+    ],
+    exports: [JwtModule, PassportModule],
+    providers: [JwtStrategy],
 })
 export class TokenModule {}

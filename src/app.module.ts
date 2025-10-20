@@ -15,12 +15,12 @@ import { UserModule } from '@user';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CmsAuthModule } from './cms-auth/cms-auth.module';
-import { CmsClientModule } from './cms-client/cms-client.module';
+import { CmsFileModule } from './cms-file/cms-file.module';
 
 /**
  * Root application module that configures all feature modules and global providers.
  *
- * 
+ *
  * This module serves as the main entry point for the WebCA server application,
  * importing all necessary feature modules and configuring global providers
  * including JWT authentication guard.
@@ -29,33 +29,32 @@ import { CmsClientModule } from './cms-client/cms-client.module';
  * @since 1.0.0
  */
 @Module({
-  imports: [
-    ConfigModule,
-    SecurityModule,
-    StorageModule,
-    AuthModule,
-    UserRepositoryModule,
-    UserModule,
-    TokenModule,
-    MonitoringModule,
-    BrokerModule,
-    HostModule,
-    LockModule,
+    imports: [
+        ConfigModule,
+        SecurityModule,
+        StorageModule,
+        AuthModule,
+        UserRepositoryModule,
+        UserModule,
+        TokenModule,
+        MonitoringModule,
+        BrokerModule,
+        HostModule,
+        LockModule,
     CmsAuthModule,
-    CmsClientModule,
-  ],
-  controllers: [AppController],
-  providers: [
-    AppService,
-    ConfigService,
-    EncryptionService,
-    StorageService,
-    { provide: APP_GUARD, useClass: JwtAuthGuard },
-  ],
+    CmsFileModule,
+    ],
+    controllers: [AppController],
+    providers: [
+        AppService,
+        ConfigService,
+        EncryptionService,
+        StorageService,
+        { provide: APP_GUARD, useClass: JwtAuthGuard },
+    ],
 })
 export class AppModule {}
 
 // Export controllers and services for documentation
 export { AppController } from './app.controller';
 export { AppService } from './app.service';
-

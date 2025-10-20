@@ -5,7 +5,7 @@ import { HaService } from './ha/ha.service';
 import { ResourceService } from './resource/resource.service';
 
 @Module({
-  controllers: [HaController, ResourceController],
-  providers: [HaService, ResourceService]
+    controllers: [HaController, ResourceController],
+    providers: [HaService, ResourceService],
 })
 export class MonitoringModule {}

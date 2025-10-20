@@ -7,19 +7,19 @@ import { TokenModule } from '@token';
 
 /**
  * User management module for handling user-related operations.
- * 
+ *
  * This module provides user management functionality including user data
  * retrieval, password changes, account updates, and user deletion.
  * It integrates with the security module for password operations.
- * 
+ *
  * @module UserModule
  * @since 1.0.0
  */
 @Module({
-  controllers: [UserController],
-  providers : [UserService],
-  imports: [UserRepositoryModule, SecurityModule, TokenModule],
-  exports: [UserService]
+    controllers: [UserController],
+    providers: [UserService],
+    imports: [UserRepositoryModule, SecurityModule, TokenModule],
+    exports: [UserService],
 })
 export class UserModule {}
 

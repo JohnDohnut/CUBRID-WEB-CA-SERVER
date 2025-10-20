@@ -1,1 +1,1 @@
-export * from './lock-error'
+export * from './lock-error';
