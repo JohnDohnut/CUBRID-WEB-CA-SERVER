@@ -5,11 +5,17 @@ export { StorageErrorCode };
 
 /**
  * Error class for storage-related operations.
+ * 저장소 관련 작업을 위한 오류 클래스입니다.
  *
  * @category Errors
  * @since 1.0.0
  */
 export class StorageError extends AppError {
+    /**
+     * Creates an error indicating that a file was not found.
+     *
+     * 파일을 찾을 수 없음을 나타내는 오류를 생성합니다.
+     */
     static NotFound(
         additionalData?: Record<string, any>,
         originalError?: Error,
@@ -22,6 +28,11 @@ export class StorageError extends AppError {
         );
     }
 
+    /**
+     * Creates an error indicating that permission was denied for a file operation.
+     *
+     * 파일 작업에 대한 권한이 거부되었음을 나타내는 오류를 생성합니다.
+     */
     static PermissionDenied(
         additionalData?: Record<string, any>,
         originalError?: Error,
@@ -34,6 +45,11 @@ export class StorageError extends AppError {
         );
     }
 
+    /**
+     * Creates an error indicating that a file already exists.
+     *
+     * 파일이 이미 존재함을 나타내는 오류를 생성합니다.
+     */
     static AlreadyExists(
         additionalData?: Record<string, any>,
         originalError?: Error,
@@ -46,6 +62,11 @@ export class StorageError extends AppError {
         );
     }
 
+    /**
+     * Creates an error for an unknown storage-related issue.
+     *
+     * 알 수 없는 저장소 관련 문제를 나타내는 오류를 생성합니다.
+     */
     static Unknown(
         additionalData?: Record<string, any>,
         originalError?: Error,

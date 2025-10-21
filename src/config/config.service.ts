@@ -28,6 +28,8 @@ export class ConfigService {
     public salt!: string;
     public port: string = '8080';
     public secret_key!: string;
+    public environment: string = 'development';
+    public allowedOrigins: string[] = [];
 
     constructor() {
         const args = parseArgs(process.argv.slice(2)); // Corrected slice index
@@ -54,7 +56,11 @@ export class ConfigService {
             this.port = '8080'; // Default port
         }
 
-        // 3. Derive secret key
+        // 3. Set environment and CORS origins
+        this.environment = args.ENVIRONMENT || 'development';
+        this.setAllowedOrigins();
+
+        // 4. Derive secret key
         const derived = crypto.pbkdf2Sync(
             this.seed,
             this.salt,
@@ -85,6 +91,37 @@ export class ConfigService {
      */
     getPort(): string {
         return this.port;
+    }
+
+    /**
+     * Gets the current environment.
+     *
+     * @returns The environment string ('development' or 'production')
+     */
+    getEnvironment(): string {
+        return this.environment;
+    }
+
+    /**
+     * Gets the allowed origins for CORS.
+     *
+     * @returns Array of allowed origins
+     */
+    getAllowedOrigins(): string[] {
+        return this.allowedOrigins;
+    }
+
+    /**
+     * Sets allowed origins based on environment.
+     */
+    private setAllowedOrigins(): void {
+        if (this.environment === 'production') {
+            // 내부 툴용 - 동적 origin 검증으로 내부 네트워크 허용
+            this.allowedOrigins = ['internal-tool']; // 특별한 값으로 표시
+        } else {
+            // 개발 환경에서는 모든 origin 허용
+            this.allowedOrigins = ['*'];
+        }
     }
 }
 

@@ -3,91 +3,31 @@ import { CmsAuthService } from './cms-auth.service';
 import { HostInfo } from '@type/index';
 import { Public } from '@common';
 
+/**
+ * Controller for handling CMS authentication operations.
+ *
+ * CMS 인증 작업을 처리하기 위한 컨트롤러입니다.
+ *
+ * @category Controllers
+ * @since 1.0.0
+ */
 @Controller('cms-auth')
 export class CmsAuthController {
     constructor(private readonly cmsAuthService: CmsAuthService) {}
 
+    /**
+     * Handles CMS login for a specific host.
+     *
+     * 특정 호스트에 대한 CMS 로그인을 처리합니다.
+     *
+     * @param request - The Express request object, containing user information from the JWT.
+     * @param body - Request body containing the host UID.
+     * @returns A boolean indicating successful login.
+     */
     @Post('login')
     async login(@Request() request: any, @Body() body : {uid : string}) {
         const userId = request.user.sub;
         const rv = await this.cmsAuthService.login(userId, body.uid) ? true : false
         return rv;
-    }
-    @Public()
-    @Post('test-login')
-    async testLogin(@Body() body: any) {
-        try {
-            // Handle field mapping from request body
-            const host: HostInfo = {
-                address: body.address || body.host || '192.168.2.36',
-                port: parseInt(body.port) || 8001,
-                id: body.id,
-                password: body.password,
-                token: body.token || '',
-                uid: body.uid || 'test-host',
-            };
-
-            const token = await this.cmsAuthService.testLogin(host);
-            return {
-                success: true,
-                token: token,
-                message: 'Login successful',
-            };
-        } catch (error) {
-            return {
-                success: false,
-                error: error.message,
-                message: 'Login failed',
-            };
-        }
-    }
-    @Public()
-    @Get('test-connection/:hostId')
-    async testConnection(@Param('hostId') hostId: string) {
-        // Mock host info for testing
-        const mockHost: HostInfo = {
-            id: 'admin',
-            password: '1234',
-            token: '',
-            address: '192.168.2.36',
-            port: 8001,
-            uid: hostId,
-        };
-
-        try {
-            const token = await this.cmsAuthService.testLogin(mockHost);
-            return {
-                success: true,
-                hostId: hostId,
-                token: token,
-                message: 'Connection test successful',
-            };
-        } catch (error) {
-            return {
-                success: false,
-                hostId: hostId,
-                error: error.message,
-                message: 'Connection test failed',
-            };
-        }
-    }
-    @Public()
-    @Post('validate-token')
-    async validateToken(@Body() body: { host: HostInfo; token: string }) {
-        try {
-            // You can add token validation logic here if needed
-            return {
-                success: true,
-                valid: true,
-                message: 'Token is valid',
-            };
-        } catch (error) {
-            return {
-                success: false,
-                valid: false,
-                error: error.message,
-                message: 'Token validation failed',
-            };
-        }
     }
 }

@@ -1,14 +1,3 @@
-/**
- * WebCA Server - Certificate Authority Management System
- *
- * A comprehensive NestJS application for managing digital certificates,
- * user authentication, and host management with secure storage and
- * monitoring capabilities.
- *
- * @module WebCAServer
- * @since 1.0.0
- */
-
 // Export main application
 export { AppService } from './app.service';
 export { AppController } from './app.controller';

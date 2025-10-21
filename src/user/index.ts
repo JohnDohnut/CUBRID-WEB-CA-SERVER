@@ -1,13 +1,3 @@
-/**
- * User module exports
- *
- * Central export file for all user-related components
- * including controllers, services, and modules.
- *
- * @module User
- * @since 1.0.0
- */
-
 // Export module
 export { UserModule } from './user.module';
 

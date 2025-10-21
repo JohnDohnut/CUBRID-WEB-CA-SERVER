@@ -1,14 +1,44 @@
+/**
+ * Omits the 'password' property from a single object.
+ *
+ * 단일 객체에서 'password' 속성을 생략합니다.
+ *
+ * @param param - The object from which to omit the password.
+ * @returns A new object without the 'password' property.
+ * @category Utilities
+ * @since 1.0.0
+ */
 export function omitPassword<T extends { password: any }>(param: T) {
     const { password, ...rv } = param;
     return rv;
 }
 
+/**
+ * Omits the 'password' property from each object in an array.
+ *
+ * 배열의 각 객체에서 'password' 속성을 생략합니다.
+ *
+ * @param param - The array of objects from which to omit passwords.
+ * @returns A new array with objects that do not have the 'password' property.
+ * @category Utilities
+ * @since 1.0.0
+ */
 export function omitPasswordArray<T extends { password: any }>(
     param: T[],
 ): Omit<T, 'password'>[] {
     return param.map(({ password, ...rv }) => rv);
 }
 
+/**
+ * Omits the 'password' property from each value in a HashMap.
+ *
+ * HashMap의 각 값에서 'password' 속성을 생략합니다.
+ *
+ * @param hashMap - The HashMap from which to omit passwords.
+ * @returns A new HashMap with values that do not have the 'password' property.
+ * @category Utilities
+ * @since 1.0.0
+ */
 export function omitPasswordHashMap<T extends { password: any }>(
     hashMap: Record<string, T>,
 ): Record<string, Omit<T, 'password'>> {
@@ -22,7 +52,17 @@ export function omitPasswordHashMap<T extends { password: any }>(
     return result;
 }
 
-// 범용 HashMap Omitter
+/**
+ * Omits specified keys from each value in a generic HashMap.
+ *
+ * 제네릭 HashMap의 각 값에서 지정된 키를 생략합니다.
+ *
+ * @param hashMap - The HashMap from which to omit keys.
+ * @param keys - An array of keys to omit.
+ * @returns A new HashMap with values that do not have the specified keys.
+ * @category Utilities
+ * @since 1.0.0
+ */
 export function omitHashMap<T, K extends keyof T>(
     hashMap: Record<string, T>,
     keys: K[]

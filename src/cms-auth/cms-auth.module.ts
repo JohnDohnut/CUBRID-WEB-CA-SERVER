@@ -4,6 +4,14 @@ import { CmsAuthController } from './cms-auth.controller';
 import { CmsHttpsClientModule } from '../cms-https-client/cms-https-client.module';
 import { UserRepositoryModule } from '@repository';
 
+/**
+ * Module for handling CMS authentication functionalities.
+ *
+ * CMS 인증 기능을 처리하기 위한 모듈입니다.
+ *
+ * @category Modules
+ * @since 1.0.0
+ */
 @Module({
     imports: [CmsHttpsClientModule, UserRepositoryModule],
     providers: [CmsAuthService],

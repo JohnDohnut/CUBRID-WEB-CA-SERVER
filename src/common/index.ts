@@ -1,13 +1,3 @@
-/**
- * Common module exports
- *
- * Central export file for all common components
- * including decorators and shared utilities.
- *
- * @module Common
- * @since 1.0.0
- */
-
 // Export decorators
 export { Public } from './decorators/public.decorator';
 export { HandleAuthErrors } from './decorators/handle-auth-errors.decorator';

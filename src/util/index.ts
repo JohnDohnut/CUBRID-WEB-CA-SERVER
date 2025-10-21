@@ -1,12 +1,3 @@
-/**
- * Utility module exports
- *
- * Central export file for all utility functions and helpers.
- *
- * @module Utils
- * @since 1.0.0
- */
-
 // Export utility functions
 export {
     omitPassword,

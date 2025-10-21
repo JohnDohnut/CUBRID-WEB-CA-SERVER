@@ -17,13 +17,14 @@ import { LockModule } from '@lock';
  * 호스트 관리 기능을 제공합니다. 암호화를 위한 보안 모듈과 동시성 제어를 위한
  * 락 모듈과 통합됩니다.
  *
- * @module HostModule
+ * @category Modules
  * @since 1.0.0
  */
 @Module({
     controllers: [HostController],
     providers: [HostService],
     imports: [UserRepositoryModule, SecurityModule, LockModule],
+    exports : [HostService]
 })
 export class HostModule {}
 

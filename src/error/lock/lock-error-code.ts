@@ -1,3 +1,11 @@
+/**
+ * Enumeration of lock-related error codes.
+ *
+ * 잠금 관련 오류 코드 열거형입니다.
+ *
+ * @category Errors
+ * @since 1.0.0
+ */
 export enum LockErrorCode {
     LOCK_NOT_FOUND = 'LOCK_NOT_FOUND',
     PERMISSION_DENIED = 'PERMISSION_DENIED',
