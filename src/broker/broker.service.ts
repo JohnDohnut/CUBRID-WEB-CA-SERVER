@@ -1,4 +1,9 @@
+import { HostService } from '@host';
 import { Injectable } from '@nestjs/common';
+import { CmsHttpsClientService } from '../cms-https-client/cms-https-client.service';
+import { BaseCmsRequest, BaseCmsResponse, GetBrokersInfoResponse, HostInfo, HandleBrokerRequest } from '../type';
+import { HandleHostErrors } from '@common';
+import { HandleCmsHttpsClientErrors } from '@common/decorators';
 
 /**
  * Service for managing broker operations.
@@ -10,4 +15,88 @@ import { Injectable } from '@nestjs/common';
  * @since 1.0.0
  */
 @Injectable()
-export class BrokerService {}
+export class BrokerService {
+    constructor(
+        private readonly hostService : HostService,
+        private readonly cmsClient : CmsHttpsClientService,
+    ){}
+
+    @HandleHostErrors()
+    @HandleCmsHttpsClientErrors()
+    async getBrokers(userId: string, hostUid : string){
+        const host : Omit<HostInfo, "password"> = await this.hostService.findHost(userId, hostUid);
+        const url = `https://${host.address}:${host.port}/cm_api`
+        const body : BaseCmsRequest = {
+            task : "getbrokersinfo",
+            token : host.token ? host.token : ""
+        }
+        const response = await this.cmsClient.postAuthenticated<BaseCmsRequest, GetBrokersInfoResponse>(url, body);
+        return response.brokersinfo;
+        
+    }
+
+    
+    @HandleHostErrors()
+    @HandleCmsHttpsClientErrors()
+    async stopBroker(userId: string, hostUid: string, bname : string) : Promise<BaseCmsResponse>{
+        const host : Omit<HostInfo, "password"> = await this.hostService.findHost(userId, hostUid);
+        const url = `https://${host.address}:${host.port}/cm_api`
+        const body : HandleBrokerRequest = {
+            task : "broker_stop",
+            token : host.token ? host.token : "",
+            bname : bname
+        }
+
+        const response = await this.cmsClient.postAuthenticated<HandleBrokerRequest, BaseCmsResponse>(url, body);
+        return response;
+
+    }
+
+    @HandleHostErrors()
+    @HandleCmsHttpsClientErrors()
+    async startBroker(userId: string, hostUid: string, bname : string): Promise<BaseCmsResponse>{
+        const host : Omit<HostInfo, "password"> = await this.hostService.findHost(userId, hostUid);
+        const url = `https://${host.address}:${host.port}/cm_api`
+        const body : HandleBrokerRequest = {
+            task : "broker_start",
+            token : host.token ? host.token : "",
+            bname : bname
+        }
+
+        const response = await this.cmsClient.postAuthenticated<HandleBrokerRequest, BaseCmsResponse>(url, body);
+        return response;
+
+    }
+
+
+    @HandleHostErrors()
+    @HandleCmsHttpsClientErrors()
+    async restartBroker(userId: string, hostUid: string, bname : string) : Promise<boolean> {
+        const host : Omit<HostInfo, "password"> = await this.hostService.findHost(userId, hostUid);
+        const url = `https://${host.address}:${host.port}/cm_api`
+        const stopRequest : HandleBrokerRequest = {
+            task : "broker_stop",
+            token : host.token ? host.token : "",
+            bname : bname
+        }
+
+        const response = await this.cmsClient.postAuthenticated<HandleBrokerRequest, BaseCmsResponse>(url, stopRequest);
+        if(response.status === "success"){
+            const startRequest : HandleBrokerRequest = {
+                task : "broker_start",
+                token : host.token ? host.token : "",
+                bname : bname
+            }
+
+            const response = await this.cmsClient.postAuthenticated<HandleBrokerRequest, BaseCmsResponse>(url, startRequest);
+            if(response.status === "success"){
+                return true;
+            }
+        }   
+        else{
+            return false;
+        }
+        return false;
+    }
+
+}
