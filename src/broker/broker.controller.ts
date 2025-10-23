@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Param, Post, Request } from '@nestjs/common';
-import { BaseCmsResponse, BrokerList, CmsForwardRequestWithoutToken } from '../type';
+import { Body, Controller, Get, Logger, Param, Post, Request } from '@nestjs/common';
+import { BaseCmsResponse, BrokerList, BrokerRequest, CmsForwardRequestWithoutToken } from '../type';
 import { BrokerService } from './broker.service';
 
 /**
@@ -29,22 +29,46 @@ export class BrokerController {
     }
 
     @Post('stop/:hostUid')
-    async stopBroker(@Request() req, @Param ('hostUid') hostUid, @Body() body : {bname : string}) : Promise<BaseCmsResponse>{
+    async stopBroker(@Request() req, @Param ('hostUid') hostUid, @Body() body : BrokerRequest) : Promise<BaseCmsResponse>{
         const userId = req.user.sub;
+        
+        // body 유효성 검사
+        if (!body || !body.bname) {
+            Logger.error('bname is required in request body', 'BrokerController');
+            throw new Error('bname is required in request body');
+        }
+        
+        Logger.log(`Stopping broker: ${body.bname}`, 'BrokerController');
         const response = await this.brokerService.stopBroker(userId, hostUid, body.bname);
         return response;
     }
 
     @Post('start/:hostUid')
-    async startBroker(@Request() req, @Param ('hostUid') hostUid, @Body() body : {bname : string}) : Promise<BaseCmsResponse>{
+    async startBroker(@Request() req, @Param ('hostUid') hostUid, @Body() body : BrokerRequest) : Promise<BaseCmsResponse>{
         const userId = req.user.sub;
+        
+        // body 유효성 검사
+        if (!body || !body.bname) {
+            Logger.error('bname is required in request body', 'BrokerController');
+            throw new Error('bname is required in request body');
+        }
+        
+        Logger.log(`Starting broker: ${body.bname}`, 'BrokerController');
         const response = await this.brokerService.startBroker(userId, hostUid, body.bname);
         return response;
     }
 
     @Post('restart/:hostUid')
-    async restartBroker(@Request() req, @Param ('hostUid') hostUid, @Body() body : {bname : string}) : Promise<boolean>{
+    async restartBroker(@Request() req, @Param ('hostUid') hostUid, @Body() body : BrokerRequest) : Promise<boolean>{
         const userId = req.user.sub;
+        
+        // body 유효성 검사
+        if (!body || !body.bname) {
+            Logger.error('bname is required in request body', 'BrokerController');
+            throw new Error('bname is required in request body');
+        }
+        
+        Logger.log(`Restarting broker: ${body.bname}`, 'BrokerController');
         const response : boolean = await this.brokerService.restartBroker(userId, hostUid, body.bname);
         return response;
     }

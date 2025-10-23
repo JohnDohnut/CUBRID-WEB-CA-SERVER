@@ -4,6 +4,8 @@ import { CmsHttpsClientService } from '../cms-https-client/cms-https-client.serv
 import { BaseCmsRequest, BaseCmsResponse, GetBrokersInfoResponse, HostInfo, HandleBrokerRequest } from '../type';
 import { HandleHostErrors } from '@common';
 import { HandleCmsHttpsClientErrors } from '@common/decorators';
+import { BrokerError } from '@error/broker/broker-error';
+import { CmsError } from '@error/cms/cms-error';
 
 /**
  * Service for managing broker operations.
@@ -31,6 +33,9 @@ export class BrokerService {
             token : host.token ? host.token : ""
         }
         const response = await this.cmsClient.postAuthenticated<BaseCmsRequest, GetBrokersInfoResponse>(url, body);
+        if(response.status !== 'success'){
+            throw BrokerError.GetBrokersFailed();
+        }
         return response.brokersinfo;
         
     }
@@ -48,6 +53,9 @@ export class BrokerService {
         }
 
         const response = await this.cmsClient.postAuthenticated<HandleBrokerRequest, BaseCmsResponse>(url, body);
+        if(response.status !== 'success'){
+            throw BrokerError.BrokerStopFailed();
+        }
         return response;
 
     }
@@ -64,6 +72,9 @@ export class BrokerService {
         }
 
         const response = await this.cmsClient.postAuthenticated<HandleBrokerRequest, BaseCmsResponse>(url, body);
+        if(response.status !== 'success'){
+            throw BrokerError.BrokerStartFailed();
+        }
         return response;
 
     }
@@ -92,11 +103,13 @@ export class BrokerService {
             if(response.status === "success"){
                 return true;
             }
+            else{
+                throw BrokerError.BrokerStartFailed();
+            }
         }   
         else{
-            return false;
+            throw BrokerError.BrokerStopFailed();
         }
-        return false;
     }
 
 }
