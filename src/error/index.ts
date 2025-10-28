@@ -7,6 +7,10 @@ export * from './repository/repository-error';
 export * from './storage/storage-error';
 export * from './lock/lock-error';
 export * from './user/user-error';
+export * from './database/database-error';
+export * from './broker/broker-error';
+export * from './auth/auth-error';
+export * from './cms/cms-error';
 
 // Global error handling
 export * from './global-filter';

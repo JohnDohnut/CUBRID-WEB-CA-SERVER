@@ -38,6 +38,12 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
             status = exception.getStatus();
             response = exception.getResponse();
 
+            // Ensure response is an object to add 'result' field
+            if (typeof response === 'string') {
+                response = { message: response };
+            }
+            response.result = false; // Add result: false
+
             // HttpException 로깅
             this.logger.error(
                 'HttpException',
@@ -50,7 +56,7 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
             const problemDetails = exception.toProblemDetails(req.url);
 
             status = problemDetails.status;
-            response = problemDetails;
+            response = { ...problemDetails, result: false }; // Add result: false
 
             // RFC 7807 Content-Type 설정
             res.setHeader('Content-Type', 'application/problem+json');
@@ -72,6 +78,7 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
                 detail: 'An unexpected error occurred',
                 instance: req.url,
                 timestamp: new Date().toISOString(),
+                result: false, // Add result: false
             };
             res.setHeader('Content-Type', 'application/problem+json');
 

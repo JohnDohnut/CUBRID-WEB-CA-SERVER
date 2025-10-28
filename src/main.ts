@@ -4,6 +4,7 @@ import 'module-alias/register';
 import { getOrCreateSSLCert } from '@util/ssl-util';
 import { GlobalExceptionFilter } from '@error/global-filter';
 import { ConfigService } from '@config/config.service';
+import { SuccessResponseInterceptor, LoggingInterceptor } from '@common'; // Updated import
 
 async function bootstrap() {
     const httpsOptions = getOrCreateSSLCert();
@@ -56,7 +57,8 @@ async function bootstrap() {
                 
                 if (isInternalNetwork) {
                     callback(null, true);
-                } else {
+                }
+                else {
                     callback(new Error('Not allowed by CORS - Internal tool only'));
                 }
             },
@@ -67,6 +69,10 @@ async function bootstrap() {
     }
     
     app.useGlobalFilters(new GlobalExceptionFilter());
+    app.useGlobalInterceptors(
+        new LoggingInterceptor(), // Registered first
+        new SuccessResponseInterceptor() // Registered second
+    );
     await app.listen(port);
     console.log('\t@ server running port :', port);
 }

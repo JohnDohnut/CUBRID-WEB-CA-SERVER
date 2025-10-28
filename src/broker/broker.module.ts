@@ -6,10 +6,10 @@ import { CmsHttpsClientModule } from '../cms-https-client/cms-https-client.modul
 
 /**
  * Module for managing broker-related functionalities.
- * Currently a placeholder.
+ * Provides broker control operations including start, stop, restart, and list.
  *
  * 브로커 관련 기능을 관리하기 위한 모듈입니다.
- * 현재는 플레이스홀더입니다.
+ * 브로커의 시작, 중지, 재시작, 목록 조회 기능을 제공합니다.
  *
  * @category Modules
  * @since 1.0.0

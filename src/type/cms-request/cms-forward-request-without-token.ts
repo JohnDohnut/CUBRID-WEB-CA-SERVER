@@ -12,4 +12,6 @@ import { BaseCmsRequest } from './base-cms-request';
  * @category Requests
  * @since 1.0.0
  */
-export type CmsForwardRequestWithoutToken = Omit<BaseCmsRequest, 'token'>;
+export type CmsForwardRequestWithoutToken = Omit<BaseCmsRequest, 'token'> & {
+    hostUid: string;
+};
