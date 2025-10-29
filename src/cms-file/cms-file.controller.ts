@@ -1,6 +1,6 @@
-import { Controller, Post, Request, Param } from '@nestjs/common';
+import { Body, Controller, Post, Request } from '@nestjs/common';
 import { CmsFileService } from './cms-file.service';
-import { CheckFileCmsResponse } from '@type/index';
+import { CheckFileRequest, CheckFileCmsResponse } from '@type/index';
 
 /**
  * Controller for CMS file operations.
@@ -24,19 +24,15 @@ export class CmsFileController {
      * 지정된 CMS 호스트에서 파일이 존재하는지 확인합니다.
      * 
      * @param request - Express request object containing user payload
-     * @param hostUid - Unique identifier of the host
+     * @param body - Request body containing hostUid
      * @returns Promise<CheckFileCmsResponse> File check information
-     * @example
-     * ```typescript
-     * POST /cms/file/check/host123
-     * ```
      */
-    @Post('checkfile/:hostUid')
+    @Post('checkfile')
     async checkFile(
         @Request() request: any,
-        @Param('hostUid') hostUid: string
+        @Body() body: CheckFileRequest
     ): Promise<CheckFileCmsResponse> {
         const userId = request.user.sub;
-        return await this.cmsFileService.checkFile(userId, hostUid);
+        return await this.cmsFileService.checkFile(userId, body.hostUid);
     }
 }

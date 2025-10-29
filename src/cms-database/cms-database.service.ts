@@ -2,7 +2,7 @@ import { HostService } from '@host';
 import { Injectable } from '@nestjs/common';
 import { CmsHttpsClientService } from '../cms-https-client/cms-https-client.service';
 import { BaseCmsRequest, BaseCmsResponse, StartInfoResponse } from '../type';
-import { StartDatabaseRequest } from '../type/cms-request/start-database-request';
+import { StartDatabaseRequest, StopDatabaseRequest, RestartDatabaseRequest } from '../type/cms-request';
 import { DatabaseError } from '@error/database/database-error';
 
 /**
@@ -81,5 +81,77 @@ export class CmsDatabaseService {
         }
         
         throw DatabaseError.StartDatabaseFailed({ response, dbname });
+    }
+
+    /**
+     * Stop a database on a specific host.
+     * 
+     * 특정 호스트의 데이터베이스를 중지합니다.
+     * 
+     * @param userId - User ID
+     * @param hostUid - Host unique identifier
+     * @param dbname - Database name to stop
+     * @returns true if successful
+     * @throws DatabaseError if the request fails
+     */
+    async stopDatabase(userId: string, hostUid: string, dbname: string): Promise<boolean> {
+        const host = await this.hostService.findHost(userId, hostUid);
+        const url = `https://${host.address}:${host.port}/cm_api`;
+        const data: StopDatabaseRequest = {
+            task: "stopdb",
+            token: host.token || "",
+            dbname: dbname,
+        };
+
+        const response = await this.cmsClient.postAuthenticated<StopDatabaseRequest, BaseCmsResponse>(url, data);
+        
+        // CMS는 항상 200/201 HTTP status를 반환하므로 body의 status 필드로 성공 여부 판단
+        if (response.status === "success") {
+            return true;
+        }
+        
+        throw DatabaseError.StopDatabaseFailed({ response, dbname });
+    }
+
+    /**
+     * Restart a database on a specific host.
+     * 
+     * 특정 호스트의 데이터베이스를 재시작합니다.
+     * 
+     * @param userId - User ID
+     * @param hostUid - Host unique identifier
+     * @param dbname - Database name to restart
+     * @returns true if successful
+     * @throws DatabaseError if the request fails
+     */
+    async restartDatabase(userId: string, hostUid: string, dbname: string): Promise<boolean> {
+        // Stop database
+        const host = await this.hostService.findHost(userId, hostUid);
+        const url = `https://${host.address}:${host.port}/cm_api`;
+        
+        const stopRequest: StopDatabaseRequest = {
+            task: "stopdb",
+            token: host.token || "",
+            dbname: dbname,
+        };
+
+        const stopResponse = await this.cmsClient.postAuthenticated<StopDatabaseRequest, BaseCmsResponse>(url, stopRequest);
+        if (stopResponse.status === "success") {
+            // Start database
+            const startRequest: StartDatabaseRequest = {
+                task: "startdb",
+                token: host.token || "",
+                dbname: dbname,
+            };
+
+            const startResponse = await this.cmsClient.postAuthenticated<StartDatabaseRequest, BaseCmsResponse>(url, startRequest);
+            if (startResponse.status === "success") {
+                return true;
+            } else {
+                throw DatabaseError.StartDatabaseFailed({ response: startResponse, dbname });
+            }
+        } else {
+            throw DatabaseError.StopDatabaseFailed({ response: stopResponse, dbname });
+        }
     }
 }

@@ -3,7 +3,6 @@ import {
     Controller,
     Delete,
     Get,
-    Param,
     Post,
     Put,
     Request,
@@ -12,7 +11,9 @@ import { HostService } from './host.service';
 import { HandleHostErrors } from '@common';
 import {
     AddHostRequest,
-    UpdateHostRequest,
+    UpdateHostWithUidRequest,
+    GetHostRequest,
+    DeleteHostRequest,
     GetHostsResponse,
     HostResponse,
     SafeHostList,
@@ -67,49 +68,47 @@ export class HostController {
      * Get a specific host by UID.
      *
      * @param request - Express request object containing user payload
-     * @param hostUid - Unique identifier of the host
+     * @param body - Request body containing hostUid
      * @returns Promise<HostResponse> Host information without password
      */
-    @Get(':hostUid')
+    @Post('get')
     async getHost(
         @Request() request,
-        @Param('hostUid') hostUid: string,
+        @Body() body: GetHostRequest,
     ): Promise<HostResponse> {
         const userId = request.user.sub;
-        return await this.hostService.findHost(userId, hostUid);
+        return await this.hostService.findHost(userId, body.hostUid);
     }
 
     /**
      * Update an existing host.
      *
      * @param request - Express request object containing user payload
-     * @param hostUid - Unique identifier of the host to update
-     * @param hostInfo - Updated host information without UID
+     * @param hostInfo - Updated host information including UID
      * @returns Promise<void>
      */
-    @Put(':hostUid')
+    @Put()
     async updateHost(
         @Request() request,
-        @Param('hostUid') hostUid: string,
-        @Body() hostInfo: UpdateHostRequest,
+        @Body() hostInfo: UpdateHostWithUidRequest,
     ): Promise<void> {
         const userId = request.user.sub;
-        await this.hostService.updateHost(userId, hostUid, hostInfo);
+        await this.hostService.updateHost(userId, hostInfo.uid, hostInfo);
     }
 
     /**
      * Delete a host and return updated host list.
      *
      * @param request - Express request object containing user payload
-     * @param hostUid - Unique identifier of the host to delete
+     * @param body - Request body containing hostUid
      * @returns Promise<SafeHostList> Updated host list without passwords
      */
-    @Delete(':hostUid')
+    @Delete()
     async deleteHost(
         @Request() request,
-        @Param('hostUid') hostUid: string,
+        @Body() body: DeleteHostRequest,
     ): Promise<SafeHostList> {
         const userId = request.user.sub;
-        return await this.hostService.deleteHost(userId, hostUid);
+        return await this.hostService.deleteHost(userId, body.hostUid);
     }
 }

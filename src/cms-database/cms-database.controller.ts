@@ -1,6 +1,6 @@
 import { Body, Controller, Logger, Post, Request } from '@nestjs/common';
 import { CmsDatabaseService } from './cms-database.service';
-import { BaseCmsResponse, CmsForwardRequestWithoutToken, StartInfoResponse } from '../type';
+import { BaseCmsResponse, CmsForwardRequestWithoutToken, DatabaseRequest, StartInfoResponse } from '../type';
 
 /**
  * Controller for handling CMS database operations.
@@ -43,5 +43,83 @@ export class CmsDatabaseController {
         Logger.log(`Getting start info for host: ${body.hostUid}`, 'CmsDatabaseController');
         const response = await this.cmsDatabaseService.startInfo(userId, body.hostUid);
         return response;
+    }
+
+    /**
+     * Start a database on a specific host.
+     * 
+     * 특정 호스트의 데이터베이스를 시작합니다.
+     * 
+     * @param req - Request object containing user information
+     * @param body - Request body containing hostUid, dbname
+     * @returns true if successful
+     */
+    @Post('start')
+    async startDatabase(
+        @Request() req,
+        @Body() body: DatabaseRequest
+    ): Promise<boolean> {
+        const userId = req.user.sub;
+        
+        if (!body || !body.hostUid || !body.dbname) {
+            Logger.error('hostUid and dbname are required in request body', 'CmsDatabaseController');
+            throw new Error('hostUid and dbname are required in request body');
+        }
+        
+        Logger.log(`Starting database: ${body.dbname} on host: ${body.hostUid}`, 'CmsDatabaseController');
+        const result = await this.cmsDatabaseService.startDatabase(userId, body.hostUid, body.dbname);
+        return result;
+    }
+
+    /**
+     * Stop a database on a specific host.
+     * 
+     * 특정 호스트의 데이터베이스를 중지합니다.
+     * 
+     * @param req - Request object containing user information
+     * @param body - Request body containing hostUid, dbname
+     * @returns true if successful
+     */
+    @Post('stop')
+    async stopDatabase(
+        @Request() req,
+        @Body() body: DatabaseRequest
+    ): Promise<boolean> {
+        const userId = req.user.sub;
+        
+        if (!body || !body.hostUid || !body.dbname) {
+            Logger.error('hostUid and dbname are required in request body', 'CmsDatabaseController');
+            throw new Error('hostUid and dbname are required in request body');
+        }
+        
+        Logger.log(`Stopping database: ${body.dbname} on host: ${body.hostUid}`, 'CmsDatabaseController');
+        const result = await this.cmsDatabaseService.stopDatabase(userId, body.hostUid, body.dbname);
+        return result;
+    }
+
+    /**
+     * Restart a database on a specific host.
+     * 
+     * 특정 호스트의 데이터베이스를 재시작합니다.
+     * 
+     * @param req - Request object containing user information
+     * @param body - Request body containing hostUid, dbname
+     * @returns true if successful
+     */
+    @Post('restart')
+    async restartDatabase(
+        @Request() req,
+        @Body() body: DatabaseRequest
+    ): Promise<boolean> {
+        const userId = req.user.sub;
+        
+        if (!body || !body.hostUid || !body.dbname) {
+            Logger.error('hostUid and dbname are required in request body', 'CmsDatabaseController');
+            throw new Error('hostUid and dbname are required in request body');
+        }
+        
+        Logger.log(`Restarting database: ${body.dbname} on host: ${body.hostUid}`, 'CmsDatabaseController');
+        const result = await this.cmsDatabaseService.restartDatabase(userId, body.hostUid, body.dbname);
+        return result;
     }
 }

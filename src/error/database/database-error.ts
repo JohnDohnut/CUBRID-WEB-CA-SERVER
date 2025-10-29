@@ -12,7 +12,7 @@ export class DatabaseError extends AppError {
         originalError?: Error,
     ) {
         return new DatabaseError(
-            'DATABASE',
+            'CMS',
             DatabaseErrorCode.GET_START_INFO_FAILED,
             additionalData,
             originalError,
@@ -24,7 +24,7 @@ export class DatabaseError extends AppError {
         originalError?: Error,
     ) {
         return new DatabaseError(
-            'DATABASE',
+            'CMS',
             DatabaseErrorCode.START_DATABASE_FAILED,
             additionalData,
             originalError,
@@ -36,7 +36,7 @@ export class DatabaseError extends AppError {
         originalError?: Error,
     ) {
         return new DatabaseError(
-            'DATABASE',
+            'CMS',
             DatabaseErrorCode.STOP_DATABASE_FAILED,
             additionalData,
             originalError,
@@ -48,7 +48,7 @@ export class DatabaseError extends AppError {
         originalError?: Error,
     ) {
         return new DatabaseError(
-            'DATABASE',
+            'CMS',
             DatabaseErrorCode.RESTART_DATABASE_FAILED,
             additionalData,
             originalError,
