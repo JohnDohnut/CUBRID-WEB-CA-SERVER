@@ -1,5 +1,5 @@
 import { Body, Controller, Logger, Post, Request } from '@nestjs/common';
-import { BaseCmsResponse, BrokerList, BrokerRequest, CmsForwardRequestWithoutToken } from '../type';
+import { BaseCmsResponse, BrokerListClientResponse, BrokerClientRequest, CmsForwardRequestWithoutToken } from '../type';
 import { BrokerService } from './broker.service';
 
 /**
@@ -34,7 +34,7 @@ export class BrokerController {
     async getBrokers(
         @Request() req,
         @Body() Body: CmsForwardRequestWithoutToken,
-    ): Promise<BrokerList[]> {
+    ): Promise<BrokerListClientResponse> {
         const userId = req.user.sub;
         const response = await this.brokerService.getBrokers(userId, Body.hostUid);
         return response;
@@ -50,7 +50,7 @@ export class BrokerController {
      * @returns Response indicating success or failure
      */
     @Post('stop')
-    async stopBroker(@Request() req, @Body() body : BrokerRequest) : Promise<BaseCmsResponse>{
+    async stopBroker(@Request() req, @Body() body : BrokerClientRequest) : Promise<BaseCmsResponse>{
         const userId = req.user.sub;
         
         // body 유효성 검사
@@ -74,7 +74,7 @@ export class BrokerController {
      * @returns Response indicating success or failure
      */
     @Post('start')
-    async startBroker(@Request() req, @Body() body : BrokerRequest) : Promise<BaseCmsResponse>{
+    async startBroker(@Request() req, @Body() body : BrokerClientRequest) : Promise<BaseCmsResponse>{
         const userId = req.user.sub;
         
         // body 유효성 검사
@@ -98,7 +98,7 @@ export class BrokerController {
      * @returns Boolean indicating success
      */
     @Post('restart')
-    async restartBroker(@Request() req, @Body() body : BrokerRequest) : Promise<boolean>{
+    async restartBroker(@Request() req, @Body() body : BrokerClientRequest) : Promise<boolean>{
         const userId = req.user.sub;
         
         // body 유효성 검사

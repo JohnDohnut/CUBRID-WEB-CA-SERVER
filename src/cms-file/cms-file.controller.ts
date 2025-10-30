@@ -1,6 +1,6 @@
 import { Body, Controller, Post, Request } from '@nestjs/common';
 import { CmsFileService } from './cms-file.service';
-import { CheckFileRequest, CheckFileCmsResponse } from '@type/index';
+import { CheckFileClientRequest, CheckFileClientResponse } from '@type/index';
 
 /**
  * Controller for CMS file operations.
@@ -30,8 +30,8 @@ export class CmsFileController {
     @Post('checkfile')
     async checkFile(
         @Request() request: any,
-        @Body() body: CheckFileRequest
-    ): Promise<CheckFileCmsResponse> {
+        @Body() body: CheckFileClientRequest
+    ): Promise<CheckFileClientResponse> {
         const userId = request.user.sub;
         return await this.cmsFileService.checkFile(userId, body.hostUid);
     }

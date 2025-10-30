@@ -11,9 +11,9 @@ import { HostService } from './host.service';
 import { HandleHostErrors } from '@common';
 import {
     AddHostRequest,
-    UpdateHostWithUidRequest,
-    GetHostRequest,
-    DeleteHostRequest,
+    UpdateHostClientRequest,
+    GetHostClientRequest,
+    DeleteHostClientRequest,
     GetHostsResponse,
     HostResponse,
     SafeHostList,
@@ -74,7 +74,7 @@ export class HostController {
     @Post('get')
     async getHost(
         @Request() request,
-        @Body() body: GetHostRequest,
+        @Body() body: GetHostClientRequest,
     ): Promise<HostResponse> {
         const userId = request.user.sub;
         return await this.hostService.findHost(userId, body.hostUid);
@@ -90,7 +90,7 @@ export class HostController {
     @Put()
     async updateHost(
         @Request() request,
-        @Body() hostInfo: UpdateHostWithUidRequest,
+        @Body() hostInfo: UpdateHostClientRequest,
     ): Promise<void> {
         const userId = request.user.sub;
         await this.hostService.updateHost(userId, hostInfo.uid, hostInfo);
@@ -106,7 +106,7 @@ export class HostController {
     @Delete()
     async deleteHost(
         @Request() request,
-        @Body() body: DeleteHostRequest,
+        @Body() body: DeleteHostClientRequest,
     ): Promise<SafeHostList> {
         const userId = request.user.sub;
         return await this.hostService.deleteHost(userId, body.hostUid);

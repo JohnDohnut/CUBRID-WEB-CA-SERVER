@@ -5,6 +5,9 @@ export * from './login-cms-request';
 export * from './base-cms-forward-request'
 export * from './cms-forward-request-without-token';
 export * from './stop-broker-request';
-export * from './start-database-request';
-export * from './stop-database-request';
-export * from './restart-database-request';
+export * from './start-database-cms-request';
+export * from './stop-database-cms-request';
+export * from './restart-database-cms-request';
+export * from './start-database-cms-request';
+export * from './stop-database-cms-request';
+export * from './restart-database-cms-request';

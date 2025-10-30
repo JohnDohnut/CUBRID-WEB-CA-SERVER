@@ -11,3 +11,10 @@ export * from './update-user-info-request';
 export * from './broker_request';
 export * from './database-request';
 export * from './check-file-request';
+// Client request aliases
+export * from './broker-client-request';
+export * from './database-client-request';
+export * from './get-host-client-request';
+export * from './delete-host-client-request';
+export * from './update-host-client-request';
+export * from './check-file-client-request';
