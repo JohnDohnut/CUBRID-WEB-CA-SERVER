@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { HandleCmsHttpsClientErrors } from '@decorators/handle-cms-https-client-errors.decorator';
-import { BaseCmsRequest, CmsForwardRequestWithoutToken } from '@type/index';
+import { BaseCmsRequest, CmsForwardClientRequest } from '@type/index';
 import * as https from 'https';
 import { HostService } from '@host';
 import { EncryptionService } from '../security';
@@ -126,26 +126,25 @@ export class CmsHttpsClientService {
      * 클라이언트는 토큰을 직접 제공할 필요가 없습니다.
      *
      * @param sub - The subject (user ID) from the authentication token, used to find the host.
-     * @param hostUid - The unique identifier of the host to which the request will be forwarded.
-     * @param requestBody - The original request payload from the client, without the authentication token.
+     * @param requestBody - The original request payload from the client, containing hostUid and task.
      * @returns A Promise that resolves with the response data from the CMS API.
      * @throws HostError.NoSuchHost if the specified host is not found.
      * @throws CmsError if the forwarded request fails or an unexpected error occurs.
      *
      * @param sub - 인증 토큰의 주체(사용자 ID)로, 호스트를 찾는 데 사용됩니다.
-     * @param hostUid - 요청이 전달될 호스트의 고유 식별자.
-     * @param requestBody - 인증 토큰이 없는 클라이언트의 원본 요청 페이로드.
+     * @param requestBody - hostUid와 task를 포함한 클라이언트의 원본 요청 페이로드.
      * @returns CMS API의 응답 데이터를 포함하는 Promise.
      * @throws 지정된 호스트를 찾을 수 없는 경우 HostError.NoSuchHost.
      * @throws 전달된 요청이 실패하거나 예기치 않은 오류 발생 시 CmsError.
      */
     @HandleCmsHttpsClientErrors()
-    public async forwardAuthenticated<T extends CmsForwardRequestWithoutToken, P>(sub : string, hostUid : string, requestBody : T) : Promise<P>{
+    public async forwardAuthenticated<T extends CmsForwardClientRequest, P>(sub : string, requestBody : T) : Promise<P>{
+        const hostUid = requestBody.hostUid;
         const host = await this.hostService.findHost(sub, hostUid);
         const url = `https://${host.address}:${host.port}/cm_api`;
 
         const request: BaseCmsRequest = {
-            ...requestBody,
+            task: requestBody.task,
             token: host.token as string || "",
         };
         Logger.log(request);

@@ -11,7 +11,8 @@ export type ErrorKind =
     | 'RESOURCE'
     | 'USER'
     | 'INTERNAL'
-    | 'CMS';
+    | 'CMS'
+    | 'VALIDATION';
 
 /**
  * Base error class for all application errors.
@@ -168,6 +169,8 @@ export class AppError extends Error {
                 return 500;
             case 'CMS':
                 return 500;
+            case 'VALIDATION':
+                return 400; // Bad Request
             default:
                 return 500;
         }

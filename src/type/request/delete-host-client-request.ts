@@ -1,3 +1,3 @@
-import { DeleteHostRequest } from './delete-host-request';
+import { HostUidRequest } from './host-uid-request';
 
-export type DeleteHostClientRequest = DeleteHostRequest;
+export type DeleteHostClientRequest = HostUidRequest;

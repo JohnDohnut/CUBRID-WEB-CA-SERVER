@@ -64,10 +64,7 @@ try {
             
             # Stop and Start docs server
             Write-Host "Stopping and starting documentation server on port 7777..."
-            $DocsCommands = @"
-if pgrep -f 'http-server.*7777' >/dev/null 2>&1; then echo 'Stopping docs server...'; pkill -f 'http-server.*7777'; fi
-nohup npx http-server $RemoteDocsDir -p 7777 > $RemoteBaseDir/docs.log 2>&1 &
-"@
+            $DocsCommands = "if pgrep -f 'http-server.*7777' >/dev/null 2>&1; then echo 'Stopping docs server...'; pkill -f 'http-server.*7777'; fi; nohup npx http-server $RemoteDocsDir -p 7777 > $RemoteBaseDir/docs.log 2>&1 &"
             ssh.exe "$User@$TargetHost" $DocsCommands
             
             Write-Host "Documentation available at: http://${TargetHost}:7777"
@@ -109,11 +106,7 @@ nohup npx http-server $RemoteDocsDir -p 7777 > $RemoteBaseDir/docs.log 2>&1 &
             # Stop and Start server (Linux only for now)
             if ($Platform -eq "linux" -or $Platform -eq "both") {
                 Write-Host "Stopping and starting WebCA server on port 8080..."
-                $ServerCommands = @"
-if pgrep -f 'webca-server-linux.*8080' >/dev/null 2>&1; then echo 'Stopping WebCA server...'; pkill -f 'webca-server-linux.*8080'; fi
-chmod +x $RemoteBinLinux
-nohup $RemoteBinLinux --SEED=seed --SALT=salt --PORT=8080 > $RemoteBaseDir/server.log 2>&1 &
-"@
+                $ServerCommands = "if pgrep -f 'webca-server-linux.*8080' >/dev/null 2>&1; then echo 'Stopping WebCA server...'; pkill -f 'webca-server-linux.*8080'; fi; chmod +x $RemoteBinLinux; nohup $RemoteBinLinux --SEED=seed --SALT=salt --PORT=8080 > $RemoteBaseDir/server.log 2>&1 &"
                 ssh.exe "$User@$TargetHost" $ServerCommands
                 
                 Write-Host "WebCA server available at: https://${TargetHost}:8080"
@@ -161,20 +154,15 @@ nohup $RemoteBinLinux --SEED=seed --SALT=salt --PORT=8080 > $RemoteBaseDir/serve
             
             # Stop existing servers
             Write-Host "Stopping existing servers on ports 7777 and 8080..."
-            $StopCommands = @"
-if pgrep -f 'http-server.*7777' >/dev/null 2>&1; then echo 'Stopping docs server...'; pkill -f 'http-server.*7777'; fi
-if pgrep -f 'webca-server-linux.*8080' >/dev/null 2>&1; then echo 'Stopping WebCA server...'; pkill -f 'webca-server-linux.*8080'; fi
-"@
+            $StopCommands = "if pgrep -f 'http-server.*7777' >/dev/null 2>&1; then echo 'Stopping docs server...'; pkill -f 'http-server.*7777'; fi; if pgrep -f 'webca-server-linux.*8080' >/dev/null 2>&1; then echo 'Stopping WebCA server...'; pkill -f 'webca-server-linux.*8080'; fi"
             ssh.exe "$User@$TargetHost" $StopCommands
             
             # Start servers
             Write-Host "Starting documentation server on port 7777 and WebCA server on port 8080..."
-            $StartCommands = @"
-nohup npx http-server $RemoteDocsDir -p 7777 > $RemoteBaseDir/docs.log 2>&1 &
-"@
             if ($Platform -eq "linux" -or $Platform -eq "both") {
-                $StartCommands += "chmod +x $RemoteBinLinux`n" +
-                "nohup $RemoteBinLinux --SEED=seed --SALT=salt --PORT=8080 > $RemoteBaseDir/server.log 2>&1 &`n"
+                $StartCommands = "nohup npx http-server $RemoteDocsDir -p 7777 > $RemoteBaseDir/docs.log 2>&1 & chmod +x $RemoteBinLinux; nohup $RemoteBinLinux --SEED=seed --SALT=salt --PORT=8080 > $RemoteBaseDir/server.log 2>&1 &"
+            } else {
+                $StartCommands = "nohup npx http-server $RemoteDocsDir -p 7777 > $RemoteBaseDir/docs.log 2>&1 &"
             }
             ssh.exe "$User@$TargetHost" $StartCommands
             

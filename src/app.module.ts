@@ -15,6 +15,7 @@ import { UserModule } from '@user';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CmsAuthModule } from './cms-auth/cms-auth.module';
+import { CmsConfigModule } from './cms-config/cms-config.module';
 import { CmsFileModule } from './cms-file/cms-file.module';
 
 /**
@@ -44,8 +45,9 @@ import { CmsFileModule } from './cms-file/cms-file.module';
         BrokerModule,
         HostModule,
         LockModule,
-    CmsAuthModule,
-    CmsFileModule,
+        CmsAuthModule,
+        CmsConfigModule,
+        CmsFileModule,
     ],
     controllers: [AppController],
     providers: [

@@ -1,7 +1,7 @@
 import { HostService } from '@host';
 import { Injectable } from '@nestjs/common';
 import { CmsHttpsClientService } from '../cms-https-client/cms-https-client.service';
-import { BaseCmsRequest, BaseCmsResponse, GetBrokersInfoResponse, HostInfo, HandleBrokerRequest } from '../type';
+import { BaseCmsRequest, BaseCmsResponse, GetBrokersInfoResponse, HostInfo, HandleBrokerRequest, GetBrokerStatusCmsRequest, GetBrokerStatusCmsResponse, GetBrokerStatusClientResponse } from '../type';
 import { HandleHostErrors } from '@common';
 import { HandleCmsHttpsClientErrors } from '@common/decorators';
 import { BrokerError } from '@error/broker/broker-error';
@@ -110,6 +110,40 @@ export class BrokerService {
         else{
             throw BrokerError.BrokerStopFailed();
         }
+    }
+
+    /**
+     * Get broker status including application server information.
+     * 
+     * 애플리케이션 서버 정보를 포함한 브로커 상태를 조회합니다.
+     * 
+     * @param userId - User ID
+     * @param hostUid - Host unique identifier
+     * @param bname - Broker name
+     * @returns Broker status data without BaseCmsResponse fields
+     * @throws BrokerError if the request fails
+     */
+    @HandleHostErrors()
+    @HandleCmsHttpsClientErrors()
+    async getBrokerStatus(userId: string, hostUid: string, bname: string): Promise<GetBrokerStatusClientResponse> {
+        const host : Omit<HostInfo, "password"> = await this.hostService.findHost(userId, hostUid);
+        const url = `https://${host.address}:${host.port}/cm_api`;
+        const body : GetBrokerStatusCmsRequest = {
+            task : "getbrokerstatus",
+            token : host.token ? host.token : "",
+            bname : bname
+        };
+
+        const response = await this.cmsClient.postAuthenticated<GetBrokerStatusCmsRequest, GetBrokerStatusCmsResponse>(url, body);
+        
+        // CMS는 항상 200/201 HTTP status를 반환하므로 body의 status 필드로 성공 여부 판단
+        if (response.status === "success") {
+            // BaseCmsResponse 필드 제외하고 순수 데이터만 반환
+            const { __EXEC_TIME, note, status, task, ...dataOnly } = response;
+            return dataOnly;
+        }
+        
+        throw BrokerError.GetBrokersFailed({ response });
     }
 
 }

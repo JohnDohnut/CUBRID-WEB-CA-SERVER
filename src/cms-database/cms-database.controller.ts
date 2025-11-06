@@ -1,6 +1,7 @@
 import { Body, Controller, Logger, Post, Request } from '@nestjs/common';
 import { CmsDatabaseService } from './cms-database.service';
-import { BaseCmsResponse, CmsForwardRequestWithoutToken, DatabaseClientRequest, StartInfoClientResponse } from '../type';
+import { BaseCmsResponse, HostUidRequest, DatabaseClientRequest, StartInfoClientResponse } from '../type';
+import { ValidationError } from '@error/validation/validation-error';
 
 /**
  * Controller for handling CMS database operations.
@@ -30,22 +31,22 @@ export class CmsDatabaseController {
      *
      * @route POST /cms-database/start-info
      * @param req Express request (contains authenticated user)
-     * @param body CmsForwardRequestWithoutToken — must include `hostUid`, `task: "startinfo"`
+     * @param body HostUidRequest — must include `hostUid`
      * @returns StartInfoClientResponse Start info without CMS envelope fields
      * @example
      * // Request body
-     * { "hostUid": "host-uid", "task": "startinfo" }
+     * { "hostUid": "host-uid" }
      */
     @Post('start-info')
     async getStartInfo(
         @Request() req,
-        @Body() body: CmsForwardRequestWithoutToken
+        @Body() body: HostUidRequest
     ): Promise<StartInfoClientResponse> {
         const userId = req.user.sub;
         
         if (!body || !body.hostUid) {
             Logger.error('hostUid is required in request body', 'CmsDatabaseController');
-            throw new Error('hostUid is required in request body');
+            throw ValidationError.MissingRequiredField('hostUid', { endpoint: 'cms-database/start-info' });
         }
         
         Logger.log(`Getting start info for host: ${body.hostUid}`, 'CmsDatabaseController');
@@ -70,8 +71,11 @@ export class CmsDatabaseController {
         const userId = req.user.sub;
         
         if (!body || !body.hostUid || !body.dbname) {
-            Logger.error('hostUid and dbname are required in request body', 'CmsDatabaseController');
-            throw new Error('hostUid and dbname are required in request body');
+            const missingFields: string[] = [];
+            if (!body?.hostUid) missingFields.push('hostUid');
+            if (!body?.dbname) missingFields.push('dbname');
+            Logger.error(`Missing required fields: ${missingFields.join(', ')}`, 'CmsDatabaseController');
+            throw ValidationError.MissingRequiredField(missingFields, { endpoint: 'cms-database/start' });
         }
         
         Logger.log(`Starting database: ${body.dbname} on host: ${body.hostUid}`, 'CmsDatabaseController');
@@ -96,8 +100,11 @@ export class CmsDatabaseController {
         const userId = req.user.sub;
         
         if (!body || !body.hostUid || !body.dbname) {
-            Logger.error('hostUid and dbname are required in request body', 'CmsDatabaseController');
-            throw new Error('hostUid and dbname are required in request body');
+            const missingFields: string[] = [];
+            if (!body?.hostUid) missingFields.push('hostUid');
+            if (!body?.dbname) missingFields.push('dbname');
+            Logger.error(`Missing required fields: ${missingFields.join(', ')}`, 'CmsDatabaseController');
+            throw ValidationError.MissingRequiredField(missingFields, { endpoint: 'cms-database/stop' });
         }
         
         Logger.log(`Stopping database: ${body.dbname} on host: ${body.hostUid}`, 'CmsDatabaseController');
@@ -122,8 +129,11 @@ export class CmsDatabaseController {
         const userId = req.user.sub;
         
         if (!body || !body.hostUid || !body.dbname) {
-            Logger.error('hostUid and dbname are required in request body', 'CmsDatabaseController');
-            throw new Error('hostUid and dbname are required in request body');
+            const missingFields: string[] = [];
+            if (!body?.hostUid) missingFields.push('hostUid');
+            if (!body?.dbname) missingFields.push('dbname');
+            Logger.error(`Missing required fields: ${missingFields.join(', ')}`, 'CmsDatabaseController');
+            throw ValidationError.MissingRequiredField(missingFields, { endpoint: 'cms-database/restart' });
         }
         
         Logger.log(`Restarting database: ${body.dbname} on host: ${body.hostUid}`, 'CmsDatabaseController');

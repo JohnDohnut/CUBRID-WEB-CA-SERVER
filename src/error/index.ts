@@ -11,6 +11,7 @@ export * from './database/database-error';
 export * from './broker/broker-error';
 export * from './auth/auth-error';
 export * from './cms/cms-error';
+export * from './validation/validation-error';
 
 // Global error handling
 export * from './global-filter';

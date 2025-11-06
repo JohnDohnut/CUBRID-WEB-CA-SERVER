@@ -1,3 +1,3 @@
-import { GetHostRequest } from './get-host-request';
+import { HostUidRequest } from './host-uid-request';
 
-export type GetHostClientRequest = GetHostRequest;
+export type GetHostClientRequest = HostUidRequest;
