@@ -17,6 +17,7 @@ import { AppService } from './app.service';
 import { CmsAuthModule } from './cms-auth/cms-auth.module';
 import { CmsConfigModule } from './cms-config/cms-config.module';
 import { CmsFileModule } from './cms-file/cms-file.module';
+import { CmsHttpsClientModule } from './cms-https-client/cms-https-client.module';
 
 /**
  * Root application module that configures all feature modules and global providers.
@@ -48,6 +49,7 @@ import { CmsFileModule } from './cms-file/cms-file.module';
         CmsAuthModule,
         CmsConfigModule,
         CmsFileModule,
+        CmsHttpsClientModule,
     ],
     controllers: [AppController],
     providers: [
