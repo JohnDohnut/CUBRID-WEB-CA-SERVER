@@ -100,16 +100,16 @@ export class HostService {
 
                 if (duplicate) {
                     throw HostError.DuplicatedHost({
-                        duplicatedHostId: duplicate.uid,
+                        duplicatedHostId: duplicate.hostUid,
                     });
                 }
 
                 const newHost: HostInfo = {
-                    uid: uuidv4(),
+                    hostUid: uuidv4(),
                     ...hostInfo,
                 };
 
-                user.host_list[newHost.uid] = newHost;
+                user.host_list[newHost.hostUid] = newHost;
                 return user;
             },
         );
@@ -166,7 +166,7 @@ export class HostService {
                 }
 
                 const updatedHost: HostInfo = {
-                    uid: hostUid, // Keep the original UID
+                    hostUid: hostUid, // Keep the original UID
                     ...hostInfo,
                 };
 

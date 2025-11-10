@@ -1,10 +1,20 @@
 import { HostService } from '@host';
 import { Injectable } from '@nestjs/common';
 import { CmsHttpsClientService } from '../cms-https-client/cms-https-client.service';
-import { BaseCmsRequest, BaseCmsResponse, StartInfoClientResponse } from '../type';
+import {
+    BaseCmsRequest,
+    BaseCmsResponse,
+    StartInfoClientResponse,
+} from '../type';
 import { StartInfoCmsResponse } from '../type/cms-response/start-info-cms-response';
-import { StartDatabaseCmsRequest, StopDatabaseCmsRequest } from '../type/cms-request';
+import {
+    StartDatabaseCmsRequest,
+    StopDatabaseCmsRequest,
+} from '../type/cms-request';
 import { DatabaseError } from '@error/database/database-error';
+import e from 'express';
+import { CmsError } from '@error/index';
+import { checkCmsTokenError } from '@common';
 
 /**
  * Service for managing CMS database operations.
@@ -23,11 +33,10 @@ import { DatabaseError } from '@error/database/database-error';
  */
 @Injectable()
 export class CmsDatabaseService {
-
     constructor(
-        private readonly hostService : HostService,
-        private readonly cmsClient : CmsHttpsClientService,
-    ){}
+        private readonly hostService: HostService,
+        private readonly cmsClient: CmsHttpsClientService,
+    ) {}
 
     /**
      * Get start information for databases on a host.
@@ -41,24 +50,34 @@ export class CmsDatabaseService {
      * @returns StartInfoClientResponse
      * @throws DatabaseError 요청 실패 또는 CMS status가 fail인 경우
      */
-    async startInfo(userId : string, hostUid : string) : Promise<StartInfoClientResponse>{
+    async startInfo(
+        userId: string,
+        hostUid: string,
+    ): Promise<StartInfoClientResponse> {
         const host = await this.hostService.findHost(userId, hostUid);
         const url = `https://${host.address}:${host.port}/cm_api`;
-        const data : BaseCmsRequest = {
-            task : "startinfo",
-            token : host.token || ""
+        const data: BaseCmsRequest = {
+            task: 'startinfo',
+            token: host.token || '',
         };
-        const response = await this.cmsClient.postAuthenticated<BaseCmsRequest, StartInfoCmsResponse | BaseCmsResponse>(url, data);
-        
+        const response = await this.cmsClient.postAuthenticated<
+            BaseCmsRequest,
+            StartInfoCmsResponse | BaseCmsResponse
+        >(url, data);
+
+        // CMS token 에러 체크
+        checkCmsTokenError(response);
+
         // CMS는 항상 200/201 HTTP status를 반환하므로 body의 status 필드로 성공 여부 판단
-        if(response.status === "success"){
+        if (response.status === 'success') {
             // BaseCmsResponse 필드 제외하고 순수 데이터만 반환
-            const { __EXEC_TIME, note, status, task, ...dataOnly } = response as StartInfoCmsResponse;
+            const { __EXEC_TIME, note, status, task, ...dataOnly } =
+                response as StartInfoCmsResponse;
             return dataOnly;
+        } else {
+            // status가 "fail"인 경우 에러 던지기
+            throw DatabaseError.GetStartInfoFailed({ response });
         }
-        
-        // status가 "fail"인 경우 에러 던지기
-        throw DatabaseError.GetStartInfoFailed({ response });
     }
 
     /**
@@ -72,22 +91,32 @@ export class CmsDatabaseService {
      * @returns 성공 시 true
      * @throws DatabaseError CMS status가 fail인 경우
      */
-    async startDatabase(userId: string, hostUid: string, dbname : string) : Promise <boolean> {
+    async startDatabase(
+        userId: string,
+        hostUid: string,
+        dbname: string,
+    ): Promise<boolean> {
         const host = await this.hostService.findHost(userId, hostUid);
         const url = `https://${host.address}:${host.port}/cm_api`;
-        const data : StartDatabaseCmsRequest = {
-            task : "startdb",
-            token : host.token || "",
-            dbname : dbname,
+        const data: StartDatabaseCmsRequest = {
+            task: 'startdb',
+            token: host.token || '',
+            dbname: dbname,
         };
 
-        const response = await this.cmsClient.postAuthenticated<StartDatabaseCmsRequest, BaseCmsResponse>(url, data);
-        
+        const response = await this.cmsClient.postAuthenticated<
+            StartDatabaseCmsRequest,
+            BaseCmsResponse
+        >(url, data);
+
+        // CMS token 에러 체크
+        checkCmsTokenError(response);
+
         // CMS는 항상 200/201 HTTP status를 반환하므로 body의 status 필드로 성공 여부 판단
-        if (response.status === "success") {
+        if (response.status === 'success') {
             return true;
         }
-        
+
         throw DatabaseError.StartDatabaseFailed({ response, dbname });
     }
 
@@ -102,22 +131,32 @@ export class CmsDatabaseService {
      * @returns 성공 시 true
      * @throws DatabaseError CMS status가 fail인 경우
      */
-    async stopDatabase(userId: string, hostUid: string, dbname: string): Promise<boolean> {
+    async stopDatabase(
+        userId: string,
+        hostUid: string,
+        dbname: string,
+    ): Promise<boolean> {
         const host = await this.hostService.findHost(userId, hostUid);
         const url = `https://${host.address}:${host.port}/cm_api`;
         const data: StopDatabaseCmsRequest = {
-            task: "stopdb",
-            token: host.token || "",
+            task: 'stopdb',
+            token: host.token || '',
             dbname: dbname,
         };
 
-        const response = await this.cmsClient.postAuthenticated<StopDatabaseCmsRequest, BaseCmsResponse>(url, data);
-        
+        const response = await this.cmsClient.postAuthenticated<
+            StopDatabaseCmsRequest,
+            BaseCmsResponse
+        >(url, data);
+
+        // CMS token 에러 체크
+        checkCmsTokenError(response);
+
         // CMS는 항상 200/201 HTTP status를 반환하므로 body의 status 필드로 성공 여부 판단
-        if (response.status === "success") {
+        if (response.status === 'success') {
             return true;
         }
-        
+
         throw DatabaseError.StopDatabaseFailed({ response, dbname });
     }
 
@@ -132,34 +171,60 @@ export class CmsDatabaseService {
      * @returns 성공 시 true
      * @throws DatabaseError 중지/시작 단계에서 실패 시 해당 에러
      */
-    async restartDatabase(userId: string, hostUid: string, dbname: string): Promise<boolean> {
+    async restartDatabase(
+        userId: string,
+        hostUid: string,
+        dbname: string,
+    ): Promise<boolean> {
         // Stop database
         const host = await this.hostService.findHost(userId, hostUid);
         const url = `https://${host.address}:${host.port}/cm_api`;
-        
+
         const stopRequest: StopDatabaseCmsRequest = {
-            task: "stopdb",
-            token: host.token || "",
+            task: 'stopdb',
+            token: host.token || '',
             dbname: dbname,
         };
 
-        const stopResponse = await this.cmsClient.postAuthenticated<StopDatabaseCmsRequest, BaseCmsResponse>(url, stopRequest);
-        if (stopResponse.status === "success") {
+        const stopResponse = await this.cmsClient.postAuthenticated<
+            StopDatabaseCmsRequest,
+            BaseCmsResponse
+        >(url, stopRequest);
+        
+        // CMS token 에러 체크
+        checkCmsTokenError(stopResponse);
+        
+        if (stopResponse.status === 'success') {
             // Start database
             const startRequest: StartDatabaseCmsRequest = {
-                task: "startdb",
-                token: host.token || "",
+                task: 'startdb',
+                token: host.token || '',
                 dbname: dbname,
             };
 
-            const startResponse = await this.cmsClient.postAuthenticated<StartDatabaseCmsRequest, BaseCmsResponse>(url, startRequest);
-            if (startResponse.status === "success") {
+            const startResponse = await this.cmsClient.postAuthenticated<
+                StartDatabaseCmsRequest,
+                BaseCmsResponse
+            >(url, startRequest);
+            
+            // CMS token 에러 체크
+            checkCmsTokenError(startResponse);
+            
+            if (startResponse.status === 'success') {
                 return true;
             } else {
-                throw DatabaseError.StartDatabaseFailed({ response: startResponse, dbname });
+                throw DatabaseError.StartDatabaseFailed({
+                    response: startResponse,
+                    dbname,
+                });
             }
         } else {
-            throw DatabaseError.StopDatabaseFailed({ response: stopResponse, dbname });
+            throw DatabaseError.StopDatabaseFailed({
+                response: stopResponse,
+                dbname,
+            });
         }
     }
+
+    async loginDatabase() {}
 }

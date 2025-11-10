@@ -1,6 +1,6 @@
 import { Controller, Post, Body, Get, Param, Request } from '@nestjs/common';
 import { CmsAuthService } from './cms-auth.service';
-import { HostInfo } from '@type/index';
+import { HostInfo, HostUidRequest } from '@type/index';
 import { Public } from '@common';
 
 /**
@@ -25,9 +25,9 @@ export class CmsAuthController {
      * @returns A boolean indicating successful login.
      */
     @Post('login')
-    async login(@Request() request: any, @Body() body : {uid : string}) {
+    async login(@Request() request: any, @Body() body: HostUidRequest) {
         const userId = request.user.sub;
-        const rv = await this.cmsAuthService.login(userId, body.uid) ? true : false
+        const rv = await this.cmsAuthService.login(userId, body.hostUid) ? true : false
         return rv;
     }
 }

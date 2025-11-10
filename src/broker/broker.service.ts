@@ -2,7 +2,7 @@ import { HostService } from '@host';
 import { Injectable } from '@nestjs/common';
 import { CmsHttpsClientService } from '../cms-https-client/cms-https-client.service';
 import { BaseCmsRequest, BaseCmsResponse, GetBrokersInfoResponse, HostInfo, HandleBrokerRequest, GetBrokerStatusCmsRequest, GetBrokerStatusCmsResponse, GetBrokerStatusClientResponse } from '../type';
-import { HandleHostErrors } from '@common';
+import { HandleHostErrors, checkCmsTokenError } from '@common';
 import { HandleCmsHttpsClientErrors } from '@common/decorators';
 import { BrokerError } from '@error/broker/broker-error';
 import { CmsError } from '@error/cms/cms-error';
@@ -33,6 +33,10 @@ export class BrokerService {
             token : host.token ? host.token : ""
         }
         const response = await this.cmsClient.postAuthenticated<BaseCmsRequest, GetBrokersInfoResponse>(url, body);
+        
+        // CMS token 에러 체크
+        checkCmsTokenError(response);
+        
         if(response.status !== 'success'){
             throw BrokerError.GetBrokersFailed();
         }
@@ -53,6 +57,10 @@ export class BrokerService {
         }
 
         const response = await this.cmsClient.postAuthenticated<HandleBrokerRequest, BaseCmsResponse>(url, body);
+        
+        // CMS token 에러 체크
+        checkCmsTokenError(response);
+        
         if(response.status !== 'success'){
             throw BrokerError.BrokerStopFailed();
         }
@@ -72,6 +80,10 @@ export class BrokerService {
         }
 
         const response = await this.cmsClient.postAuthenticated<HandleBrokerRequest, BaseCmsResponse>(url, body);
+        
+        // CMS token 에러 체크
+        checkCmsTokenError(response);
+        
         if(response.status !== 'success'){
             throw BrokerError.BrokerStartFailed();
         }
@@ -135,6 +147,9 @@ export class BrokerService {
         };
 
         const response = await this.cmsClient.postAuthenticated<GetBrokerStatusCmsRequest, GetBrokerStatusCmsResponse>(url, body);
+        
+        // CMS token 에러 체크
+        checkCmsTokenError(response);
         
         // CMS는 항상 200/201 HTTP status를 반환하므로 body의 status 필드로 성공 여부 판단
         if (response.status === "success") {

@@ -84,7 +84,7 @@ export class HostController {
      * Update an existing host.
      *
      * @param request - Express request object containing user payload
-     * @param hostInfo - Updated host information including UID
+     * @param hostInfo - Updated host information including hostUid
      * @returns Promise<void>
      */
     @Put()
@@ -93,7 +93,9 @@ export class HostController {
         @Body() hostInfo: UpdateHostClientRequest,
     ): Promise<void> {
         const userId = request.user.sub;
-        await this.hostService.updateHost(userId, hostInfo.uid, hostInfo);
+        // hostUid를 제외한 나머지 정보를 서비스에 전달
+        const { hostUid, ...updateData } = hostInfo;
+        await this.hostService.updateHost(userId, hostUid, updateData);
     }
 
     /**

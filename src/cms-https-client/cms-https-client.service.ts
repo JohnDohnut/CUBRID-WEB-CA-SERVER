@@ -144,8 +144,8 @@ export class CmsHttpsClientService {
         const url = `https://${host.address}:${host.port}/cm_api`;
 
         const request: BaseCmsRequest = {
-            task: requestBody.task,
             token: host.token as string || "",
+            ...requestBody
         };
         Logger.log(request);
         const rv = await this.postAuthenticated(url, request) as any
