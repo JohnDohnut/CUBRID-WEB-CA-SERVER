@@ -1,6 +1,6 @@
 import { Body, Controller, Logger, Post, Request } from '@nestjs/common';
 import { CmsDatabaseService } from './cms-database.service';
-import { BaseCmsResponse, HostUidRequest, DatabaseClientRequest, StartInfoClientResponse } from '../type';
+import { BaseCmsResponse, HostUidRequest, DatabaseClientRequest as DatabaseInstanceClientRequest, StartInfoClientResponse } from '../type';
 import { ValidationError } from '@error/validation/validation-error';
 
 /**
@@ -66,7 +66,7 @@ export class CmsDatabaseController {
     @Post('start')
     async startDatabase(
         @Request() req,
-        @Body() body: DatabaseClientRequest
+        @Body() body: DatabaseInstanceClientRequest
     ): Promise<boolean> {
         const userId = req.user.sub;
         
@@ -95,7 +95,7 @@ export class CmsDatabaseController {
     @Post('stop')
     async stopDatabase(
         @Request() req,
-        @Body() body: DatabaseClientRequest
+        @Body() body: DatabaseInstanceClientRequest
     ): Promise<boolean> {
         const userId = req.user.sub;
         
@@ -124,7 +124,7 @@ export class CmsDatabaseController {
     @Post('restart')
     async restartDatabase(
         @Request() req,
-        @Body() body: DatabaseClientRequest
+        @Body() body: DatabaseInstanceClientRequest
     ): Promise<boolean> {
         const userId = req.user.sub;
         

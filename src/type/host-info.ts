@@ -1,3 +1,6 @@
+import { DBInfo } from "./db-info";
+import { HashMap } from "./collections";
+
 /**
  * Interface representing host information.
  * 호스트 정보를 나타내는 인터페이스입니다.
@@ -19,4 +22,5 @@ export type HostInfo = {
     port: number;
     password: string;
     alias?: string;
+    dbProfiles: HashMap<DBInfo>;
 };

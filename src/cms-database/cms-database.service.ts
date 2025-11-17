@@ -71,9 +71,20 @@ export class CmsDatabaseService {
         // CMS는 항상 200/201 HTTP status를 반환하므로 body의 status 필드로 성공 여부 판단
         if (response.status === 'success') {
             // BaseCmsResponse 필드 제외하고 순수 데이터만 반환
-            const { __EXEC_TIME, note, status, task, ...dataOnly } =
+            const { __EXEC_TIME: _, note: __, status: ___, task: ____, ...dataOnly } =
                 response as StartInfoCmsResponse;
-            return dataOnly;
+            
+            const clientResponse: StartInfoClientResponse = {
+                activelist: dataOnly.activelist,
+                dblist: {
+                    dbs: dataOnly.dblist.dbs.map((db) => ({
+                        ...db,
+                        isProfileExists: !!host.dbProfiles[db.dbname],
+                    })),
+                },
+            };
+            
+            return clientResponse;
         } else {
             // status가 "fail"인 경우 에러 던지기
             throw DatabaseError.GetStartInfoFailed({ response });
