@@ -8,7 +8,7 @@ param(
 
 # --- Configuration ---
 $User = "cubrid"
-$TargetHost = "192.168.2.36"
+$TargetHosts = @("192.168.2.36", "192.168.2.50")
 $RemoteBaseDir = "/home/cubrid/webca_deployment"
 
 # --- Local Artifact Paths ---
@@ -42,21 +42,20 @@ function Invoke-Command {
     Write-Host "SUCCESS: $Description completed"
 }
 
-
-# --- Main Execution Block ---
-try {
+# Function to deploy to a single host
+function Deploy-ToHost {
+    param([string]$TargetHost)
+    
+    Write-Host "`n=== Deploying to $TargetHost ===" -ForegroundColor Cyan
+    
     # --- Remote Directory Preparation ---
     Write-Host "Connecting to $TargetHost to prepare directory..."
     ssh.exe "$User@$TargetHost" "mkdir -p $RemoteBaseDir"
-
+    
     # --- Deploy Based on Options ---
     switch ($Deploy) {
         "docs" {
             Write-Host "=== DOCS ONLY DEPLOYMENT ==="
-            
-            # Build docs
-            Invoke-Command "npm run docs" "Building TypeDoc documentation"
-            Test-FileExists $DocsPath
             
             # Deploy docs
             Write-Host "Deploying documentation to ${User}@${TargetHost}:${RemoteDocsDir}"
@@ -64,7 +63,7 @@ try {
             
             # Stop and Start docs server
             Write-Host "Stopping and starting documentation server on port 7777..."
-            $DocsCommands = "if pgrep -f 'http-server.*7777' >/dev/null 2>&1; then echo 'Stopping docs server...'; pkill -f 'http-server.*7777'; fi; nohup npx http-server $RemoteDocsDir -p 7777 > $RemoteBaseDir/docs.log 2>&1 &"
+            $DocsCommands = "if pgrep -f 'http-server.*7777' >/dev/null 2>&1; then echo 'Stopping docs server...'; pkill -f 'http-server.*7777'; fi; nohup npx http-server $RemoteDocsDir -p 7777 > $RemoteBaseDir/docs.log 2>&1 & disown"
             ssh.exe "$User@$TargetHost" $DocsCommands
             
             Write-Host "Documentation available at: http://${TargetHost}:7777"
@@ -73,29 +72,19 @@ try {
         "server" {
             Write-Host "=== SERVER ONLY DEPLOYMENT ==="
             
-            # Build project
-            Invoke-Command "npm run build" "Building project"
-            
             # Platform-specific packaging and deployment
             switch ($Platform) {
                 "linux" {
-                    Invoke-Command "npm run pkg:linux" "Packaging for Linux"
-                    Test-FileExists $ArtLinux
                     Write-Host "Deploying Linux binary to ${User}@${TargetHost}:${RemoteBinLinux}"
                     ssh.exe "$User@$TargetHost" "rm -f $RemoteBinLinux"
                     scp.exe $ArtLinux "${User}@${TargetHost}:${RemoteBaseDir}/"
                 }
                 "win" {
-                    Invoke-Command "npm run pkg:win" "Packaging for Windows"
-                    Test-FileExists $ArtWin
                     Write-Host "Deploying Windows binary to ${User}@${TargetHost}:${RemoteBinWin}"
                     ssh.exe "$User@$TargetHost" "rm -f $RemoteBinWin"
                     scp.exe $ArtWin "${User}@${TargetHost}:${RemoteBaseDir}/"
                 }
                 "both" {
-                    Invoke-Command "npm run pkg:all" "Packaging for both platforms"
-                    Test-FileExists $ArtLinux
-                    Test-FileExists $ArtWin
                     Write-Host "Deploying both binaries to ${User}@${TargetHost}:${RemoteBaseDir}"
                     ssh.exe "$User@$TargetHost" "rm -f $RemoteBinLinux $RemoteBinWin"
                     scp.exe $ArtLinux "${User}@${TargetHost}:${RemoteBaseDir}/"
@@ -106,7 +95,7 @@ try {
             # Stop and Start server (Linux only for now)
             if ($Platform -eq "linux" -or $Platform -eq "both") {
                 Write-Host "Stopping and starting WebCA server on port 8080..."
-                $ServerCommands = "if pgrep -f 'webca-server-linux.*8080' >/dev/null 2>&1; then echo 'Stopping WebCA server...'; pkill -f 'webca-server-linux.*8080'; fi; chmod +x $RemoteBinLinux; nohup $RemoteBinLinux --SEED=seed --SALT=salt --PORT=8080 > $RemoteBaseDir/server.log 2>&1 &"
+                $ServerCommands = "if pgrep -f 'webca-server-linux.*8080' >/dev/null 2>&1; then echo 'Stopping WebCA server...'; pkill -f 'webca-server-linux.*8080'; fi; chmod +x $RemoteBinLinux; nohup $RemoteBinLinux --SEED=seed --SALT=salt --PORT=8080 > $RemoteBaseDir/server.log 2>&1 & disown"
                 ssh.exe "$User@$TargetHost" $ServerCommands
                 
                 Write-Host "WebCA server available at: https://${TargetHost}:8080"
@@ -116,31 +105,19 @@ try {
         "both" {
             Write-Host "=== FULL DEPLOYMENT (DOCS + SERVER) ==="
             
-            # Build everything
-            Invoke-Command "npm run build" "Building project"
-            Invoke-Command "npm run docs" "Building TypeDoc documentation"
-            Test-FileExists $DocsPath
-            
             # Platform-specific packaging and deployment
             switch ($Platform) {
                 "linux" {
-                    Invoke-Command "npm run pkg:linux" "Packaging for Linux"
-                    Test-FileExists $ArtLinux
                     Write-Host "Deploying Linux binary to ${User}@${TargetHost}:${RemoteBinLinux}"
                     ssh.exe "$User@$TargetHost" "rm -f $RemoteBinLinux"
                     scp.exe $ArtLinux "${User}@${TargetHost}:${RemoteBaseDir}/"
                 }
                 "win" {
-                    Invoke-Command "npm run pkg:win" "Packaging for Windows"
-                    Test-FileExists $ArtWin
                     Write-Host "Deploying Windows binary to ${User}@${TargetHost}:${RemoteBinWin}"
                     ssh.exe "$User@$TargetHost" "rm -f $RemoteBinWin"
                     scp.exe $ArtWin "${User}@${TargetHost}:${RemoteBaseDir}/"
                 }
                 "both" {
-                    Invoke-Command "npm run pkg:all" "Packaging for both platforms"
-                    Test-FileExists $ArtLinux
-                    Test-FileExists $ArtWin
                     Write-Host "Deploying both binaries to ${User}@${TargetHost}:${RemoteBaseDir}"
                     ssh.exe "$User@$TargetHost" "rm -f $RemoteBinLinux $RemoteBinWin"
                     scp.exe $ArtLinux "${User}@${TargetHost}:${RemoteBaseDir}/"
@@ -160,22 +137,84 @@ try {
             # Start servers
             Write-Host "Starting documentation server on port 7777 and WebCA server on port 8080..."
             if ($Platform -eq "linux" -or $Platform -eq "both") {
-                $StartCommands = "nohup npx http-server $RemoteDocsDir -p 7777 > $RemoteBaseDir/docs.log 2>&1 & chmod +x $RemoteBinLinux; nohup $RemoteBinLinux --SEED=seed --SALT=salt --PORT=8080 > $RemoteBaseDir/server.log 2>&1 &"
+                $StartCommands = "nohup npx http-server $RemoteDocsDir -p 7777 > $RemoteBaseDir/docs.log 2>&1 & disown; chmod +x $RemoteBinLinux; nohup $RemoteBinLinux --SEED=seed --SALT=salt --PORT=8080 > $RemoteBaseDir/server.log 2>&1 & disown"
             } else {
-                $StartCommands = "nohup npx http-server $RemoteDocsDir -p 7777 > $RemoteBaseDir/docs.log 2>&1 &"
+                $StartCommands = "nohup npx http-server $RemoteDocsDir -p 7777 > $RemoteBaseDir/docs.log 2>&1 & disown"
             }
             ssh.exe "$User@$TargetHost" $StartCommands
             
             # Final Summary
-            Write-Host "--- Deployment Summary ---"
+            Write-Host "--- Deployment Summary for $TargetHost ---"
             if ($Platform -eq "linux" -or $Platform -eq "both") {
                 Write-Host "WebCA server available at: https://${TargetHost}:8080"
             }
             Write-Host "Documentation available at: http://${TargetHost}:7777"
         }
     }
+}
+
+# --- Main Execution Block ---
+try {
+    # Build phase (only once, before deploying to all hosts)
+    switch ($Deploy) {
+        "docs" {
+            Write-Host "=== BUILDING DOCS ===" -ForegroundColor Green
+            Invoke-Command "npm run docs" "Building TypeDoc documentation"
+            Test-FileExists $DocsPath
+        }
+        
+        "server" {
+            Write-Host "=== BUILDING SERVER ===" -ForegroundColor Green
+            Invoke-Command "npm run build" "Building project"
+            
+            switch ($Platform) {
+                "linux" {
+                    Invoke-Command "npm run pkg:linux" "Packaging for Linux"
+                    Test-FileExists $ArtLinux
+                }
+                "win" {
+                    Invoke-Command "npm run pkg:win" "Packaging for Windows"
+                    Test-FileExists $ArtWin
+                }
+                "both" {
+                    Invoke-Command "npm run pkg:all" "Packaging for both platforms"
+                    Test-FileExists $ArtLinux
+                    Test-FileExists $ArtWin
+                }
+            }
+        }
+        
+        "both" {
+            Write-Host "=== BUILDING EVERYTHING ===" -ForegroundColor Green
+            Invoke-Command "npm run build" "Building project"
+            Invoke-Command "npm run docs" "Building TypeDoc documentation"
+            Test-FileExists $DocsPath
+            
+            switch ($Platform) {
+                "linux" {
+                    Invoke-Command "npm run pkg:linux" "Packaging for Linux"
+                    Test-FileExists $ArtLinux
+                }
+                "win" {
+                    Invoke-Command "npm run pkg:win" "Packaging for Windows"
+                    Test-FileExists $ArtWin
+                }
+                "both" {
+                    Invoke-Command "npm run pkg:all" "Packaging for both platforms"
+                    Test-FileExists $ArtLinux
+                    Test-FileExists $ArtWin
+                }
+            }
+        }
+    }
     
-    Write-Host "Deploy complete"
+    # Deploy to all hosts
+    foreach ($TargetHost in $TargetHosts) {
+        Deploy-ToHost -TargetHost $TargetHost
+    }
+    
+    Write-Host "`n=== DEPLOYMENT COMPLETE ===" -ForegroundColor Green
+    Write-Host "Deployed to: $($TargetHosts -join ', ')"
 }
 catch {
     Write-Error "ERROR: Deploy failed: $($_.Exception.Message)"
