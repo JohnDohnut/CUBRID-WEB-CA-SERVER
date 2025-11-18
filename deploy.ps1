@@ -95,7 +95,7 @@ function Deploy-ToHost {
             # Stop and Start server (Linux only for now)
             if ($Platform -eq "linux" -or $Platform -eq "both") {
                 Write-Host "Stopping and starting WebCA server on port 8080..."
-                $ServerCommands = "if pgrep -f 'webca-server-linux.*8080' >/dev/null 2>&1; then echo 'Stopping WebCA server...'; pkill -f 'webca-server-linux.*8080'; fi; chmod +x $RemoteBinLinux; nohup $RemoteBinLinux --SEED=seed --SALT=salt --PORT=8080 > $RemoteBaseDir/server.log 2>&1 & disown"
+                $ServerCommands = "if pgrep -f 'webca-server-linux.*8080' >/dev/null 2>&1; then echo 'Stopping WebCA server...'; pkill -f 'webca-server-linux.*8080'; fi; chmod +x $RemoteBinLinux; nohup ./$RemoteBinLinux --SEED=seed --SALT=salt --PORT=8080 > $RemoteBaseDir/server.log 2>&1 & disown"
                 ssh.exe "$User@$TargetHost" $ServerCommands
                 
                 Write-Host "WebCA server available at: https://${TargetHost}:8080"

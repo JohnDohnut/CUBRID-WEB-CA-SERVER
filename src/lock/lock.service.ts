@@ -126,62 +126,41 @@ export class LockService {
      * @returns A Promise that resolves with the result of the work function.
      * @throws Any error thrown by the work function or a LockError if lock operations fail.
      */
-    @HandleLockFsErrors()
     async withLock<T>(filename: string, work: () => Promise<T>): Promise<T> {
         const lock = await this.acquire(filename);
         let workerError: any = null;
+        let result: T | undefined = undefined;
 
         try {
             Logger.log("with lock work")
-            return await work();
+            result = await work();
+            return result;
         } catch (error) {
-            // worker 메서드에서 발생한 에러를 저장하고 다시 던짐
+            // worker 메서드에서 발생한 에러를 저장
             Logger.log('with lock error');
             workerError = error;
-            throw error;
+            // 에러는 finally에서 처리 후 던짐
         } finally {
-            // lock 해제는 항상 시도하되, 실패해도 worker 에러를 덮어쓰지 않음
+            // lock 해제는 항상 시도하되, 실패해도 로그만 남기고 무시
+            // release 실패는 치명적이지 않음 (락은 시간이 지나면 자동으로 만료됨)
             try {
                 await this.release(lock);
             } catch (releaseError) {
-                // worker 에러가 있었다면 두 에러를 모두 보존
-                Logger.log('release error occurred')
-                if (workerError) {
-                    // AppError인 경우 additionalData에 lock 해제 실패 정보 추가
-                    if (workerError instanceof AppError) {
-                        // 새로운 AppError 생성 (기존 에러 정보 + lock 해제 실패 정보)
-                        const enhancedError = new AppError(
-                            workerError.kind,
-                            workerError.code,
-                            {
-                                ...workerError.additionalData,
-                                lockReleaseFailed: true,
-                                lockReleaseError: {
-                                    message: releaseError.message,
-                                    code: releaseError.code || 'UNKNOWN',
-                                    stack: releaseError.stack,
-                                },
-                            },
-                            workerError.originalError,
-                        );
-
-                        // 원본 에러의 메시지와 이름 유지
-                        enhancedError.message = workerError.message;
-                        enhancedError.name = workerError.name;
-
-                        throw enhancedError;
-                    } else {
-                        // 일반 Error인 경우 기존 방식 사용
-                        workerError.suppressedError = releaseError;
-                        workerError.message += ` (Lock release also failed: ${releaseError.message})`;
-                        throw workerError;
-                    }
-                } else {
-                    // worker 에러가 없었다면 lock 해제 에러를 던짐
-
-                    throw releaseError;
-                }
+                // release 에러는 로그만 남기고 무시 (worker 에러가 우선)
+                Logger.warn(
+                    `Lock release failed for ${filename}: ${releaseError.message}`,
+                    releaseError.stack,
+                );
+                // release 에러는 무시 (락은 시간이 지나면 자동으로 만료됨)
+            }
+            
+            // worker 에러가 있으면 던짐
+            if (workerError) {
+                throw workerError;
             }
         }
+        
+        // TypeScript를 위한 명시적 반환 (실제로는 도달하지 않음)
+        return result!;
     }
 }

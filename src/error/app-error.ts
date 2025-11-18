@@ -116,8 +116,9 @@ export class AppError extends Error {
             case 'USER':
                 switch (this.code) {
                     case UserErrorCode.USER_NOT_FOUND:
+                        return 404; // Not Found
                     case UserErrorCode.USER_ALREADY_EXISTS:
-                        return 409; // Authentication/authorization related
+                        return 409; // Conflict - resource already exists
                     case UserErrorCode.DATA_SAVE_FAILED:
                     case UserErrorCode.DATA_LOAD_FAILED:
                     case UserErrorCode.DATA_DELETE_FAILED:
@@ -138,7 +139,8 @@ export class AppError extends Error {
                 }
             case 'STORAGE':
                 switch (this.code) {
-                    case StorageErrorCode.FILE_NOT_FOUND:
+                    case StorageErrorCode.NO_SUCH_FILE:
+                    case StorageErrorCode.FILE_NOT_FOUND: // Deprecated
                     case StorageErrorCode.FILE_ALREADY_EXISTS:
                         return 400;
                     case StorageErrorCode.PERMISSION_DENIED:

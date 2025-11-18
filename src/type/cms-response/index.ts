@@ -5,6 +5,5 @@ export * from './BaseCmsResponse';
 export * from './get-brokers-info-response';
 export * from './get-broker-status-cms-response';
 export * from './get-env-cms-response';
-export * from './start-info';
 export * from './start-info-cms-response';
 export * from './paramdump-cms-response';

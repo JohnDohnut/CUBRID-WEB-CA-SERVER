@@ -36,9 +36,11 @@ export function HandleUserRepoErrors() {
                 const contextId = args[0] || 'unknown';
 
                 // Handle storage errors first, as they are more specific
+                // StorageError를 의미에 맞는 UserError로 변환
                 if (err instanceof StorageError) {
                     switch (err.code) {
-                        case StorageErrorCode.FILE_NOT_FOUND:
+                        case StorageErrorCode.NO_SUCH_FILE:
+                        case StorageErrorCode.FILE_NOT_FOUND: // Deprecated
                             throw UserError.UserNotFound(
                                 { userId: contextId },
                                 err,
@@ -59,28 +61,37 @@ export function HandleUserRepoErrors() {
                     }
                 }
 
-                // Handle lock errors - but be more specific about when user doesn't exist
+                // Handle lock errors - 의미에 맞는 UserError로 변환
                 if (err instanceof LockError) {
-                    // If it's a lock error but the underlying cause might be user not found
-                    if (
-                        err.code === LockErrorCode.LOCK_NOT_FOUND &&
-                        err.message?.includes('ENOENT')
-                    ) {
-                        throw UserError.UserNotFound(
-                            { userId: contextId },
-                            err,
-                        );
-                    }
-                    if (err.code === LockErrorCode.LOCK_ALREADY_HELD) {
-                        throw UserError.ResourceLocked(
-                            { resourceId: contextId },
-                            err,
-                        );
-                    } else {
-                        throw UserError.LockOperationFailed(
-                            { resourceId: contextId, reason: err.code },
-                            err,
-                        );
+                    switch (err.code) {
+                        case LockErrorCode.LOCK_NOT_FOUND:
+                            // 락 파일이 없으면 사용자 파일도 없을 가능성이 높음
+                            if (err.message?.includes('ENOENT')) {
+                                throw UserError.UserNotFound(
+                                    { userId: contextId },
+                                    err,
+                                );
+                            }
+                            // 그 외의 경우는 락 작업 실패
+                            throw UserError.LockOperationFailed(
+                                { resourceId: contextId, reason: err.code },
+                                err,
+                            );
+                        case LockErrorCode.LOCK_ALREADY_HELD:
+                            // 락이 이미 보유 중이면 리소스 잠김
+                            throw UserError.ResourceLocked(
+                                { resourceId: contextId },
+                                err,
+                            );
+                        case LockErrorCode.PERMISSION_DENIED:
+                        case LockErrorCode.STALE_LOCK:
+                        case LockErrorCode.UNKNOWN:
+                        default:
+                            // 알 수 없는 락 에러는 락 작업 실패로 변환
+                            throw UserError.LockOperationFailed(
+                                { resourceId: contextId, reason: err.code },
+                                err,
+                            );
                     }
                 }
 

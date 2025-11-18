@@ -16,6 +16,25 @@ export class StorageError extends AppError {
      *
      * 파일을 찾을 수 없음을 나타내는 오류를 생성합니다.
      */
+    static NoSuchFile(
+        additionalData?: Record<string, any>,
+        originalError?: Error,
+    ) {
+        return new StorageError(
+            'STORAGE',
+            StorageErrorCode.NO_SUCH_FILE,
+            additionalData,
+            originalError,
+        );
+    }
+
+    /**
+     * Creates an error indicating that a file was not found.
+     * @deprecated Use NoSuchFile instead
+     *
+     * 파일을 찾을 수 없음을 나타내는 오류를 생성합니다.
+     * @deprecated NoSuchFile을 사용하세요
+     */
     static NotFound(
         additionalData?: Record<string, any>,
         originalError?: Error,

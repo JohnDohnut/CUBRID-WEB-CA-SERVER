@@ -50,7 +50,9 @@ export class DBAuthResolver {
         clientId?: string,
         clientPassword?: string,
     ): ResolvedDBAuth {
-        const profile = host.dbProfiles[dbname];
+        // 기존 host 객체에 dbProfiles가 없으면 빈 객체로 처리 (하위 호환성)
+        const dbProfiles = host.dbProfiles || {};
+        const profile = dbProfiles[dbname];
 
         if (profile) {
             // Profile이 있는 경우: profile의 id/password 사용
@@ -91,7 +93,8 @@ export class DBAuthResolver {
      * @returns true if profile exists, false otherwise
      */
     static hasProfile(host: HostInfo, dbname: string): boolean {
-        return !!host.dbProfiles[dbname];
+        // 기존 host 객체에 dbProfiles가 없으면 false 반환 (하위 호환성)
+        return !!(host.dbProfiles && host.dbProfiles[dbname]);
     }
 }
 

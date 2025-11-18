@@ -57,7 +57,7 @@ export class StorageService {
     private handleFsError(err: any): never {
         switch (err?.code) {
             case 'ENOENT':
-                throw StorageError.NotFound({ filePath: err.path }, err);
+                throw StorageError.NoSuchFile({ filePath: err.path }, err);
             case 'EEXIST':
                 throw StorageError.AlreadyExists({ filePath: err.path }, err);
             case 'EACCES':

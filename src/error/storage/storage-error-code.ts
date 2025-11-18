@@ -7,7 +7,8 @@
  * @since 1.0.0
  */
 export enum StorageErrorCode {
-    FILE_NOT_FOUND = 'FILE_NOT_FOUND',
+    NO_SUCH_FILE = 'NO_SUCH_FILE',
+    FILE_NOT_FOUND = 'FILE_NOT_FOUND', // Deprecated: Use NO_SUCH_FILE instead
     PERMISSION_DENIED = 'PERMISSION_DENIED',
     FILE_ALREADY_EXISTS = 'FILE_ALREADY_EXISTS',
     UNKNOWN = 'UNKNOWN',

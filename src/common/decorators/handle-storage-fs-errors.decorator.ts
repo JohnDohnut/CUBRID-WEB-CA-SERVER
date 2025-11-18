@@ -46,7 +46,7 @@ export function HandleStorageFsErrors() {
                 }
                 switch (err?.code) {
                     case 'ENOENT':
-                        throw StorageError.NotFound(
+                        throw StorageError.NoSuchFile(
                             { filePath: err.path },
                             err,
                         );

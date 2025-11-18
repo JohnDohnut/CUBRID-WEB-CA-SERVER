@@ -107,6 +107,8 @@ export class HostService {
                 const newHost: HostInfo = {
                     uid: uuidv4(),
                     ...hostInfo,
+                    // dbProfiles가 없으면 빈 객체로 초기화
+                    dbProfiles: {},
                 };
 
                 user.host_list[newHost.uid] = newHost;
@@ -165,9 +167,12 @@ export class HostService {
                     throw HostError.NoSuchHost({ hostUid });
                 }
 
+                const existingHost = user.host_list[hostUid];
                 const updatedHost: HostInfo = {
                     uid: hostUid, // Keep the original UID
                     ...hostInfo,
+                    // hostInfo에 dbProfiles가 있으면 덮어쓰기, 없으면 기존 것 유지
+                    dbProfiles: hostInfo.dbProfiles ?? existingHost.dbProfiles ?? {},
                 };
 
                 user.host_list[hostUid] = updatedHost;

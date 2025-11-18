@@ -1,13 +1,13 @@
 import { BaseCmsResponse } from './BaseCmsResponse';
 
 export type StartInfoCmsResponse = BaseCmsResponse & {
-    activelist: {
+    activelist: Array<{
         active: { dbname: string }[];
-    };
-    dblist: {
+    }>;
+    dblist: Array<{
         dbs: {
             dbdir: string;
             dbname: string;
         }[];
-    };
+    }>;
 };

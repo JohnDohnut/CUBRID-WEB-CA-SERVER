@@ -9,4 +9,4 @@ import { HostInfo } from '../host-info';
  * @category Responses
  * @since 1.0.0
  */
-export type HostResponse = Omit<HostInfo, 'password'>;
+export type HostResponse = Omit<HostInfo, 'password' | 'token'>;
