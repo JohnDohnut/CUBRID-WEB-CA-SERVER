@@ -100,16 +100,16 @@ export class HostService {
 
                 if (duplicate) {
                     throw HostError.DuplicatedHost({
-                        duplicatedHostId: duplicate.hostUid,
+                        duplicatedHostId: duplicate.uid,
                     });
                 }
 
                 const newHost: HostInfo = {
-                    hostUid: uuidv4(),
+                    uid: uuidv4(),
                     ...hostInfo,
                 };
 
-                user.host_list[newHost.hostUid] = newHost;
+                user.host_list[newHost.uid] = newHost;
                 return user;
             },
         );
@@ -166,7 +166,7 @@ export class HostService {
                 }
 
                 const updatedHost: HostInfo = {
-                    hostUid: hostUid, // Keep the original UID
+                    uid: hostUid, // Keep the original UID
                     ...hostInfo,
                 };
 
@@ -178,11 +178,38 @@ export class HostService {
     }
 
     /**
-     * Finds and returns a single host by its UID.
+     * Finds and returns a single host by its UID (internal use with password).
+     * 
+     * This method is used as infrastructure service by other business services.
+     * Errors from this method will be converted to domain errors by the calling service's decorators.
+     *
+     * 다른 비즈니스 서비스에서 인프라 서비스로 사용되는 메서드입니다.
+     * 이 메서드의 에러는 호출하는 서비스의 데코레이터에 의해 도메인 에러로 변환됩니다.
      *
      * @param {string} userId - The unique identifier of the user.
      * @param {string} hostUid - The unique identifier of the host to find.
-     * @returns {Promise<HostInfo>} The found host object.
+     * @returns {Promise<HostInfo>} The found host object with password.
+     * @throws {HostError.NoSuchHost} If no host with the given UID is found.
+     * @throws {UserError} When user is not found.
+     */
+    @HandleHostErrors()
+    async findHostInternal(userId: string, hostUid: string): Promise<HostInfo> {
+        const user = await this.repository.loadUserById(userId);
+        const host = user.host_list[hostUid];
+
+        if (!host) {
+            throw HostError.NoSuchHost({ hostUid });
+        }
+
+        return host;
+    }
+
+    /**
+     * Finds and returns a single host by its UID (external use without password).
+     *
+     * @param {string} userId - The unique identifier of the user.
+     * @param {string} hostUid - The unique identifier of the host to find.
+     * @returns {Promise<HostResponse>} The found host object without password.
      * @throws {HostError.NoSuchHost} If no host with the given UID is found.
      * @throws {UserError} When user is not found.
      */

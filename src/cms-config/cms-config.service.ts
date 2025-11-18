@@ -3,8 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { CmsHttpsClientService } from '../cms-https-client/cms-https-client.service';
 import { CmsForwardClientRequest, GetEnvClientResponse } from '../type';
 import { GetEnvCmsResponse } from '../type/cms-response/get-env-cms-response';
-import { HandleHostErrors } from '@common';
-import { HandleCmsHttpsClientErrors } from '@common/decorators';
+import { HandleHostErrors, HandleCmsHttpsClientErrors } from '@common';
 
 /**
  * Service for managing CMS environment configuration operations.

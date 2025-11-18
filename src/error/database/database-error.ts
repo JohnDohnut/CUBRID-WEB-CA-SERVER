@@ -3,7 +3,7 @@ import { DatabaseErrorCode } from './database-error-code';
 
 /**
  * Error class for database-related operations.
- * 
+ *
  * 데이터베이스 관련 작업을 위한 에러 클래스입니다.
  */
 export class DatabaseError extends AppError {
@@ -54,5 +54,76 @@ export class DatabaseError extends AppError {
             originalError,
         );
     }
-}
 
+    static LoginDatabaseFailed(
+        additionalData?: Record<string, any>,
+        originalError?: Error,
+    ) {
+        return new DatabaseError(
+            'CMS',
+            DatabaseErrorCode.LOGIN_DATABASE_FAILED,
+            additionalData,
+            originalError,
+        );
+    }
+
+    static MissingDBCredentials(
+        additionalData?: Record<string, any>,
+        originalError?: Error,
+    ) {
+        return new DatabaseError(
+            'CMS',
+            DatabaseErrorCode.MISSING_DB_CREDENTIALS,
+            additionalData,
+            originalError,
+        );
+    }
+
+    static HostNotFound(
+        additionalData?: Record<string, any>,
+        originalError?: Error,
+    ) {
+        return new DatabaseError(
+            'CMS',
+            DatabaseErrorCode.HOST_NOT_FOUND,
+            additionalData,
+            originalError,
+        );
+    }
+
+    static HostError(
+        additionalData?: Record<string, any>,
+        originalError?: Error,
+    ) {
+        return new DatabaseError(
+            'CMS',
+            DatabaseErrorCode.HOST_ERROR,
+            additionalData,
+            originalError,
+        );
+    }
+
+    static InternalError(
+        additionalData?: Record<string, any>,
+        originalError?: Error,
+    ) {
+        return new DatabaseError(
+            'CMS',
+            DatabaseErrorCode.INTERNAL_ERROR,
+            additionalData,
+            originalError,
+        );
+    }
+
+    static DuplicatedDatabaseProfile(
+        additionalData?: Record<string, any>,
+        originalError?: Error,
+    ) {
+        return new DatabaseError(
+            'RESOURCE',
+            DatabaseErrorCode.DUPLICATED_DATABASE_PROFILE,
+            additionalData,
+            originalError,
+        );
+    }
+}

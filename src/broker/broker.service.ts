@@ -2,8 +2,7 @@ import { HostService } from '@host';
 import { Injectable } from '@nestjs/common';
 import { CmsHttpsClientService } from '../cms-https-client/cms-https-client.service';
 import { BaseCmsRequest, BaseCmsResponse, GetBrokersInfoResponse, HostInfo, HandleBrokerRequest, GetBrokerStatusCmsRequest, GetBrokerStatusCmsResponse, GetBrokerStatusClientResponse } from '../type';
-import { HandleHostErrors, checkCmsTokenError } from '@common';
-import { HandleCmsHttpsClientErrors } from '@common/decorators';
+import { HandleHostErrors, checkCmsTokenError, HandleCmsHttpsClientErrors } from '@common';
 import { BrokerError } from '@error/broker/broker-error';
 import { CmsError } from '@error/cms/cms-error';
 
@@ -26,7 +25,7 @@ export class BrokerService {
     @HandleHostErrors()
     @HandleCmsHttpsClientErrors()
     async getBrokers(userId: string, hostUid : string){
-        const host : Omit<HostInfo, "password"> = await this.hostService.findHost(userId, hostUid);
+        const host = await this.hostService.findHostInternal(userId, hostUid);
         const url = `https://${host.address}:${host.port}/cm_api`
         const body : BaseCmsRequest = {
             task : "getbrokersinfo",
@@ -48,7 +47,7 @@ export class BrokerService {
     @HandleHostErrors()
     @HandleCmsHttpsClientErrors()
     async stopBroker(userId: string, hostUid: string, bname : string) : Promise<BaseCmsResponse>{
-        const host : Omit<HostInfo, "password"> = await this.hostService.findHost(userId, hostUid);
+        const host = await this.hostService.findHostInternal(userId, hostUid);
         const url = `https://${host.address}:${host.port}/cm_api`
         const body : HandleBrokerRequest = {
             task : "broker_stop",
@@ -71,7 +70,7 @@ export class BrokerService {
     @HandleHostErrors()
     @HandleCmsHttpsClientErrors()
     async startBroker(userId: string, hostUid: string, bname : string): Promise<BaseCmsResponse>{
-        const host : Omit<HostInfo, "password"> = await this.hostService.findHost(userId, hostUid);
+        const host = await this.hostService.findHostInternal(userId, hostUid);
         const url = `https://${host.address}:${host.port}/cm_api`
         const body : HandleBrokerRequest = {
             task : "broker_start",
@@ -95,7 +94,7 @@ export class BrokerService {
     @HandleHostErrors()
     @HandleCmsHttpsClientErrors()
     async restartBroker(userId: string, hostUid: string, bname : string) : Promise<boolean> {
-        const host : Omit<HostInfo, "password"> = await this.hostService.findHost(userId, hostUid);
+        const host = await this.hostService.findHostInternal(userId, hostUid);
         const url = `https://${host.address}:${host.port}/cm_api`
         const stopRequest : HandleBrokerRequest = {
             task : "broker_stop",
@@ -138,7 +137,7 @@ export class BrokerService {
     @HandleHostErrors()
     @HandleCmsHttpsClientErrors()
     async getBrokerStatus(userId: string, hostUid: string, bname: string): Promise<GetBrokerStatusClientResponse> {
-        const host : Omit<HostInfo, "password"> = await this.hostService.findHost(userId, hostUid);
+        const host = await this.hostService.findHostInternal(userId, hostUid);
         const url = `https://${host.address}:${host.port}/cm_api`;
         const body : GetBrokerStatusCmsRequest = {
             task : "getbrokerstatus",

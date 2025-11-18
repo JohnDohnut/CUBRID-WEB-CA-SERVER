@@ -8,3 +8,4 @@ export { passwordValidityChecker } from './password-validity-checker';
 export { getOrCreateSSLCert } from './ssl-util';
 export { getStoragePath, resolveUserFilePath } from './resolve-storage-path';
 export { isValidIPv4, isValidIPv6 } from './ip-checker';
+export { DBAuthResolver, ResolvedDBAuth } from './db-auth-resolver';

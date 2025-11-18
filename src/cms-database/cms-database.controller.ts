@@ -1,7 +1,8 @@
 import { Body, Controller, Logger, Post, Request } from '@nestjs/common';
 import { CmsDatabaseService } from './cms-database.service';
-import { BaseCmsResponse, HostUidRequest, DatabaseClientRequest as DatabaseInstanceClientRequest, StartInfoClientResponse } from '../type';
+import { BaseCmsResponse, HostUidRequest, DatabaseClientRequest as DatabaseInstanceClientRequest, StartInfoClientResponse, DatabaseLoginClientRequest } from '../type';
 import { ValidationError } from '@error/validation/validation-error';
+import { SaveDatabaseProfileRequest } from '../type/request/sava-database-profile';
 
 /**
  * Controller for handling CMS database operations.
@@ -139,5 +140,77 @@ export class CmsDatabaseController {
         Logger.log(`Restarting database: ${body.dbname} on host: ${body.hostUid}`, 'CmsDatabaseController');
         const result = await this.cmsDatabaseService.restartDatabase(userId, body.hostUid, body.dbname);
         return result;
+    }
+
+    /**
+     * Login to a database using profile or client-provided credentials.
+     * 
+     * 프로파일 또는 클라이언트 제공 자격 증명을 사용하여 데이터베이스에 로그인합니다.
+     * 
+     * - Profile이 있는 경우: dbname만 필요
+     * - Profile이 없는 경우: dbname + id + password 필요
+     *
+     * @route POST /cms-database/login
+     * @param req Express request (contains authenticated user)
+     * @param body DatabaseLoginClientRequest
+     * @returns boolean True on success
+     */
+    @Post('login')
+    async loginDatabase(
+        @Request() req,
+        @Body() body: DatabaseLoginClientRequest
+    ): Promise<boolean> {
+        const userId = req.user.sub;
+        
+        if (!body || !body.hostUid || !body.dbname) {
+            const missingFields: string[] = [];
+            if (!body?.hostUid) missingFields.push('hostUid');
+            if (!body?.dbname) missingFields.push('dbname');
+            Logger.error(`Missing required fields: ${missingFields.join(', ')}`, 'CmsDatabaseController');
+            throw ValidationError.MissingRequiredField(missingFields, { endpoint: 'cms-database/login' });
+        }
+        
+        Logger.log(`Logging in to database: ${body.dbname} on host: ${body.hostUid}`, 'CmsDatabaseController');
+        const result = await this.cmsDatabaseService.loginDatabase(
+            userId,
+            body.hostUid,
+            body.dbname,
+            body.id,
+            body.password,
+        );
+        return result;
+    }
+
+    @Post('register')
+    async saveDatabaseProfile(
+        @Request() req,
+        @Body() body: SaveDatabaseProfileRequest,
+    ): Promise<boolean> {
+        const userId = req.user.sub;
+
+        if (!body || !body.hostUid || !body.dbname) {
+            const missingFields: string[] = [];
+            if (!body?.hostUid) missingFields.push('hostUid');
+            if (!body?.dbname) missingFields.push('dbname');
+            if (!body?.id) missingFields.push('id');
+            if (!body?.password) missingFields.push('password');
+            if (missingFields.length > 0) {
+                Logger.error(
+                    `Missing required fields: ${missingFields.join(', ')}`,
+                    'CmsDatabaseController',
+                );
+                throw ValidationError.MissingRequiredField(missingFields, {
+                    endpoint: 'cms-database/register',
+                });
+            }
+        }
+
+        return await this.cmsDatabaseService.saveDatabaseProfile(
+            userId,
+            body.hostUid,
+            body.dbname,
+            body.id,
+            body.password,
+        );
     }
 }

@@ -1,3 +1,3 @@
-import { DatabaseRequest } from './database-request';
+import { BaseDatabaseRequest } from './base-database-request';
 
-export type DatabaseClientRequest = DatabaseRequest;
+export type DatabaseClientRequest = BaseDatabaseRequest;

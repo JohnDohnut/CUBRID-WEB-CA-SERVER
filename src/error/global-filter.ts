@@ -9,6 +9,7 @@ import {
 import { BaseExceptionFilter } from '@nestjs/core';
 import { Response } from 'express';
 import { AppError } from './app-error';
+import { ValidationError } from './validation';
 
 /**
  * Global exception filter for handling all unhandled exceptions across the application.
@@ -69,15 +70,13 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
                 JSON.stringify(logDetails, null, 2),
                 `${req.method} ${req.url}`,
             );
-        } else {
+        }
+        else {
             status = HttpStatus.INTERNAL_SERVER_ERROR;
             response = {
-                type: '/errors/internal/unknown',
                 title: 'Internal Server Error',
                 status: 500,
                 detail: 'An unexpected error occurred',
-                instance: req.url,
-                timestamp: new Date().toISOString(),
                 result: false, // Add result: false
             };
             res.setHeader('Content-Type', 'application/problem+json');

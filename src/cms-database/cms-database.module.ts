@@ -3,6 +3,7 @@ import { CmsDatabaseController } from './cms-database.controller';
 import { CmsDatabaseService } from './cms-database.service';
 import { HostModule } from '@host';
 import { CmsHttpsClientModule } from '../cms-https-client/cms-https-client.module';
+import { UserRepositoryModule } from '@repository';
 
 /**
  * Module for managing CMS database functionalities.
@@ -17,6 +18,6 @@ import { CmsHttpsClientModule } from '../cms-https-client/cms-https-client.modul
 @Module({
   controllers: [CmsDatabaseController],
   providers: [CmsDatabaseService],
-  imports: [HostModule, CmsHttpsClientModule]
+  imports: [HostModule, CmsHttpsClientModule, UserRepositoryModule]
 })
 export class CmsDatabaseModule {}

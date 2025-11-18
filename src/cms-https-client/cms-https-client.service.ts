@@ -140,7 +140,7 @@ export class CmsHttpsClientService {
     @HandleCmsHttpsClientErrors()
     public async forwardAuthenticated<T extends CmsForwardClientRequest, P>(sub : string, requestBody : T) : Promise<P>{
         const hostUid = requestBody.hostUid;
-        const host = await this.hostService.findHost(sub, hostUid);
+        const host = await this.hostService.findHostInternal(sub, hostUid);
         const url = `https://${host.address}:${host.port}/cm_api`;
 
         const request: BaseCmsRequest = {

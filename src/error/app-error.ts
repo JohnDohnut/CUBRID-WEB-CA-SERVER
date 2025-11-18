@@ -3,6 +3,7 @@ import { StorageErrorCode } from '@error/storage/storage-error-code';
 import { LockErrorCode } from '@error/lock/lock-error-code';
 import { HostErrorCode } from '@error/host/host-error-code';
 import { UserErrorCode } from '@error/user/user-error-code';
+import { DatabaseErrorCode } from '@error/database/database-error-code';
 
 export type ErrorKind =
     | 'AUTH'
@@ -33,6 +34,7 @@ export class AppError extends Error {
 
     // RFC 7807 Problem Details generation (for client response - excluding internal information)
     toProblemDetails(requestUrl?: string) {
+        // 클라이언트로 보내는 최소한의 정보만 포함
         return {
             type: `/errors/${this.kind.toLowerCase()}/${this.code.toLowerCase()}`,
             title: this.code
@@ -45,11 +47,7 @@ export class AppError extends Error {
                 .join(' '),
             status: this.getHttpStatus(),
             detail: this.message,
-            instance: requestUrl || '',
             code: this.code,
-            timestamp: new Date().toISOString(),
-            // Include additional data directly in Problem Details (excluding sensitive information)
-            ...(this.additionalData || {}),
         };
     }
 
@@ -168,7 +166,17 @@ export class AppError extends Error {
             case 'INTERNAL':
                 return 500;
             case 'CMS':
-                return 500;
+                // DatabaseError의 경우 에러 코드에 따라 구체적인 HTTP 상태 반환
+                switch (this.code) {
+                    case DatabaseErrorCode.HOST_NOT_FOUND:
+                        return 404; // Not Found
+                    case DatabaseErrorCode.HOST_ERROR:
+                        return 502; // Bad Gateway (호스트 서버 문제)
+                    case DatabaseErrorCode.INTERNAL_ERROR:
+                        return 500; // Internal Server Error
+                    default:
+                        return 500;
+                }
             case 'VALIDATION':
                 return 400; // Bad Request
             default:

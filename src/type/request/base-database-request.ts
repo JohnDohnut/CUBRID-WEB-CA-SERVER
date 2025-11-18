@@ -8,7 +8,7 @@
  * @category Requests
  * @since 1.0.0
  */
-export type DatabaseRequest = {
+export type BaseDatabaseRequest = {
     hostUid: string;
     dbname: string;
 };

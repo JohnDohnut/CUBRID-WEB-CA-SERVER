@@ -7,7 +7,8 @@ export * from './host-uid-request';
 export * from './update-db-request';
 export * from './update-user-info-request';
 export * from './broker_request';
-export * from './database-request';
+export * from './base-database-request';
+export * from './database-login-client-request';
 export * from './check-file-request';
 export * from './cms-forward-client-request';
 // Client request aliases

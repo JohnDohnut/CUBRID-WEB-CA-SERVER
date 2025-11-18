@@ -48,15 +48,38 @@ export function HandleHostErrors() {
             } catch (err) {
                 const contextId = args[0] || 'unknown';
 
-                if (
-                    err instanceof StorageError ||
-                    err instanceof LockError ||
-                    err instanceof HostError
-                ) {
+                // HostError는 그대로 전달
+                if (err instanceof HostError) {
                     throw err;
-                } else {
-                    throw HostError.InternalError({ userId: contextId }, err);
                 }
+
+                // 인프라 에러를 HostError로 변환
+                if (err instanceof StorageError) {
+                    throw HostError.InternalError(
+                        {
+                            userId: contextId,
+                            originalError: 'StorageError',
+                            storageErrorCode: err.code,
+                            ...err.additionalData,
+                        },
+                        err,
+                    );
+                }
+
+                if (err instanceof LockError) {
+                    throw HostError.InternalError(
+                        {
+                            userId: contextId,
+                            originalError: 'LockError',
+                            lockErrorCode: err.code,
+                            ...err.additionalData,
+                        },
+                        err,
+                    );
+                }
+
+                // 알 수 없는 에러는 InternalError로 변환
+                throw HostError.InternalError({ userId: contextId }, err);
             }
         };
     };

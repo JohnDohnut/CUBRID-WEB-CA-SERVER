@@ -154,14 +154,15 @@ export class UserRepositoryService {
                 await this.encryptionService.decryptValue(encrypted);
             const userJson: User = await JSON.parse(decrypted);
 
-            await modifierCallback(userJson);
+            const modifiedUser = await modifierCallback(userJson);
 
+            // 모든 검증과 수정이 완료된 후 저장
             const newEncryted = await this.encryptionService.encryptValue(
-                JSON.stringify(userJson),
+                JSON.stringify(modifiedUser),
             );
             await this.storageService.writeUnsafe(hashedId, newEncryted);
 
-            return userJson;
+            return modifiedUser;
         });
         return updated;
     }
