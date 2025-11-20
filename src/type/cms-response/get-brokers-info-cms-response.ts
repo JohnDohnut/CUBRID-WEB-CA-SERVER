@@ -1,4 +1,4 @@
-import { BaseCmsResponse } from "./BaseCmsResponse"
+import { BaseCmsResponse } from './base-cms-response';
 
 export type BrokerInstanceInfo = {
     access_list: string;
@@ -31,7 +31,8 @@ export type BrokerList = {
     broker: BrokerInstanceInfo[];
 }
 
-export type GetBrokersInfoResponse = BaseCmsResponse & {
+export type GetBrokersInfoCmsResponse = BaseCmsResponse & {
     brokersinfo: BrokerList[];
     brokerstatus: string;
 }
+

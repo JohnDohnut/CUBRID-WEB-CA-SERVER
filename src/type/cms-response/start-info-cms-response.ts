@@ -1,4 +1,4 @@
-import { BaseCmsResponse } from './BaseCmsResponse';
+import { BaseCmsResponse } from './base-cms-response';
 
 export type StartInfoCmsResponse = BaseCmsResponse & {
     activelist: Array<{

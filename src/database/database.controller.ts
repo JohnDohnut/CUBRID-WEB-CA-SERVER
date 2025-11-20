@@ -1,17 +1,17 @@
 import { Body, Controller, Logger, Post, Request } from '@nestjs/common';
-import { CmsDatabaseService } from './cms-database.service';
+import { DatabaseService } from './database.service';
 import { BaseCmsResponse, HostUidRequest, DatabaseClientRequest as DatabaseInstanceClientRequest, StartInfoClientResponse, DatabaseLoginClientRequest } from '../type';
 import { ValidationError } from '@error/validation/validation-error';
 import { SaveDatabaseProfileRequest } from '../type/request/sava-database-profile';
 
 /**
- * Controller for handling CMS database operations.
+ * Controller for handling database operations.
  *
  * - Exposes REST endpoints to query start info and to start/stop/restart a DB
  * - Requires authentication; extracts `userId` from JWT (`req.user.sub`)
  * - All endpoints receive `hostUid` in the request body (not in the path)
  *
- * CMS 데이터베이스 작업을 처리하는 컨트롤러입니다.
+ * 데이터베이스 작업을 처리하는 컨트롤러입니다.
  * - 시작 정보 조회 및 DB 시작/중지/재시작 REST 엔드포인트 제공
  * - 인증 필요, JWT의 `req.user.sub`에서 사용자 ID를 추출합니다
  * - 모든 엔드포인트는 경로 파라미터 대신 body로 `hostUid`를 받습니다
@@ -19,10 +19,10 @@ import { SaveDatabaseProfileRequest } from '../type/request/sava-database-profil
  * @category Controllers
  * @since 1.0.0
  */
-@Controller('cms-database')
-export class CmsDatabaseController {
+@Controller('database')
+export class DatabaseController {
 
-    constructor(private readonly cmsDatabaseService: CmsDatabaseService) {}
+    constructor(private readonly databaseService: DatabaseService) {}
 
     /**
      * Get start information for databases on a host.
@@ -30,7 +30,7 @@ export class CmsDatabaseController {
      *
      * 호스트의 데이터베이스 시작 정보를 조회합니다. CMS 메타 필드(BaseCmsResponse)는 제거한 순수 데이터만 반환합니다.
      *
-     * @route POST /cms-database/start-info
+     * @route POST /database/start-info
      * @param req Express request (contains authenticated user)
      * @param body HostUidRequest — must include `hostUid`
      * @returns StartInfoClientResponse Start info without CMS envelope fields
@@ -46,12 +46,12 @@ export class CmsDatabaseController {
         const userId = req.user.sub;
         
         if (!body || !body.hostUid) {
-            Logger.error('hostUid is required in request body', 'CmsDatabaseController');
-            throw ValidationError.MissingRequiredField('hostUid', { endpoint: 'cms-database/start-info' });
+            Logger.error('hostUid is required in request body', 'DatabaseController');
+            throw ValidationError.MissingRequiredField('hostUid', { endpoint: 'database/start-info' });
         }
         
-        Logger.log(`Getting start info for host: ${body.hostUid}`, 'CmsDatabaseController');
-        const response = await this.cmsDatabaseService.startInfo(userId, body.hostUid);
+        Logger.log(`Getting start info for host: ${body.hostUid}`, 'DatabaseController');
+        const response = await this.databaseService.startInfo(userId, body.hostUid);
         return response;
     }
 
@@ -59,7 +59,7 @@ export class CmsDatabaseController {
      * Start a database on a host.
      * 성공 시 true를 반환하고, 실패 시 도메인 에러(DatabaseError)를 던집니다.
      *
-     * @route POST /cms-database/start
+     * @route POST /database/start
      * @param req Express request (contains authenticated user)
      * @param body DatabaseClientRequest — `hostUid`, `dbname`
      * @returns boolean True on success
@@ -75,12 +75,12 @@ export class CmsDatabaseController {
             const missingFields: string[] = [];
             if (!body?.hostUid) missingFields.push('hostUid');
             if (!body?.dbname) missingFields.push('dbname');
-            Logger.error(`Missing required fields: ${missingFields.join(', ')}`, 'CmsDatabaseController');
-            throw ValidationError.MissingRequiredField(missingFields, { endpoint: 'cms-database/start' });
+            Logger.error(`Missing required fields: ${missingFields.join(', ')}`, 'DatabaseController');
+            throw ValidationError.MissingRequiredField(missingFields, { endpoint: 'database/start' });
         }
         
-        Logger.log(`Starting database: ${body.dbname} on host: ${body.hostUid}`, 'CmsDatabaseController');
-        const result = await this.cmsDatabaseService.startDatabase(userId, body.hostUid, body.dbname);
+        Logger.log(`Starting database: ${body.dbname} on host: ${body.hostUid}`, 'DatabaseController');
+        const result = await this.databaseService.startDatabase(userId, body.hostUid, body.dbname);
         return result;
     }
 
@@ -88,7 +88,7 @@ export class CmsDatabaseController {
      * Stop a database on a host.
      * 성공 시 true를 반환하고, 실패 시 도메인 에러(DatabaseError)를 던집니다.
      *
-     * @route POST /cms-database/stop
+     * @route POST /database/stop
      * @param req Express request (contains authenticated user)
      * @param body DatabaseClientRequest — `hostUid`, `dbname`
      * @returns boolean True on success
@@ -104,12 +104,12 @@ export class CmsDatabaseController {
             const missingFields: string[] = [];
             if (!body?.hostUid) missingFields.push('hostUid');
             if (!body?.dbname) missingFields.push('dbname');
-            Logger.error(`Missing required fields: ${missingFields.join(', ')}`, 'CmsDatabaseController');
-            throw ValidationError.MissingRequiredField(missingFields, { endpoint: 'cms-database/stop' });
+            Logger.error(`Missing required fields: ${missingFields.join(', ')}`, 'DatabaseController');
+            throw ValidationError.MissingRequiredField(missingFields, { endpoint: 'database/stop' });
         }
         
-        Logger.log(`Stopping database: ${body.dbname} on host: ${body.hostUid}`, 'CmsDatabaseController');
-        const result = await this.cmsDatabaseService.stopDatabase(userId, body.hostUid, body.dbname);
+        Logger.log(`Stopping database: ${body.dbname} on host: ${body.hostUid}`, 'DatabaseController');
+        const result = await this.databaseService.stopDatabase(userId, body.hostUid, body.dbname);
         return result;
     }
 
@@ -117,7 +117,7 @@ export class CmsDatabaseController {
      * Restart a database on a host (stop → start sequence).
      * 성공 시 true를 반환하고, 중지/시작 단계별 실패 시 해당 도메인 에러를 던집니다.
      *
-     * @route POST /cms-database/restart
+     * @route POST /database/restart
      * @param req Express request (contains authenticated user)
      * @param body DatabaseClientRequest — `hostUid`, `dbname`
      * @returns boolean True on success
@@ -133,12 +133,12 @@ export class CmsDatabaseController {
             const missingFields: string[] = [];
             if (!body?.hostUid) missingFields.push('hostUid');
             if (!body?.dbname) missingFields.push('dbname');
-            Logger.error(`Missing required fields: ${missingFields.join(', ')}`, 'CmsDatabaseController');
-            throw ValidationError.MissingRequiredField(missingFields, { endpoint: 'cms-database/restart' });
+            Logger.error(`Missing required fields: ${missingFields.join(', ')}`, 'DatabaseController');
+            throw ValidationError.MissingRequiredField(missingFields, { endpoint: 'database/restart' });
         }
         
-        Logger.log(`Restarting database: ${body.dbname} on host: ${body.hostUid}`, 'CmsDatabaseController');
-        const result = await this.cmsDatabaseService.restartDatabase(userId, body.hostUid, body.dbname);
+        Logger.log(`Restarting database: ${body.dbname} on host: ${body.hostUid}`, 'DatabaseController');
+        const result = await this.databaseService.restartDatabase(userId, body.hostUid, body.dbname);
         return result;
     }
 
@@ -150,7 +150,7 @@ export class CmsDatabaseController {
      * - Profile이 있는 경우: dbname만 필요
      * - Profile이 없는 경우: dbname + id + password 필요
      *
-     * @route POST /cms-database/login
+     * @route POST /database/login
      * @param req Express request (contains authenticated user)
      * @param body DatabaseLoginClientRequest
      * @returns boolean True on success
@@ -166,12 +166,12 @@ export class CmsDatabaseController {
             const missingFields: string[] = [];
             if (!body?.hostUid) missingFields.push('hostUid');
             if (!body?.dbname) missingFields.push('dbname');
-            Logger.error(`Missing required fields: ${missingFields.join(', ')}`, 'CmsDatabaseController');
-            throw ValidationError.MissingRequiredField(missingFields, { endpoint: 'cms-database/login' });
+            Logger.error(`Missing required fields: ${missingFields.join(', ')}`, 'DatabaseController');
+            throw ValidationError.MissingRequiredField(missingFields, { endpoint: 'database/login' });
         }
         
-        Logger.log(`Logging in to database: ${body.dbname} on host: ${body.hostUid}`, 'CmsDatabaseController');
-        const result = await this.cmsDatabaseService.loginDatabase(
+        Logger.log(`Logging in to database: ${body.dbname} on host: ${body.hostUid}`, 'DatabaseController');
+        const result = await this.databaseService.loginDatabase(
             userId,
             body.hostUid,
             body.dbname,
@@ -193,19 +193,19 @@ export class CmsDatabaseController {
             if (!body?.hostUid) missingFields.push('hostUid');
             if (!body?.dbname) missingFields.push('dbname');
             if (!body?.id) missingFields.push('id');
-            if (!body?.password) missingFields.push('password');
+            if (body?.password == null) missingFields.push('password');
             if (missingFields.length > 0) {
                 Logger.error(
                     `Missing required fields: ${missingFields.join(', ')}`,
-                    'CmsDatabaseController',
+                    'DatabaseController',
                 );
                 throw ValidationError.MissingRequiredField(missingFields, {
-                    endpoint: 'cms-database/register',
+                    endpoint: 'database/register',
                 });
             }
         }
 
-        return await this.cmsDatabaseService.saveDatabaseProfile(
+        return await this.databaseService.saveDatabaseProfile(
             userId,
             body.hostUid,
             body.dbname,
@@ -214,3 +214,4 @@ export class CmsDatabaseController {
         );
     }
 }
+

@@ -1,19 +1,23 @@
 import { Module } from '@nestjs/common';
-import { HaController } from './ha/ha.controller';
-import { ResourceController } from './resource/resource.controller';
-import { HaService } from './ha/ha.service';
-import { ResourceService } from './resource/resource.service';
+import { HaMonitoringController } from './ha-monitoring/ha-monitoring.controller';
+import { HaMonitoringService } from './ha-monitoring/ha-monitoring.service';
+import { ResourceMonitoringController } from './resource-monitoring/resource-monitoring.controller';
+import { ResourceMonitoringService } from './resource-monitoring/resource-monitoring.service';
 
 /**
- * Module for managing monitoring functionalities, including HA and resource monitoring.
+ * Module for managing monitoring functionalities.
+ * Includes HA (High Availability) and resource monitoring operations.
  *
- * HA 및 리소스 모니터링을 포함한 모니터링 기능을 관리하기 위한 모듈입니다.
+ * 모니터링 기능을 관리하기 위한 모듈입니다.
+ * HA(고가용성) 및 리소스 모니터링 작업을 포함합니다.
  *
  * @category Modules
  * @since 1.0.0
  */
 @Module({
-    controllers: [HaController, ResourceController],
-    providers: [HaService, ResourceService],
+    controllers: [HaMonitoringController, ResourceMonitoringController],
+    providers: [HaMonitoringService, ResourceMonitoringService],
+    exports: [HaMonitoringService, ResourceMonitoringService],
 })
 export class MonitoringModule {}
+

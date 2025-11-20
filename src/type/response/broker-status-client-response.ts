@@ -1,4 +1,4 @@
-import { BaseCmsResponse } from '../cms-response/BaseCmsResponse';
+import { BaseCmsResponse } from '../cms-response/base-cms-response';
 import { GetBrokerStatusCmsResponse } from '../cms-response/get-broker-status-cms-response';
 
 /**

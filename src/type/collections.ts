@@ -24,7 +24,7 @@ export type HostList = HashMap<HostInfo>;
  *
  * @category Types
  */
-export type SafeHostList = HashMap<Omit<HostInfo, 'password' | 'token'>>;
+export type SafeHostList = HashMap<Omit<HostInfo, 'password' | 'token' | 'dbProfiles'>>;
 
 /**
  * Database list as a hashmap (internal use with passwords)

@@ -1,4 +1,4 @@
-import { BaseCmsResponse } from "../cms-response";
+import { BaseCmsResponse } from './base-cms-response';
 
 export type LoginDBCmsResponse = BaseCmsResponse & {
     authority : string,

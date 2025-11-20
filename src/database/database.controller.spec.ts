@@ -1,18 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CmsFileController } from './cms-file.controller';
+import { DatabaseController } from './database.controller';
 
-describe('CmsFileController', () => {
-  let controller: CmsFileController;
+describe('DatabaseController', () => {
+  let controller: DatabaseController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [CmsFileController],
+      controllers: [DatabaseController],
     }).compile();
 
-    controller = module.get<CmsFileController>(CmsFileController);
+    controller = module.get<DatabaseController>(DatabaseController);
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
 });
+

@@ -1,5 +1,5 @@
 import { CmsError } from '@error/cms/cms-error';
-import { BaseCmsResponse } from '@type/cms-response/BaseCmsResponse';
+import { BaseCmsResponse } from '@type/cms-response/base-cms-response';
 
 /**
  * Invalid token error message from CMS.
@@ -66,7 +66,7 @@ export function checkCmsTokenError(response: any): void {
  * @since 1.0.0
  * @example
  * ```typescript
- * class CmsDatabaseService {
+ * class DatabaseService {
  *   @HandleCmsTokenErrors()
  *   async startInfo(userId: string, hostUid: string): Promise<StartInfoCmsResponse> {
  *     const response = await this.cmsClient.postAuthenticated(...);

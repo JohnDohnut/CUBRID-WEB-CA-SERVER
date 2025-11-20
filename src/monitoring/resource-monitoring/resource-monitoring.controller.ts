@@ -11,4 +11,5 @@ import { Controller } from '@nestjs/common';
  * @since 1.0.0
  */
 @Controller('resource')
-export class ResourceController {}
+export class ResourceMonitoringController {}
+

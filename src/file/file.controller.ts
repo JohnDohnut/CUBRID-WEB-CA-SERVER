@@ -1,10 +1,10 @@
 import { Body, Controller, Post, Request } from '@nestjs/common';
-import { CmsFileService } from './cms-file.service';
+import { FileService } from './file.service';
 import { CheckFileClientRequest, CheckFileClientResponse } from '@type/index';
 
 /**
- * Controller for CMS file operations.
- * CMS 파일 작업을 관리하는 컨트롤러입니다.
+ * Controller for file operations.
+ * 파일 작업을 관리하는 컨트롤러입니다.
  * 
  * Handles HTTP requests for file management including checking file existence,
  * uploading, downloading, and listing files on CMS hosts.
@@ -15,9 +15,9 @@ import { CheckFileClientRequest, CheckFileClientResponse } from '@type/index';
  * @category Controllers
  * @since 1.0.0
  */
-@Controller('cms/file')
-export class CmsFileController {
-    constructor(private readonly cmsFileService: CmsFileService) {}
+@Controller('file')
+export class FileController {
+    constructor(private readonly fileService: FileService) {}
 
     /**
      * Check if a file exists on the specified CMS host.
@@ -33,6 +33,7 @@ export class CmsFileController {
         @Body() body: CheckFileClientRequest
     ): Promise<CheckFileClientResponse> {
         const userId = request.user.sub;
-        return await this.cmsFileService.checkFile(userId, body.hostUid);
+        return await this.fileService.checkFile(userId, body.hostUid);
     }
 }
+

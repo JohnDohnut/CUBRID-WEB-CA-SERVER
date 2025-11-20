@@ -3,6 +3,7 @@ export {
     omitPassword,
     omitPasswordArray,
     omitPasswordHashMap,
+    omitHashMap,
 } from './omit_password';
 export { passwordValidityChecker } from './password-validity-checker';
 export { getOrCreateSSLCert } from './ssl-util';

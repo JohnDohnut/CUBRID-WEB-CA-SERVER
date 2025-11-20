@@ -1,18 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CmsFileService } from './cms-file.service';
+import { HaMonitoringService } from './ha-monitoring.service';
 
-describe('CmsFileService', () => {
-    let service: CmsFileService;
+describe('HaMonitoringService', () => {
+    let service: HaMonitoringService;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            providers: [CmsFileService],
+            providers: [HaMonitoringService],
         }).compile();
 
-        service = module.get<CmsFileService>(CmsFileService);
+        service = module.get<HaMonitoringService>(HaMonitoringService);
     });
 
     it('should be defined', () => {
         expect(service).toBeDefined();
     });
 });
+

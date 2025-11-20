@@ -1,7 +1,7 @@
 import { HostService } from '@host';
 import { Injectable } from '@nestjs/common';
 import { CmsHttpsClientService } from '../cms-https-client/cms-https-client.service';
-import { BaseCmsRequest, BaseCmsResponse, GetBrokersInfoResponse, HostInfo, HandleBrokerRequest, GetBrokerStatusCmsRequest, GetBrokerStatusCmsResponse, GetBrokerStatusClientResponse } from '../type';
+import { BaseCmsRequest, BaseCmsResponse, GetBrokersInfoCmsResponse, HostInfo, HandleBrokerCmsRequest, GetBrokerStatusCmsRequest, GetBrokerStatusCmsResponse, GetBrokerStatusClientResponse } from '../type';
 import { HandleHostErrors, checkCmsTokenError, HandleCmsHttpsClientErrors } from '@common';
 import { BrokerError } from '@error/broker/broker-error';
 import { CmsError } from '@error/cms/cms-error';
@@ -31,7 +31,7 @@ export class BrokerService {
             task : "getbrokersinfo",
             token : host.token ? host.token : ""
         }
-        const response = await this.cmsClient.postAuthenticated<BaseCmsRequest, GetBrokersInfoResponse>(url, body);
+        const response = await this.cmsClient.postAuthenticated<BaseCmsRequest, GetBrokersInfoCmsResponse>(url, body);
         
         // CMS token 에러 체크
         checkCmsTokenError(response);
@@ -49,13 +49,13 @@ export class BrokerService {
     async stopBroker(userId: string, hostUid: string, bname : string) : Promise<BaseCmsResponse>{
         const host = await this.hostService.findHostInternal(userId, hostUid);
         const url = `https://${host.address}:${host.port}/cm_api`
-        const body : HandleBrokerRequest = {
+        const body : HandleBrokerCmsRequest = {
             task : "broker_stop",
             token : host.token ? host.token : "",
             bname : bname
         }
 
-        const response = await this.cmsClient.postAuthenticated<HandleBrokerRequest, BaseCmsResponse>(url, body);
+        const response = await this.cmsClient.postAuthenticated<HandleBrokerCmsRequest, BaseCmsResponse>(url, body);
         
         // CMS token 에러 체크
         checkCmsTokenError(response);
@@ -72,13 +72,13 @@ export class BrokerService {
     async startBroker(userId: string, hostUid: string, bname : string): Promise<BaseCmsResponse>{
         const host = await this.hostService.findHostInternal(userId, hostUid);
         const url = `https://${host.address}:${host.port}/cm_api`
-        const body : HandleBrokerRequest = {
+        const body : HandleBrokerCmsRequest = {
             task : "broker_start",
             token : host.token ? host.token : "",
             bname : bname
         }
 
-        const response = await this.cmsClient.postAuthenticated<HandleBrokerRequest, BaseCmsResponse>(url, body);
+        const response = await this.cmsClient.postAuthenticated<HandleBrokerCmsRequest, BaseCmsResponse>(url, body);
         
         // CMS token 에러 체크
         checkCmsTokenError(response);
@@ -96,21 +96,21 @@ export class BrokerService {
     async restartBroker(userId: string, hostUid: string, bname : string) : Promise<boolean> {
         const host = await this.hostService.findHostInternal(userId, hostUid);
         const url = `https://${host.address}:${host.port}/cm_api`
-        const stopRequest : HandleBrokerRequest = {
+        const stopRequest : HandleBrokerCmsRequest = {
             task : "broker_stop",
             token : host.token ? host.token : "",
             bname : bname
         }
 
-        const response = await this.cmsClient.postAuthenticated<HandleBrokerRequest, BaseCmsResponse>(url, stopRequest);
+        const response = await this.cmsClient.postAuthenticated<HandleBrokerCmsRequest, BaseCmsResponse>(url, stopRequest);
         if(response.status === "success"){
-            const startRequest : HandleBrokerRequest = {
+            const startRequest : HandleBrokerCmsRequest = {
                 task : "broker_start",
                 token : host.token ? host.token : "",
                 bname : bname
             }
 
-            const response = await this.cmsClient.postAuthenticated<HandleBrokerRequest, BaseCmsResponse>(url, startRequest);
+            const response = await this.cmsClient.postAuthenticated<HandleBrokerCmsRequest, BaseCmsResponse>(url, startRequest);
             if(response.status === "success"){
                 return true;
             }

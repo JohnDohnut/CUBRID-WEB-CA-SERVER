@@ -16,8 +16,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CmsAuthModule } from './cms-auth/cms-auth.module';
 import { CmsConfigModule } from './cms-config/cms-config.module';
-import { CmsFileModule } from './cms-file/cms-file.module';
-import { CmsDatabaseModule } from './cms-database/cms-database.module';
+import { FileModule } from './file/file.module';
+import { DatabaseModule } from './database/database.module';
 import { CmsHttpsClientModule } from './cms-https-client/cms-https-client.module';
 
 /**
@@ -49,8 +49,8 @@ import { CmsHttpsClientModule } from './cms-https-client/cms-https-client.module
         LockModule,
         CmsAuthModule,
         CmsConfigModule,
-        CmsFileModule,
-        CmsDatabaseModule,
+        FileModule,
+        DatabaseModule,
         CmsHttpsClientModule,
     ],
     controllers: [AppController],

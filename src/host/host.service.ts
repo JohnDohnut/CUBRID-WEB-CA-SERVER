@@ -13,7 +13,7 @@ import {
     GetHostsResponse,
     HostResponse,
 } from '@type/index';
-import { omitPassword, omitPasswordArray, omitPasswordHashMap } from '@util';
+import { omitPassword, omitPasswordArray, omitPasswordHashMap, omitHashMap } from '@util';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -54,7 +54,7 @@ export class HostService {
         const hosts = user.host_list;
 
         return {
-            host_list: omitPasswordHashMap(hosts) as SafeHostList,
+            host_list: omitHashMap(hosts, ['password', 'token', 'dbProfiles']) as SafeHostList,
         };
     }
 

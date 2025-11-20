@@ -11,4 +11,5 @@ import { Controller, Request } from '@nestjs/common';
  * @since 1.0.0
  */
 @Controller('monitoring/:version/ha')
-export class HaController {}
+export class HaMonitoringController {}
+

@@ -1,4 +1,4 @@
-import { BaseCmsResponse } from './BaseCmsResponse';
+import { BaseCmsResponse } from './base-cms-response';
 
 /**
  * Application Server information in broker status response.

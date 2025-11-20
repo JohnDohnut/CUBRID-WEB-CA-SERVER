@@ -12,8 +12,8 @@ import { HandleCmsHttpsClientErrors } from '@decorators/handle-cms-https-client-
 import { CmsError } from '@error/cms/cms-error';
 
 /**
- * Service for CMS file operations.
- * CMS 파일 작업을 위한 서비스입니다.
+ * Service for file operations.
+ * 파일 작업을 위한 서비스입니다.
  * 
  * Provides business logic for file management operations including
  * file checking, uploading, downloading, and listing.
@@ -25,7 +25,7 @@ import { CmsError } from '@error/cms/cms-error';
  * @since 1.0.0
  */
 @Injectable()
-export class CmsFileService {
+export class FileService {
     constructor(
         private readonly cmsHttpsClient: CmsHttpsClientService,
         private readonly cmsAuthService: CmsAuthService,
@@ -42,7 +42,7 @@ export class CmsFileService {
      * @throws {HostError.NoSuchHost} If no host with the given UID is found
      * @example
      * ```typescript
-     * const response = await cmsFileService.checkFile("user123", "host456");
+     * const response = await fileService.checkFile("user123", "host456");
      * console.log(response.status); // "success" or error status
      * ```
      */
@@ -81,3 +81,4 @@ export class CmsFileService {
         throw CmsError.InvalidToken();
     }
 }
+

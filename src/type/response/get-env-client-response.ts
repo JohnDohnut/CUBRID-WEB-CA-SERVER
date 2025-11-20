@@ -1,4 +1,4 @@
-import { BaseCmsResponse } from '../cms-response/BaseCmsResponse';
+import { BaseCmsResponse } from '../cms-response/base-cms-response';
 import { GetEnvCmsResponse } from '../cms-response/get-env-cms-response';
 
 /**

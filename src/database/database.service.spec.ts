@@ -1,18 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CmsDatabaseService } from './cms-database.service';
+import { DatabaseService } from './database.service';
 
-describe('CmsDatabaseService', () => {
-  let service: CmsDatabaseService;
+describe('DatabaseService', () => {
+  let service: DatabaseService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [CmsDatabaseService],
+      providers: [DatabaseService],
     }).compile();
 
-    service = module.get<CmsDatabaseService>(CmsDatabaseService);
+    service = module.get<DatabaseService>(DatabaseService);
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 });
+

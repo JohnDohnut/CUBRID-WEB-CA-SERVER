@@ -1,4 +1,4 @@
-import { BrokerList } from '../cms-response/get-brokers-info-response';
+import { BrokerList } from '../cms-response/get-brokers-info-cms-response';
 
 /**
  * Client-facing response for broker list.

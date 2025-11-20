@@ -22,8 +22,8 @@ export { ConfigService } from './config/config.service';
 export { UserRepositoryService } from './repository/user-repository/user-repository.service';
 
 // Export monitoring controllers
-export { ResourceController } from './monitoring/resource/resource.controller';
-export { HaController } from './monitoring/ha/ha.controller';
+export { ResourceMonitoringController } from './monitoring/resource-monitoring/resource-monitoring.controller';
+export { HaMonitoringController } from './monitoring/ha-monitoring/ha-monitoring.controller';
 
 // Export decorators
 export { HandleStorageFsErrors } from './common/decorators/handle-storage-fs-errors.decorator';

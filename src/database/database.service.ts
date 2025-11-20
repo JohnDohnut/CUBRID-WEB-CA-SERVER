@@ -18,13 +18,13 @@ import {
 import { StartInfoCmsResponse } from '../type/cms-response/start-info-cms-response';
 
 /**
- * Service for managing CMS database operations.
+ * Service for managing database operations.
  *
  * - Builds CMS requests (task, token, payload) and calls CMS HTTPS Client
  * - Evaluates CMS body `status` (HTTP code is always 200/201) to decide success
  * - Strips CMS envelope fields for domain-facing return types when needed
  *
- * CMS 데이터베이스 작업을 관리하는 서비스입니다.
+ * 데이터베이스 작업을 관리하는 서비스입니다.
  * - CMS 요청(task, token, payload)을 구성하여 CMS HTTPS Client로 전달합니다
  * - CMS 본문 `status`로 성공/실패를 판단합니다(HTTP 200/201이 항상 반환됨)
  * - 필요 시 도메인에 반환할 때 CMS 메타 필드를 제거합니다
@@ -33,7 +33,7 @@ import { StartInfoCmsResponse } from '../type/cms-response/start-info-cms-respon
  * @since 1.0.0
  */
 @Injectable()
-export class CmsDatabaseService {
+export class DatabaseService {
     constructor(
         private readonly hostService: HostService,
         private readonly cmsClient: CmsHttpsClientService,
@@ -384,3 +384,4 @@ export class CmsDatabaseService {
         return true;
     }
 }
+

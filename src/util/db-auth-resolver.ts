@@ -64,15 +64,16 @@ export class DBAuthResolver {
         }
 
         // Profile이 없는 경우: 클라이언트에서 제공한 id/password 필요
-        if (!clientId || !clientPassword) {
+        // null/undefined만 체크 (빈 문자열은 유효한 값으로 처리)
+        if (clientId == null || clientPassword == null) {
+            const missingFields: string[] = [];
+            if (clientId == null) missingFields.push('id');
+            if (clientPassword == null) missingFields.push('password');
+            
             throw DatabaseError.MissingDBCredentials({
                 dbname,
                 message: `Database profile not found for dbname: ${dbname}. Client must provide id and password when profile doesn't exist.`,
-                missingFields: !clientId && !clientPassword 
-                    ? ['id', 'password']
-                    : !clientId 
-                    ? ['id']
-                    : ['password'],
+                missingFields,
             });
         }
 

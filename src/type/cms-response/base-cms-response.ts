@@ -4,3 +4,4 @@ export type BaseCmsResponse = {
     status : string,
     task : string,
 };
+
