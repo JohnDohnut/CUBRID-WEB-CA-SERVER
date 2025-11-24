@@ -1,5 +1,6 @@
 import { checkCmsTokenError, HandleCmsHttpsClientErrors, HandleDatabaseErrors, HandleHostErrors, HandleUserRepoErrors } from '@common';
 import { DatabaseError } from '@error/database/database-error';
+import { ValidationError } from '@error/validation/validation-error';
 import { HostService } from '@host';
 import { Injectable, Logger } from '@nestjs/common';
 import { UserRepositoryService } from '@repository';
@@ -291,13 +292,16 @@ export class DatabaseService {
     ): Promise<StartInfoClientResponse> {
         // 유효성 검증 (null/undefined만 체크, 빈 문자열은 허용)
         if (dbname == null || databaseId == null || databasePassword == null) {
-            throw DatabaseError.MissingDBCredentials({
-                missingFields: [
-                    dbname == null && 'dbname',
-                    databaseId == null && 'id',
-                    databasePassword == null && 'password',
-                ].filter(Boolean) as string[],
-            });
+            const missingFields = [
+                dbname == null && 'dbname',
+                databaseId == null && 'id',
+                databasePassword == null && 'password',
+            ].filter(Boolean) as string[];
+            
+            throw ValidationError.MissingDBCredentials(
+                dbname || 'unknown',
+                missingFields,
+            );
         }
     
         // atomicUpdateUser를 사용하여 저장

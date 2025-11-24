@@ -13,6 +13,7 @@ export type ErrorKind =
     | 'USER'
     | 'INTERNAL'
     | 'CMS'
+    | 'DATABASE'
     | 'VALIDATION';
 
 /**
@@ -35,7 +36,7 @@ export class AppError extends Error {
     // RFC 7807 Problem Details generation (for client response - excluding internal information)
     toProblemDetails(requestUrl?: string) {
         // 클라이언트로 보내는 최소한의 정보만 포함
-        return {
+        const baseResponse = {
             type: `/errors/${this.kind.toLowerCase()}/${this.code.toLowerCase()}`,
             title: this.code
                 .split('_')
@@ -49,6 +50,59 @@ export class AppError extends Error {
             detail: this.message,
             code: this.code,
         };
+
+        // additionalData에서 안전한 필드만 필터링하여 포함
+        // 보안상 민감한 정보는 제외 (response, stack, originalError, hostUid 등)
+        if (this.additionalData) {
+            const safeFields = this.getSafeFieldsForClient(this.additionalData);
+            if (Object.keys(safeFields).length > 0) {
+                return { ...baseResponse, ...safeFields };
+            }
+        }
+
+        return baseResponse;
+    }
+
+    /**
+     * 클라이언트에 안전하게 노출할 수 있는 필드만 필터링합니다.
+     * 보안상 민감한 정보는 제외합니다.
+     * 
+     * @private
+     */
+    private getSafeFieldsForClient(additionalData: Record<string, any>): Record<string, any> {
+        const safeFields: Record<string, any> = {};
+        
+        // 허용된 안전한 필드 목록 (화이트리스트 방식)
+        const allowedFields = [
+            'missingFields',      // 유효성 검사에 필요
+            'dbname',             // DB 이름 (공개 정보)
+            'bname',              // 브로커 이름 (공개 정보)
+            'message',            // 사용자 친화적 메시지
+        ];
+
+        // 민감한 정보 필드 (제외)
+        const sensitiveFields = [
+            'response',           // CMS 응답 전체 (내부 정보 포함)
+            'stack',              // 스택 트레이스
+            'originalError',      // 원본 에러
+            'hostUid',            // 호스트 UID (보안)
+            'userId',             // 사용자 ID (보안)
+            'password',           // 비밀번호
+            'token',              // 토큰
+            'address',            // 호스트 주소 (보안)
+            'port',               // 포트 (보안)
+        ];
+
+        for (const [key, value] of Object.entries(additionalData)) {
+            // 허용된 필드이고 민감한 필드가 아닌 경우만 포함
+            if (allowedFields.includes(key) && !sensitiveFields.includes(key)) {
+                // 값이 객체인 경우 재귀적으로 필터링하지 않고 원본 유지
+                // (missingFields는 배열이므로 안전)
+                safeFields[key] = value;
+            }
+        }
+
+        return safeFields;
     }
 
     // Detailed information for logging (including internal system information)
@@ -167,18 +221,24 @@ export class AppError extends Error {
                 }
             case 'INTERNAL':
                 return 500;
-            case 'CMS':
+            case 'DATABASE':
                 // DatabaseError의 경우 에러 코드에 따라 구체적인 HTTP 상태 반환
                 switch (this.code) {
-                    case DatabaseErrorCode.HOST_NOT_FOUND:
-                        return 404; // Not Found
-                    case DatabaseErrorCode.HOST_ERROR:
-                        return 502; // Bad Gateway (호스트 서버 문제)
+                    case DatabaseErrorCode.DUPLICATED_DATABASE_PROFILE:
+                        return 409; // Conflict - resource already exists
                     case DatabaseErrorCode.INTERNAL_ERROR:
                         return 500; // Internal Server Error
+                    case DatabaseErrorCode.GET_START_INFO_FAILED:
+                    case DatabaseErrorCode.START_DATABASE_FAILED:
+                    case DatabaseErrorCode.STOP_DATABASE_FAILED:
+                    case DatabaseErrorCode.RESTART_DATABASE_FAILED:
+                    case DatabaseErrorCode.LOGIN_DATABASE_FAILED:
                     default:
-                        return 500;
+                        return 500; // Internal Server Error
                 }
+            case 'CMS':
+                // CMS 관련 에러 (DatabaseError가 아닌 순수 CMS 에러)
+                return 500;
             case 'VALIDATION':
                 return 400; // Bad Request
             default:

@@ -1,5 +1,5 @@
 import { HostInfo, DBInfo } from '@type/index';
-import { DatabaseError } from '@error/database/database-error';
+import { ValidationError } from '@error/validation/validation-error';
 
 /**
  * Resolved database authentication information.
@@ -33,7 +33,7 @@ export class DBAuthResolver {
      * @param clientId - Client-provided database user ID (required if profile doesn't exist)
      * @param clientPassword - Client-provided database password (required if profile doesn't exist)
      * @returns ResolvedDBAuth containing dbname, id, and password
-     * @throws DatabaseError.MissingDBCredentials if profile doesn't exist and client credentials are not provided
+     * @throws ValidationError.MissingDBCredentials if profile doesn't exist and client credentials are not provided
      * 
      * @example
      * ```typescript
@@ -70,11 +70,7 @@ export class DBAuthResolver {
             if (clientId == null) missingFields.push('id');
             if (clientPassword == null) missingFields.push('password');
             
-            throw DatabaseError.MissingDBCredentials({
-                dbname,
-                message: `Database profile not found for dbname: ${dbname}. Client must provide id and password when profile doesn't exist.`,
-                missingFields,
-            });
+            throw ValidationError.MissingDBCredentials(dbname, missingFields);
         }
 
         return {
