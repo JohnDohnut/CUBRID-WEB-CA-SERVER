@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { CmsConfigController } from './cms-config.controller';
 import { CmsConfigService } from './cms-config.service';
 import { HostModule } from '@host';
-import { CmsHttpsClientModule } from '../cms-https-client/cms-https-client.module';
+import { CmsHttpsClientModule } from '@cms-https-client/cms-https-client.module';
 
 /**
  * Module for managing CMS configuration operations.

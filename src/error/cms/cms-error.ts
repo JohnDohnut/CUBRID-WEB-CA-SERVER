@@ -1,4 +1,4 @@
-import { AppError } from '../app-error';
+import { AppError } from '@error/app-error';
 
 /**
  * Enumeration of CMS error codes.

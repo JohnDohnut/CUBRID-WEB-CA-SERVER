@@ -79,29 +79,6 @@ export class DatabaseError extends AppError {
         );
     }
 
-    static HostNotFound(
-        additionalData?: Record<string, any>,
-        originalError?: Error,
-    ) {
-        return new DatabaseError(
-            'CMS',
-            DatabaseErrorCode.HOST_NOT_FOUND,
-            additionalData,
-            originalError,
-        );
-    }
-
-    static HostError(
-        additionalData?: Record<string, any>,
-        originalError?: Error,
-    ) {
-        return new DatabaseError(
-            'CMS',
-            DatabaseErrorCode.HOST_ERROR,
-            additionalData,
-            originalError,
-        );
-    }
 
     static InternalError(
         additionalData?: Record<string, any>,

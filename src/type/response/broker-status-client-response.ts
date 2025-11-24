@@ -1,5 +1,5 @@
-import { BaseCmsResponse } from '../cms-response/base-cms-response';
-import { GetBrokerStatusCmsResponse } from '../cms-response/get-broker-status-cms-response';
+import { BaseCmsResponse } from '@type/cms-response/base-cms-response';
+import { GetBrokerStatusCmsResponse } from '@type/cms-response/get-broker-status-cms-response';
 
 /**
  * Client-facing response for broker status.

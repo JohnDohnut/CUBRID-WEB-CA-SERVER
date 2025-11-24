@@ -3,19 +3,18 @@ import { DatabaseError } from '@error/database/database-error';
 import { HostService } from '@host';
 import { Injectable, Logger } from '@nestjs/common';
 import { UserRepositoryService } from '@repository';
-import { DBAuthResolver } from '@util/db-auth-resolver';
-import { CmsHttpsClientService } from '../cms-https-client/cms-https-client.service';
+import { CmsHttpsClientService } from '@cms-https-client/cms-https-client.service';
 import {
     BaseCmsRequest,
     BaseCmsResponse,
     StartInfoClientResponse
-} from '../type';
+} from '@type';
 import {
-    LoginDBCmsRequest,
     StartDatabaseCmsRequest,
     StopDatabaseCmsRequest,
-} from '../type/cms-request';
-import { StartInfoCmsResponse } from '../type/cms-response/start-info-cms-response';
+} from '@type/cms-request';
+import { StartInfoCmsResponse } from '@type/cms-response/start-info-cms-response';
+import { HostError } from '@error/index';
 
 /**
  * Service for managing database operations.
@@ -61,6 +60,7 @@ export class DatabaseService {
     ): Promise<StartInfoClientResponse> {
         // Find host with full password, token, dbProfiles, etc
         const host = await this.hostService.findHostInternal(userId, hostUid);
+    
         const url = `https://${host.address}:${host.port}/cm_api`;
         const data: BaseCmsRequest = {
             task: 'startinfo',
@@ -116,7 +116,7 @@ export class DatabaseService {
      * @param userId 사용자 ID (JWT)
      * @param hostUid 호스트 UID
      * @param dbname 시작할 DB 이름
-     * @returns 성공 시 true
+     * @returns 성공 시 최신 시작 정보 (StartInfoClientResponse)
      * @throws DatabaseError CMS status가 fail인 경우
      */
     @HandleHostErrors()
@@ -126,7 +126,7 @@ export class DatabaseService {
         userId: string,
         hostUid: string,
         dbname: string,
-    ): Promise<boolean> {
+    ): Promise<StartInfoClientResponse> {
         const host = await this.hostService.findHostInternal(userId, hostUid);
         const url = `https://${host.address}:${host.port}/cm_api`;
         const data: StartDatabaseCmsRequest = {
@@ -145,7 +145,8 @@ export class DatabaseService {
 
         // CMS는 항상 200/201 HTTP status를 반환하므로 body의 status 필드로 성공 여부 판단
         if (response.status === 'success') {
-            return true;
+            // 작업 성공 후 최신 상태 반환
+            return await this.startInfo(userId, hostUid);
         }
 
         throw DatabaseError.StartDatabaseFailed({ response, dbname });
@@ -159,7 +160,7 @@ export class DatabaseService {
      * @param userId 사용자 ID (JWT)
      * @param hostUid 호스트 UID
      * @param dbname 중지할 DB 이름
-     * @returns 성공 시 true
+     * @returns 성공 시 최신 시작 정보 (StartInfoClientResponse)
      * @throws DatabaseError CMS status가 fail인 경우
      */
     @HandleHostErrors()
@@ -169,7 +170,7 @@ export class DatabaseService {
         userId: string,
         hostUid: string,
         dbname: string,
-    ): Promise<boolean> {
+    ): Promise<StartInfoClientResponse> {
         const host = await this.hostService.findHostInternal(userId, hostUid);
         const url = `https://${host.address}:${host.port}/cm_api`;
         const data: StopDatabaseCmsRequest = {
@@ -188,7 +189,8 @@ export class DatabaseService {
 
         // CMS는 항상 200/201 HTTP status를 반환하므로 body의 status 필드로 성공 여부 판단
         if (response.status === 'success') {
-            return true;
+            // 작업 성공 후 최신 상태 반환
+            return await this.startInfo(userId, hostUid);
         }
 
         throw DatabaseError.StopDatabaseFailed({ response, dbname });
@@ -202,7 +204,7 @@ export class DatabaseService {
      * @param userId 사용자 ID (JWT)
      * @param hostUid 호스트 UID
      * @param dbname 재시작할 DB 이름
-     * @returns 성공 시 true
+     * @returns 성공 시 최신 시작 정보 (StartInfoClientResponse)
      * @throws DatabaseError 중지/시작 단계에서 실패 시 해당 에러
      */
     @HandleHostErrors()
@@ -212,7 +214,7 @@ export class DatabaseService {
         userId: string,
         hostUid: string,
         dbname: string,
-    ): Promise<boolean> {
+    ): Promise<StartInfoClientResponse> {
         // Stop database
         const host = await this.hostService.findHostInternal(userId, hostUid);
         const url = `https://${host.address}:${host.port}/cm_api`;
@@ -248,7 +250,8 @@ export class DatabaseService {
             checkCmsTokenError(startResponse);
             
             if (startResponse.status === 'success') {
-                return true;
+                // 작업 성공 후 최신 상태 반환
+                return await this.startInfo(userId, hostUid);
             } else {
                 throw DatabaseError.StartDatabaseFailed({
                     response: startResponse,
@@ -262,59 +265,6 @@ export class DatabaseService {
             });
         }
     }
-    /**
-     * Login to a database using profile or client-provided credentials.
-     *
-     * 프로파일 또는 클라이언트 제공 자격 증명을 사용하여 데이터베이스에 로그인합니다.
-     *
-     * @param userId 사용자 ID (JWT)
-     * @param hostUid 호스트 UID
-     * @param dbname 데이터베이스 이름
-     * @param clientId 클라이언트 제공 DB 사용자 ID (프로파일이 없는 경우 필수)
-     * @param clientPassword 클라이언트 제공 DB 비밀번호 (프로파일이 없는 경우 필수)
-     * @returns 성공 시 true
-     * @throws DatabaseError CMS status가 fail인 경우 또는 프로파일이 없고 자격 증명이 제공되지 않은 경우
-     */
-    @HandleHostErrors()
-    @HandleCmsHttpsClientErrors()
-    @HandleDatabaseErrors()
-    async loginDatabase(
-        userId: string,
-        hostUid: string,
-        dbname: string,
-        clientId?: string,
-        clientPassword?: string,
-    ): Promise<boolean> {
-        const host = await this.hostService.findHostInternal(userId, hostUid);
-        
-        // DB 인증 정보 해결 (프로파일 우선, 없으면 클라이언트 제공 정보 사용)
-        const dbAuth = DBAuthResolver.resolve(host, dbname, clientId, clientPassword);
-        
-        const url = `https://${host.address}:${host.port}/cm_api`;
-        const data: LoginDBCmsRequest = {
-            task: 'dbmtuserlogin',
-            token: host.token || '',
-            targetid: host.id,
-            dbname: dbAuth.dbname,
-            dbuser: dbAuth.id,
-            dbpasswd: dbAuth.password,
-        };
-
-        const response = await this.cmsClient.postAuthenticated<
-            LoginDBCmsRequest,
-            BaseCmsResponse
-        >(url, data);
-
-        // CMS token 에러 체크
-        checkCmsTokenError(response);
-
-        // CMS는 항상 200/201 HTTP status를 반환하므로 body의 status 필드로 성공 여부 판단
-        if (response.status === 'success') {
-            return true;
-        }
-
-        throw DatabaseError.LoginDatabaseFailed({ response, dbname });
-    }
 
     /**
      * Save a database profile for a host.
@@ -326,7 +276,7 @@ export class DatabaseService {
      * @param dbname 데이터베이스 이름
      * @param databaseId 데이터베이스 사용자 ID
      * @param databasePassword 데이터베이스 비밀번호
-     * @returns 성공 시 true
+     * @returns 성공 시 최신 시작 정보 (StartInfoClientResponse)
      * @throws DatabaseError 프로파일이 이미 존재하거나 저장 실패 시
      */
     @HandleHostErrors()
@@ -338,7 +288,7 @@ export class DatabaseService {
         dbname: string,
         databaseId: string,
         databasePassword: string,
-    ): Promise<boolean> {
+    ): Promise<StartInfoClientResponse> {
         // 유효성 검증 (null/undefined만 체크, 빈 문자열은 허용)
         if (dbname == null || databaseId == null || databasePassword == null) {
             throw DatabaseError.MissingDBCredentials({
@@ -354,7 +304,7 @@ export class DatabaseService {
         await this.repository.atomicUpdateUser(userId, async (user) => {
             const host = user.host_list[hostUid];
             if (!host) {
-                throw DatabaseError.HostNotFound({ hostUid });
+                throw HostError.NoSuchHost({ hostUid });
             }
 
             // 기존 host 객체에 dbProfiles가 없으면 초기화 (하위 호환성)
@@ -381,7 +331,8 @@ export class DatabaseService {
             return user;
         });
 
-        return true;
+        // 프로파일 저장 후 최신 상태 반환 (isProfileExists가 업데이트됨)
+        return await this.startInfo(userId, hostUid);
     }
 }
 

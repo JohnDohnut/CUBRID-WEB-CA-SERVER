@@ -1,8 +1,8 @@
 import { Body, Controller, Logger, Post, Request } from '@nestjs/common';
 import { DatabaseService } from './database.service';
-import { BaseCmsResponse, HostUidRequest, DatabaseClientRequest as DatabaseInstanceClientRequest, StartInfoClientResponse, DatabaseLoginClientRequest } from '../type';
+import { BaseCmsResponse, HostUidRequest, DatabaseClientRequest as DatabaseInstanceClientRequest, StartInfoClientResponse } from '@type';
 import { ValidationError } from '@error/validation/validation-error';
-import { SaveDatabaseProfileRequest } from '../type/request/sava-database-profile';
+import { SaveDatabaseProfileRequest } from '@type/request/sava-database-profile';
 
 /**
  * Controller for handling database operations.
@@ -57,18 +57,18 @@ export class DatabaseController {
 
     /**
      * Start a database on a host.
-     * 성공 시 true를 반환하고, 실패 시 도메인 에러(DatabaseError)를 던집니다.
+     * 성공 시 최신 시작 정보를 반환하고, 실패 시 도메인 에러(DatabaseError)를 던집니다.
      *
      * @route POST /database/start
      * @param req Express request (contains authenticated user)
      * @param body DatabaseClientRequest — `hostUid`, `dbname`
-     * @returns boolean True on success
+     * @returns StartInfoClientResponse 최신 데이터베이스 시작 정보
      */
     @Post('start')
     async startDatabase(
         @Request() req,
         @Body() body: DatabaseInstanceClientRequest
-    ): Promise<boolean> {
+    ): Promise<StartInfoClientResponse> {
         const userId = req.user.sub;
         
         if (!body || !body.hostUid || !body.dbname) {
@@ -86,18 +86,18 @@ export class DatabaseController {
 
     /**
      * Stop a database on a host.
-     * 성공 시 true를 반환하고, 실패 시 도메인 에러(DatabaseError)를 던집니다.
+     * 성공 시 최신 시작 정보를 반환하고, 실패 시 도메인 에러(DatabaseError)를 던집니다.
      *
      * @route POST /database/stop
      * @param req Express request (contains authenticated user)
      * @param body DatabaseClientRequest — `hostUid`, `dbname`
-     * @returns boolean True on success
+     * @returns StartInfoClientResponse 최신 데이터베이스 시작 정보
      */
     @Post('stop')
     async stopDatabase(
         @Request() req,
         @Body() body: DatabaseInstanceClientRequest
-    ): Promise<boolean> {
+    ): Promise<StartInfoClientResponse> {
         const userId = req.user.sub;
         
         if (!body || !body.hostUid || !body.dbname) {
@@ -115,18 +115,18 @@ export class DatabaseController {
 
     /**
      * Restart a database on a host (stop → start sequence).
-     * 성공 시 true를 반환하고, 중지/시작 단계별 실패 시 해당 도메인 에러를 던집니다.
+     * 성공 시 최신 시작 정보를 반환하고, 중지/시작 단계별 실패 시 해당 도메인 에러를 던집니다.
      *
      * @route POST /database/restart
      * @param req Express request (contains authenticated user)
      * @param body DatabaseClientRequest — `hostUid`, `dbname`
-     * @returns boolean True on success
+     * @returns StartInfoClientResponse 최신 데이터베이스 시작 정보
      */
     @Post('restart')
     async restartDatabase(
         @Request() req,
         @Body() body: DatabaseInstanceClientRequest
-    ): Promise<boolean> {
+    ): Promise<StartInfoClientResponse> {
         const userId = req.user.sub;
         
         if (!body || !body.hostUid || !body.dbname) {
@@ -142,50 +142,21 @@ export class DatabaseController {
         return result;
     }
 
-    /**
-     * Login to a database using profile or client-provided credentials.
-     * 
-     * 프로파일 또는 클라이언트 제공 자격 증명을 사용하여 데이터베이스에 로그인합니다.
-     * 
-     * - Profile이 있는 경우: dbname만 필요
-     * - Profile이 없는 경우: dbname + id + password 필요
-     *
-     * @route POST /database/login
-     * @param req Express request (contains authenticated user)
-     * @param body DatabaseLoginClientRequest
-     * @returns boolean True on success
-     */
-    @Post('login')
-    async loginDatabase(
-        @Request() req,
-        @Body() body: DatabaseLoginClientRequest
-    ): Promise<boolean> {
-        const userId = req.user.sub;
-        
-        if (!body || !body.hostUid || !body.dbname) {
-            const missingFields: string[] = [];
-            if (!body?.hostUid) missingFields.push('hostUid');
-            if (!body?.dbname) missingFields.push('dbname');
-            Logger.error(`Missing required fields: ${missingFields.join(', ')}`, 'DatabaseController');
-            throw ValidationError.MissingRequiredField(missingFields, { endpoint: 'database/login' });
-        }
-        
-        Logger.log(`Logging in to database: ${body.dbname} on host: ${body.hostUid}`, 'DatabaseController');
-        const result = await this.databaseService.loginDatabase(
-            userId,
-            body.hostUid,
-            body.dbname,
-            body.id,
-            body.password,
-        );
-        return result;
-    }
 
+    /**
+     * Save a database profile for a host.
+     * 성공 시 최신 시작 정보를 반환합니다 (isProfileExists가 업데이트됨).
+     *
+     * @route POST /database/register
+     * @param req Express request (contains authenticated user)
+     * @param body SaveDatabaseProfileRequest — `hostUid`, `dbname`, `id`, `password`
+     * @returns StartInfoClientResponse 최신 데이터베이스 시작 정보
+     */
     @Post('register')
     async saveDatabaseProfile(
         @Request() req,
         @Body() body: SaveDatabaseProfileRequest,
-    ): Promise<boolean> {
+    ): Promise<StartInfoClientResponse> {
         const userId = req.user.sub;
 
         if (!body || !body.hostUid || !body.dbname) {

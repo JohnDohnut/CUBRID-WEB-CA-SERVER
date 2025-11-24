@@ -1,7 +1,7 @@
 import { HostService } from '@host';
 import { Injectable } from '@nestjs/common';
-import { CmsHttpsClientService } from '../cms-https-client/cms-https-client.service';
-import { BaseCmsRequest, BaseCmsResponse, GetBrokersInfoCmsResponse, HostInfo, HandleBrokerCmsRequest, GetBrokerStatusCmsRequest, GetBrokerStatusCmsResponse, GetBrokerStatusClientResponse } from '../type';
+import { CmsHttpsClientService } from '@cms-https-client/cms-https-client.service';
+import { BaseCmsRequest, BaseCmsResponse, GetBrokersInfoCmsResponse, HostInfo, HandleBrokerCmsRequest, GetBrokerStatusCmsRequest, GetBrokerStatusCmsResponse, GetBrokerStatusClientResponse } from '@type';
 import { HandleHostErrors, checkCmsTokenError, HandleCmsHttpsClientErrors } from '@common';
 import { BrokerError } from '@error/broker/broker-error';
 import { CmsError } from '@error/cms/cms-error';

@@ -1,5 +1,5 @@
-import { BaseCmsResponse } from '../cms-response/base-cms-response';
-import { StartInfoCmsResponse } from '../cms-response/start-info-cms-response';
+import { BaseCmsResponse } from '@type/cms-response/base-cms-response';
+import { StartInfoCmsResponse } from '@type/cms-response/start-info-cms-response';
 
 /**
  * Client-facing response for start info.

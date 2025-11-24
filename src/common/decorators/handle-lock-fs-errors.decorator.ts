@@ -1,5 +1,5 @@
 import { LockError } from '@error/lock/lock-error';
-import { AppError } from '@root/src/error';
+import { AppError } from '@error';
 
 /**
  * A method decorator that wraps lock service methods in a try...catch block.

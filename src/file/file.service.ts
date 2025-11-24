@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CmsHttpsClientService } from '../cms-https-client/cms-https-client.service';
-import { CmsAuthService } from '../cms-auth/cms-auth.service';
+import { CmsHttpsClientService } from '@cms-https-client/cms-https-client.service';
+import { CmsAuthService } from '@cms-auth/cms-auth.service';
 import { UserRepositoryService } from '@repository';
 import { 
     CheckFileCmsRequest, 

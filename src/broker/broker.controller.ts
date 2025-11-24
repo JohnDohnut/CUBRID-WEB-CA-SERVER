@@ -1,5 +1,5 @@
 import { Body, Controller, Logger, Post, Request } from '@nestjs/common';
-import { BaseCmsResponse, BrokerListClientResponse, BrokerClientRequest, HostUidRequest, GetBrokerStatusClientResponse } from '../type';
+import { BaseCmsResponse, BrokerListClientResponse, BrokerClientRequest, HostUidRequest, GetBrokerStatusClientResponse } from '@type';
 import { BrokerService } from './broker.service';
 import { ValidationError } from '@error/validation/validation-error';
 

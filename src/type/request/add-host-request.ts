@@ -1,4 +1,4 @@
-import { HostInfo } from '../host-info';
+import { HostInfo } from '@type/host-info';
 
 /**
  * Request interface for adding a new host.

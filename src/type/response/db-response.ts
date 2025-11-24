@@ -1,4 +1,4 @@
-import { DBInfo } from '../db-info';
+import { DBInfo } from '@type/db-info';
 
 /**
  * Response interface for single database connection information.

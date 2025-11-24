@@ -1,5 +1,5 @@
-import { BaseCmsResponse } from '../cms-response/base-cms-response';
-import { GetEnvCmsResponse } from '../cms-response/get-env-cms-response';
+import { BaseCmsResponse } from '@type/cms-response/base-cms-response';
+import { GetEnvCmsResponse } from '@type/cms-response/get-env-cms-response';
 
 /**
  * Client-facing response for environment information.

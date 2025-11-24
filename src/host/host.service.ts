@@ -81,7 +81,7 @@ export class HostService {
      * ```
      */
     @HandleHostErrors()
-    async addHost(userId: string, hostInfo: AddHostRequest): Promise<User> {
+    async addHost(userId: string, hostInfo: AddHostRequest): Promise<SafeHostList> {
         const updatedUser = await this.repository.atomicUpdateUser(
             userId,
             async (user: User) => {
@@ -116,8 +116,8 @@ export class HostService {
             },
         );
 
-        return updatedUser;
-    }
+        const rv = omitHashMap(updatedUser.host_list, ['token', 'password', 'dbProfiles']);
+        return rv;    }
 
     /**
      * Removes a host from the user's host list.
@@ -129,7 +129,7 @@ export class HostService {
      * @throws {UserError} When user is not found.
      */
     @HandleHostErrors()
-    async removeHost(userId: string, hostUid: string): Promise<User> {
+    async removeHost(userId: string, hostUid: string): Promise<SafeHostList> {
         const updatedUser = await this.repository.atomicUpdateUser(
             userId,
             async (user: User) => {
@@ -140,7 +140,8 @@ export class HostService {
                 return user;
             },
         );
-        return updatedUser;
+        const rv = omitHashMap(updatedUser.host_list, ['token', 'password', 'dbProfiles']);
+        return rv;
     }
 
     /**
@@ -159,12 +160,25 @@ export class HostService {
         userId: string,
         hostUid: string,
         hostInfo: UpdateHostRequest,
-    ): Promise<User> {
+    ): Promise<SafeHostList> {
         const updatedUser = await this.repository.atomicUpdateUser(
             userId,
             async (user: User) => {
                 if (!user.host_list[hostUid]) {
                     throw HostError.NoSuchHost({ hostUid });
+                }
+
+                const duplicate = Object.values(user.host_list).find(
+                    (host) =>
+                        host.address === hostInfo.address &&
+                        host.port === hostInfo.port &&
+                        host.id === hostInfo.id,
+                );
+
+                if (duplicate) {
+                    throw HostError.DuplicatedHost({
+                        duplicatedHostId: duplicate.uid,
+                    });
                 }
 
                 const existingHost = user.host_list[hostUid];
@@ -179,7 +193,8 @@ export class HostService {
                 return user;
             },
         );
-        return updatedUser;
+        const rv = omitHashMap(updatedUser.host_list, ['token', 'password', 'dbProfiles']);
+        return rv;
     }
 
     /**

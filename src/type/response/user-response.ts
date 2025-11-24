@@ -1,4 +1,4 @@
-import { User } from '../user';
+import { User } from '@type/user';
 
 /**
  * Response interface for user information.

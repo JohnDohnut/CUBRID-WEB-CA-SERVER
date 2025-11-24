@@ -1,5 +1,4 @@
-import { DatabaseError } from '@error/database/database-error';
-import { HostError, HostErrorCode, CmsError, UserError, AppError } from '@error/index';
+import { AppError } from '@error/index';
 
 /**
  * A method decorator that wraps database service methods in a try...catch block.
@@ -25,7 +24,9 @@ export function HandleDatabaseErrors() {
             try {
                 return await originalMethod.apply(this, args);
             } catch (err) {
-                // 모든 에러를 그대로 전달 (변환하지 않음)
+                if(err instanceof AppError){
+                    
+                }
                 throw err;
             }
         };

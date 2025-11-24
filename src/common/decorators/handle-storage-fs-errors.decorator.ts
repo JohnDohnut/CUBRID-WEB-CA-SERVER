@@ -1,5 +1,5 @@
 import { StorageError } from '@error/storage/storage-error';
-import { AppError } from '@root/src/error';
+import { AppError } from '@error';
 
 /**
  * A method decorator that wraps storage methods in a try...catch block.

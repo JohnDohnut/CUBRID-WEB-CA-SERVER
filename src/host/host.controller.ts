@@ -7,17 +7,15 @@ import {
     Put,
     Request,
 } from '@nestjs/common';
-import { HostService } from './host.service';
-import { HandleHostErrors } from '@common';
 import {
     AddHostRequest,
-    UpdateHostClientRequest,
-    GetHostClientRequest,
     DeleteHostClientRequest,
+    GetHostClientRequest,
     GetHostsResponse,
     HostResponse,
-    SafeHostList,
+    UpdateHostClientRequest,
 } from '@type/index';
+import { HostService } from './host.service';
 
 /**
  * Controller for managing host-related operations.
@@ -91,11 +89,11 @@ export class HostController {
     async updateHost(
         @Request() request,
         @Body() hostInfo: UpdateHostClientRequest,
-    ): Promise<void> {
+    ): Promise<GetHostsResponse> {
         const userId = request.user.sub;
         // hostUid를 제외한 나머지 정보를 서비스에 전달
         const { hostUid, ...updateData } = hostInfo;
-        await this.hostService.updateHost(userId, hostUid, updateData);
+        return {host_list : await this.hostService.updateHost(userId, hostUid, updateData)};
     }
 
     /**
@@ -109,8 +107,8 @@ export class HostController {
     async deleteHost(
         @Request() request,
         @Body() body: DeleteHostClientRequest,
-    ): Promise<SafeHostList> {
+    ): Promise<GetHostsResponse> {
         const userId = request.user.sub;
-        return await this.hostService.deleteHost(userId, body.hostUid);
+        return {host_list : await this.hostService.deleteHost(userId, body.hostUid)};
     }
 }

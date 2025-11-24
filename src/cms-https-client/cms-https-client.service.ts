@@ -5,7 +5,7 @@ import { HandleCmsHttpsClientErrors } from '@decorators/handle-cms-https-client-
 import { BaseCmsRequest, CmsForwardClientRequest } from '@type/index';
 import * as https from 'https';
 import { HostService } from '@host';
-import { EncryptionService } from '../security';
+import { EncryptionService } from '@security';
 
 /**
  * Service for handling secure HTTPS client communications with CMS (Central Management System).

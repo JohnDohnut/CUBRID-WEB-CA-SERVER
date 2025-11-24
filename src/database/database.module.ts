@@ -2,8 +2,10 @@ import { Module } from '@nestjs/common';
 import { DatabaseController } from './database.controller';
 import { DatabaseService } from './database.service';
 import { HostModule } from '@host';
-import { CmsHttpsClientModule } from '../cms-https-client/cms-https-client.module';
+import { CmsHttpsClientModule } from '@cms-https-client/cms-https-client.module';
 import { UserRepositoryModule } from '@repository';
+import { DatabaseUserController } from './user/database-user.controller';
+import { DatabaseUserService } from './user/database-user.service';
 
 /**
  * Module for managing database functionalities.
@@ -16,8 +18,8 @@ import { UserRepositoryModule } from '@repository';
  * @since 1.0.0
  */
 @Module({
-  controllers: [DatabaseController],
-  providers: [DatabaseService],
+  controllers: [DatabaseController, DatabaseUserController],
+  providers: [DatabaseService, DatabaseUserService],
   imports: [HostModule, CmsHttpsClientModule, UserRepositoryModule]
 })
 export class DatabaseModule {}

@@ -4,7 +4,7 @@ import {
     StorageError,
     StorageErrorCode,
     AppError,
-} from '@root/src/error';
+} from '@error';
 
 /**
  * A method decorator that wraps user service methods in a try...catch block.

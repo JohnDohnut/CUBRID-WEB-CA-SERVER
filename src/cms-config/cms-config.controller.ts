@@ -1,6 +1,6 @@
 import { Body, Controller, Logger, Post, Request } from '@nestjs/common';
 import { CmsConfigService } from './cms-config.service';
-import { HostUidRequest, GetEnvClientResponse } from '../type';
+import { HostUidRequest, GetEnvClientResponse } from '@type';
 import { ValidationError } from '@error/validation/validation-error';
 
 /**

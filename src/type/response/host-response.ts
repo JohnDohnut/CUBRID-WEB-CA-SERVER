@@ -1,4 +1,4 @@
-import { HostInfo } from '../host-info';
+import { HostInfo } from '@type/host-info';
 
 /**
  * Response interface for single host information.

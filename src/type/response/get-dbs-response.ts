@@ -1,5 +1,5 @@
-import { HashMap } from '../collections';
-import { DBInfo } from '../db-info';
+import { HashMap } from '@type/collections';
+import { DBInfo } from '@type/db-info';
 
 /**
  * Response interface for getting database connections list.

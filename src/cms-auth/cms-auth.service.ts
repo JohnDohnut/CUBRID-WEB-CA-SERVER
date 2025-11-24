@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CmsHttpsClientService } from '../cms-https-client/cms-https-client.service';
+import { CmsHttpsClientService } from '@cms-https-client/cms-https-client.service';
 import {
     HostInfo,
     CheckFileCmsRequest,

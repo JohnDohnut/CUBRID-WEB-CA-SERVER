@@ -1,8 +1,8 @@
 import { HostService } from '@host';
 import { Injectable } from '@nestjs/common';
-import { CmsHttpsClientService } from '../cms-https-client/cms-https-client.service';
-import { CmsForwardClientRequest, GetEnvClientResponse } from '../type';
-import { GetEnvCmsResponse } from '../type/cms-response/get-env-cms-response';
+import { CmsHttpsClientService } from '@cms-https-client/cms-https-client.service';
+import { CmsForwardClientRequest, GetEnvClientResponse } from '@type';
+import { GetEnvCmsResponse } from '@type/cms-response/get-env-cms-response';
 import { HandleHostErrors, HandleCmsHttpsClientErrors } from '@common';
 
 /**

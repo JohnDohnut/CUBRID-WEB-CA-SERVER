@@ -1,4 +1,4 @@
-import { SafeHostList } from '../collections';
+import { SafeHostList } from '@type/collections';
 
 /**
  * Response interface for getting hosts list.

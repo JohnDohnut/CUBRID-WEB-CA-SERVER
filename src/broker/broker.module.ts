@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { BrokerController } from './broker.controller';
 import { BrokerService } from './broker.service';
 import { HostModule } from '@host';
-import { CmsHttpsClientModule } from '../cms-https-client/cms-https-client.module';
+import { CmsHttpsClientModule } from '@cms-https-client/cms-https-client.module';
 
 /**
  * Module for managing broker-related functionalities.

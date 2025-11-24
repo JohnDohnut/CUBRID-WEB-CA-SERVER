@@ -1,4 +1,4 @@
-import { HostError, LockError, LockErrorCode, StorageError, StorageErrorCode, AppError } from '@root/src/error';
+import { HostError, LockError, LockErrorCode, StorageError, StorageErrorCode, AppError } from '@error';
 
 /**
  * A method decorator that wraps host service methods in a try...catch block.

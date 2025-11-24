@@ -14,11 +14,11 @@ import { JwtAuthGuard, TokenModule } from '@token';
 import { UserModule } from '@user';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { CmsAuthModule } from './cms-auth/cms-auth.module';
-import { CmsConfigModule } from './cms-config/cms-config.module';
-import { FileModule } from './file/file.module';
-import { DatabaseModule } from './database/database.module';
-import { CmsHttpsClientModule } from './cms-https-client/cms-https-client.module';
+import { CmsAuthModule } from '@cms-auth/cms-auth.module';
+import { CmsConfigModule } from '@cms-config/cms-config.module';
+import { FileModule } from '@file/file.module';
+import { DatabaseModule } from '@database/database.module';
+import { CmsHttpsClientModule } from '@cms-https-client/cms-https-client.module';
 
 /**
  * Root application module that configures all feature modules and global providers.

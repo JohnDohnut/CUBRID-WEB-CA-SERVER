@@ -1,6 +1,6 @@
 import { HostResponse } from './host-response';
 import { GetHostsResponse } from './get-hosts-response';
-import { SafeHostList } from '../collections';
+import { SafeHostList } from '@type/collections';
 
 export type HostClientResponse = HostResponse;
 export type GetHostsClientResponse = GetHostsResponse;
