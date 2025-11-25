@@ -14,6 +14,15 @@ export { AuthErrorCode };
  * @since 1.0.0
  */
 export class AuthError extends AppError {
+    constructor(
+        kind: 'AUTH' | 'INTERNAL',
+        code: AuthErrorCode,
+        additionalData?: Record<string, any>,
+        originalError?: Error,
+    ) {
+        super(kind, code, additionalData, originalError);
+    }
+    
     /**
      * Creates an error indicating invalid authentication credentials.
      *

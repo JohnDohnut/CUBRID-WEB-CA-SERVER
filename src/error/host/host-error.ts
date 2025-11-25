@@ -11,6 +11,15 @@ export { HostErrorCode };
  * @since 1.0.0
  */
 export class HostError extends AppError {
+    constructor(
+        kind: 'RESOURCE',
+        code: HostErrorCode,
+        additionalData?: Record<string, any>,
+        originalError?: Error,
+    ) {
+        super(kind, code, additionalData, originalError);
+    }
+    
     /**
      * Creates an error indicating that the maximum number of hosts has been exceeded.
      *

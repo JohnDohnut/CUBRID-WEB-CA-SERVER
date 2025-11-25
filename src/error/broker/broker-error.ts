@@ -2,6 +2,15 @@ import { AppError } from '@error/app-error';
 import { BrokerErrorCode } from './broker-error-code';
 
 export class BrokerError extends AppError {
+    constructor(
+        kind: 'CMS',
+        code: BrokerErrorCode,
+        additionalData?: Record<string, any>,
+        originalError?: Error,
+    ) {
+        super(kind, code, additionalData, originalError);
+    }
+    
     static GetBrokersFailed(
         additionalData?: Record<string, any>,
         originalError?: Error,

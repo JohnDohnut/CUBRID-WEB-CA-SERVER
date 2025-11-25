@@ -9,6 +9,15 @@ import { ValidationErrorCode } from './validation-error-code';
  * 요청 본문 검증, 폼 검증 등에 사용됩니다.
  */
 export class ValidationError extends AppError {
+    constructor(
+        kind: 'VALIDATION',
+        code: ValidationErrorCode,
+        additionalData?: Record<string, any>,
+        originalError?: Error,
+    ) {
+        super(kind, code, additionalData, originalError);
+    }
+    
     /**
      * Creates a validation error for invalid request body.
      * 

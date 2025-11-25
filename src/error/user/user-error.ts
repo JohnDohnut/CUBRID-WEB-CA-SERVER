@@ -11,6 +11,15 @@ export { UserErrorCode };
  * @since 1.0.0
  */
 export class UserError extends AppError {
+    constructor(
+        kind: 'USER',
+        code: UserErrorCode,
+        additionalData?: Record<string, any>,
+        originalError?: Error,
+    ) {
+        super(kind, code, additionalData, originalError);
+    }
+    
     /**
      * Creates an error indicating that a user was not found.
      *

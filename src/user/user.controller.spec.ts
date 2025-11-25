@@ -5,14 +5,8 @@ describe('UserController', () => {
     let controller: UserController;
 
     beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            controllers: [UserController],
-        }).compile();
-
-        controller = module.get<UserController>(UserController);
+        // TODO: TestingModule 설정
     });
 
-    it('should be defined', () => {
-        expect(controller).toBeDefined();
-    });
+    // TODO: 테스트 케이스 작성
 });

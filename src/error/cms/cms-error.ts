@@ -26,6 +26,15 @@ export enum CmsErrorCode {
  * @since 1.0.0
  */
 export class CmsError extends AppError {
+    constructor(
+        kind: 'CMS',
+        code: CmsErrorCode,
+        additionalData?: Record<string, any>,
+        originalError?: Error,
+    ) {
+        super(kind, code, additionalData, originalError);
+    }
+    
     /**
      * Creates an error indicating that the request to the CMS API failed.
      *

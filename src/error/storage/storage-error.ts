@@ -11,6 +11,15 @@ export { StorageErrorCode };
  * @since 1.0.0
  */
 export class StorageError extends AppError {
+    constructor(
+        kind: 'STORAGE',
+        code: StorageErrorCode,
+        additionalData?: Record<string, any>,
+        originalError?: Error,
+    ) {
+        super(kind, code, additionalData, originalError);
+    }
+    
     /**
      * Creates an error indicating that a file was not found.
      *
