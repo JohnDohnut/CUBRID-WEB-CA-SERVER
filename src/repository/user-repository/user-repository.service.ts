@@ -80,6 +80,7 @@ export class UserRepositoryService {
             host_list: {},
             ha_mon_list: {},
             resource_mon_list: {},
+            user_preference : {dashboard_interval : 0},
         };
         await this.storageService.createAndWrite(
             hashedId,
