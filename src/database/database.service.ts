@@ -1,4 +1,10 @@
-import { checkCmsTokenError, HandleCmsHttpsClientErrors, HandleDatabaseErrors, HandleHostErrors, HandleUserRepoErrors } from '@common';
+import {
+    checkCmsTokenError,
+    HandleCmsHttpsClientErrors,
+    HandleDatabaseErrors,
+    HandleHostErrors,
+    HandleUserRepoErrors,
+} from '@common';
 import { DatabaseError } from '@error/database/database-error';
 import { ValidationError } from '@error/validation/validation-error';
 import { HostService } from '@host';
@@ -8,13 +14,16 @@ import { CmsHttpsClientService } from '@cms-https-client/cms-https-client.servic
 import {
     BaseCmsRequest,
     BaseCmsResponse,
-    StartInfoClientResponse
+    StartInfoClientResponse,
+    DatabaseVolumeInfoClientResponse,
 } from '@type';
 import {
+    DbSpaceInfoCmsRequest,
     StartDatabaseCmsRequest,
     StopDatabaseCmsRequest,
 } from '@type/cms-request';
 import { StartInfoCmsResponse } from '@type/cms-response/start-info-cms-response';
+import { DbSpaceInfoCmsResponse } from '@type/cms-response/db-space-info-cms-response';
 import { HostError } from '@error/index';
 
 /**
@@ -41,27 +50,26 @@ export class DatabaseService {
     ) {}
 
     /**
-     * Get start information for databases on a host.
-     * Returns domain-only data (CMS envelope removed).
+     * Get start information for databases on a host (internal use).
+     * Returns raw CMS response without transformation.
      *
-     * 특정 호스트의 데이터베이스 시작 정보를 조회합니다.
-     * CMS 메타 필드를 제거한 순수 데이터만 반환합니다.
+     * 특정 호스트의 데이터베이스 시작 정보를 조회합니다 (내부 사용).
+     * CMS 응답을 변환 없이 그대로 반환합니다.
      *
+     * @internal
      * @param userId 사용자 ID (JWT)
      * @param hostUid 호스트 UID
-     * @returns StartInfoClientResponse
+     * @returns StartInfoCmsResponse
      * @throws DatabaseError 요청 실패 또는 CMS status가 fail인 경우
      */
-    @HandleHostErrors()
-    @HandleCmsHttpsClientErrors()
     @HandleDatabaseErrors()
-    async startInfo(
+    async startInfoInternal(
         userId: string,
         hostUid: string,
-    ): Promise<StartInfoClientResponse> {
+    ): Promise<StartInfoCmsResponse> {
         // Find host with full password, token, dbProfiles, etc
         const host = await this.hostService.findHostInternal(userId, hostUid);
-    
+
         const url = `https://${host.address}:${host.port}/cm_api`;
         const data: BaseCmsRequest = {
             task: 'startinfo',
@@ -77,36 +85,61 @@ export class DatabaseService {
 
         // CMS는 항상 200/201 HTTP status를 반환하므로 body의 status 필드로 성공 여부 판단
         if (response.status === 'success') {
-            // BaseCmsResponse 필드 제외하고 순수 데이터만 반환
-            const { __EXEC_TIME , note, status, task, ...dataOnly } =
-                response as StartInfoCmsResponse;
-
-            // 유저의 호스트 객체에서 dbProfiles 추출 (없을 수 있음)
-            // dbProfiles는 { [dbname: string]: DatabaseProfile }
-            const dbProfiles = host.dbProfiles || {};
-
-            // CMS 응답: dblist와 activelist는 배열로 옴
-            // dblist[0].dbs가 없는 경우를 대비한 안전한 처리
-            const dbs = dataOnly.dblist?.[0]?.dbs || [];
-            
-            // activelist[0].active가 없는 경우를 대비한 안전한 처리
-            const activeList = dataOnly.activelist?.[0]?.active || [];
-
-            const clientResponse: StartInfoClientResponse = {
-                activelist: { active: activeList },
-                dblist: {
-                    dbs: dbs.map((db) => ({
-                        ...db,
-                        isProfileExists: !!dbProfiles[db.dbname]
-                    })),
-                },
-            };
-
-            return clientResponse;
+            return response as StartInfoCmsResponse;
         } else {
             // status가 "fail"인 경우 에러 던지기
             throw DatabaseError.GetStartInfoFailed({ response });
         }
+    }
+
+    /**
+     * Get start information for databases on a host.
+     * Returns domain-only data (CMS envelope removed).
+     *
+     * 특정 호스트의 데이터베이스 시작 정보를 조회합니다.
+     * CMS 메타 필드를 제거한 순수 데이터만 반환합니다.
+     *
+     * @param userId 사용자 ID (JWT)
+     * @param hostUid 호스트 UID
+     * @returns StartInfoClientResponse
+     * @throws DatabaseError 요청 실패 또는 CMS status가 fail인 경우
+     */
+    @HandleDatabaseErrors()
+    async startInfo(
+        userId: string,
+        hostUid: string,
+    ): Promise<StartInfoClientResponse> {
+        // Find host with full password, token, dbProfiles, etc
+        const host = await this.hostService.findHostInternal(userId, hostUid);
+
+        // 순수 CMS 응답 가져오기
+        const response = await this.startInfoInternal(userId, hostUid);
+
+        // BaseCmsResponse 필드 제외하고 순수 데이터만 반환
+        const { __EXEC_TIME, note, status, task, ...dataOnly } = response;
+
+        // 유저의 호스트 객체에서 dbProfiles 추출 (없을 수 있음)
+        // dbProfiles는 { [dbname: string]: DatabaseProfile }
+        const dbProfiles = host.dbProfiles || {};
+
+        // CMS 응답: dblist와 activelist는 배열로 옴
+        // dblist[0].dbs가 없는 경우를 대비한 안전한 처리
+        const dbs = dataOnly.dblist?.[0]?.dbs || [];
+
+        // activelist[0].active가 없는 경우를 대비한 안전한 처리
+        const activeList = dataOnly.activelist?.[0]?.active || [];
+
+        const clientResponse: StartInfoClientResponse = {
+            activelist: { active: activeList },
+            dblist: {
+                dbs: dbs.map((db) => ({
+                    ...db,
+                    isProfileExists: !!dbProfiles[db.dbname],
+                })),
+            },
+        };
+
+        return clientResponse;
     }
 
     /**
@@ -120,8 +153,6 @@ export class DatabaseService {
      * @returns 성공 시 최신 시작 정보 (StartInfoClientResponse)
      * @throws DatabaseError CMS status가 fail인 경우
      */
-    @HandleHostErrors()
-    @HandleCmsHttpsClientErrors()
     @HandleDatabaseErrors()
     async startDatabase(
         userId: string,
@@ -164,8 +195,6 @@ export class DatabaseService {
      * @returns 성공 시 최신 시작 정보 (StartInfoClientResponse)
      * @throws DatabaseError CMS status가 fail인 경우
      */
-    @HandleHostErrors()
-    @HandleCmsHttpsClientErrors()
     @HandleDatabaseErrors()
     async stopDatabase(
         userId: string,
@@ -208,8 +237,6 @@ export class DatabaseService {
      * @returns 성공 시 최신 시작 정보 (StartInfoClientResponse)
      * @throws DatabaseError 중지/시작 단계에서 실패 시 해당 에러
      */
-    @HandleHostErrors()
-    @HandleCmsHttpsClientErrors()
     @HandleDatabaseErrors()
     async restartDatabase(
         userId: string,
@@ -230,10 +257,10 @@ export class DatabaseService {
             StopDatabaseCmsRequest,
             BaseCmsResponse
         >(url, stopRequest);
-        
+
         // CMS token 에러 체크
         checkCmsTokenError(stopResponse);
-        
+
         if (stopResponse.status === 'success') {
             // Start database
             const startRequest: StartDatabaseCmsRequest = {
@@ -246,10 +273,10 @@ export class DatabaseService {
                 StartDatabaseCmsRequest,
                 BaseCmsResponse
             >(url, startRequest);
-            
+
             // CMS token 에러 체크
             checkCmsTokenError(startResponse);
-            
+
             if (startResponse.status === 'success') {
                 // 작업 성공 후 최신 상태 반환
                 return await this.startInfo(userId, hostUid);
@@ -280,8 +307,6 @@ export class DatabaseService {
      * @returns 성공 시 최신 시작 정보 (StartInfoClientResponse)
      * @throws DatabaseError 프로파일이 이미 존재하거나 저장 실패 시
      */
-    @HandleHostErrors()
-    @HandleUserRepoErrors()
     @HandleDatabaseErrors()
     async saveDatabaseProfile(
         userId: string,
@@ -297,13 +322,13 @@ export class DatabaseService {
                 databaseId == null && 'id',
                 databasePassword == null && 'password',
             ].filter(Boolean) as string[];
-            
+
             throw ValidationError.MissingDBCredentials(
                 dbname || 'unknown',
                 missingFields,
             );
         }
-    
+
         // atomicUpdateUser를 사용하여 저장
         await this.repository.atomicUpdateUser(userId, async (user) => {
             const host = user.host_list[hostUid];
@@ -338,5 +363,79 @@ export class DatabaseService {
         // 프로파일 저장 후 최신 상태 반환 (isProfileExists가 업데이트됨)
         return await this.startInfo(userId, hostUid);
     }
-}
 
+    /**
+     * Get database volume/space information for a database on a host.
+     * Returns domain-only data (CMS envelope removed).
+     *
+     * 특정 호스트의 데이터베이스 볼륨/공간 정보를 조회합니다.
+     * CMS 메타 필드를 제거한 순수 데이터만 반환합니다.
+     *
+     * @param userId 사용자 ID (JWT)
+     * @param hostUid 호스트 UID
+     * @param dbname 데이터베이스 이름
+     * @returns DatabaseVolumeInfoClientResponse
+     * @throws DatabaseError 요청 실패 또는 CMS status가 fail인 경우
+     */
+    @HandleDatabaseErrors()
+    async getDBSpaceInfo(
+        userId: string,
+        hostUid: string,
+        dbname: string,
+    ): Promise<DatabaseVolumeInfoClientResponse> {
+        const host = await this.hostService.findHostInternal(userId, hostUid);
+        const url = `https://${host.address}:${host.port}/cm_api`;
+
+        const startInfoRequest: BaseCmsRequest = {
+            task: 'startinfo',
+            token: host.token || '',
+        };
+
+        const startInfo =
+            await this.cmsClient.postAuthenticated<
+                BaseCmsRequest,
+                StartInfoCmsResponse | BaseCmsResponse
+            >(url, startInfoRequest);
+
+        // 타입 가드: StartInfoCmsResponse인지 확인
+        if ('dblist' in startInfo && 'activelist' in startInfo) {
+            // StartInfoCmsResponse 타입
+            // dblist 내에서 dbname 존재 여부 확인
+            const dbExists = startInfo.dblist.some((el) =>
+                el.dbs.some((db) => db.dbname === dbname)
+            );
+            
+            if (!dbExists) {
+                throw DatabaseError.NoSuchDatabase({ dbname, hostUid });
+            }
+        } else {
+            // BaseCmsResponse 타입 (status === 'fail'인 경우)
+            checkCmsTokenError(startInfo);
+            throw DatabaseError.InternalError();
+        }
+            
+        const spaceInfoRequest: DbSpaceInfoCmsRequest = {
+            task: 'dbspaceinfo',
+            token: host.token || '',
+            dbname: dbname,
+        };
+        const response = await this.cmsClient.postAuthenticated<
+            DbSpaceInfoCmsRequest,
+            DbSpaceInfoCmsResponse | BaseCmsResponse
+        >(url, spaceInfoRequest);
+
+        // CMS token 에러 체크
+        checkCmsTokenError(response);
+
+        // CMS는 항상 200/201 HTTP status를 반환하므로 body의 status 필드로 성공 여부 판단
+        if (response.status === 'success') {
+            // BaseCmsResponse 필드 제외하고 순수 데이터만 반환
+            const { __EXEC_TIME, note, status, task, ...dataOnly } =
+                response as DbSpaceInfoCmsResponse;
+            return dataOnly;
+        } else {
+            // status가 "fail"인 경우 에러 던지기
+            throw DatabaseError.GetDBSpaceInfoFailed({ response, dbname });
+        }
+    }
+}

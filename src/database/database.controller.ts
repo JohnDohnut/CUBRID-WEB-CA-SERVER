@@ -1,7 +1,8 @@
 import { ValidationError } from '@error/validation/validation-error';
 import { Body, Controller, Logger, Post, Request } from '@nestjs/common';
-import { DatabaseClientRequest as DatabaseInstanceClientRequest, HostUidRequest, StartInfoClientResponse } from '@type';
+import { DatabaseClientRequest as DatabaseInstanceClientRequest, HostUidRequest, StartInfoClientResponse, DatabaseVolumeInfoRequest, DatabaseVolumeInfoClientResponse } from '@type';
 import { SaveDatabaseProfileRequest } from '@type/request/sava-database-profile';
+import { validateRequiredFields } from '@util';
 import { DatabaseService } from './database.service';
 
 /**
@@ -21,6 +22,7 @@ import { DatabaseService } from './database.service';
  */
 @Controller('database')
 export class DatabaseController {
+    private readonly logger = new Logger(DatabaseController.name);
 
     constructor(private readonly databaseService: DatabaseService) {}
 
@@ -45,10 +47,7 @@ export class DatabaseController {
     ): Promise<StartInfoClientResponse> {
         const userId = req.user.sub;
         
-        if (!body || !body.hostUid) {
-            Logger.error('hostUid is required in request body', 'DatabaseController');
-            throw ValidationError.MissingRequiredField('hostUid', { endpoint: 'database/start-info' });
-        }
+        validateRequiredFields(body, ['hostUid'], 'database/start-info', this.logger);
         
         Logger.log(`Getting start info for host: ${body.hostUid}`, 'DatabaseController');
         const response = await this.databaseService.startInfo(userId, body.hostUid);
@@ -71,13 +70,7 @@ export class DatabaseController {
     ): Promise<StartInfoClientResponse> {
         const userId = req.user.sub;
         
-        if (!body || !body.hostUid || !body.dbname) {
-            const missingFields: string[] = [];
-            if (!body?.hostUid) missingFields.push('hostUid');
-            if (!body?.dbname) missingFields.push('dbname');
-            Logger.error(`Missing required fields: ${missingFields.join(', ')}`, 'DatabaseController');
-            throw ValidationError.MissingRequiredField(missingFields, { endpoint: 'database/start' });
-        }
+        validateRequiredFields(body, ['hostUid', 'dbname'], 'database/start', this.logger);
         
         Logger.log(`Starting database: ${body.dbname} on host: ${body.hostUid}`, 'DatabaseController');
         const result = await this.databaseService.startDatabase(userId, body.hostUid, body.dbname);
@@ -100,13 +93,7 @@ export class DatabaseController {
     ): Promise<StartInfoClientResponse> {
         const userId = req.user.sub;
         
-        if (!body || !body.hostUid || !body.dbname) {
-            const missingFields: string[] = [];
-            if (!body?.hostUid) missingFields.push('hostUid');
-            if (!body?.dbname) missingFields.push('dbname');
-            Logger.error(`Missing required fields: ${missingFields.join(', ')}`, 'DatabaseController');
-            throw ValidationError.MissingRequiredField(missingFields, { endpoint: 'database/stop' });
-        }
+        validateRequiredFields(body, ['hostUid', 'dbname'], 'database/stop', this.logger);
         
         Logger.log(`Stopping database: ${body.dbname} on host: ${body.hostUid}`, 'DatabaseController');
         const result = await this.databaseService.stopDatabase(userId, body.hostUid, body.dbname);
@@ -129,13 +116,7 @@ export class DatabaseController {
     ): Promise<StartInfoClientResponse> {
         const userId = req.user.sub;
         
-        if (!body || !body.hostUid || !body.dbname) {
-            const missingFields: string[] = [];
-            if (!body?.hostUid) missingFields.push('hostUid');
-            if (!body?.dbname) missingFields.push('dbname');
-            Logger.error(`Missing required fields: ${missingFields.join(', ')}`, 'DatabaseController');
-            throw ValidationError.MissingRequiredField(missingFields, { endpoint: 'database/restart' });
-        }
+        validateRequiredFields(body, ['hostUid', 'dbname'], 'database/restart', this.logger);
         
         Logger.log(`Restarting database: ${body.dbname} on host: ${body.hostUid}`, 'DatabaseController');
         const result = await this.databaseService.restartDatabase(userId, body.hostUid, body.dbname);
@@ -159,22 +140,12 @@ export class DatabaseController {
     ): Promise<StartInfoClientResponse> {
         const userId = req.user.sub;
 
-        if (!body || !body.hostUid || !body.dbname) {
-            const missingFields: string[] = [];
-            if (!body?.hostUid) missingFields.push('hostUid');
-            if (!body?.dbname) missingFields.push('dbname');
-            if (!body?.id) missingFields.push('id');
-            if (body?.password == null) missingFields.push('password');
-            if (missingFields.length > 0) {
-                Logger.error(
-                    `Missing required fields: ${missingFields.join(', ')}`,
-                    'DatabaseController',
-                );
-                throw ValidationError.MissingRequiredField(missingFields, {
-                    endpoint: 'database/register',
-                });
-            }
-        }
+        validateRequiredFields(
+            body,
+            ['hostUid', 'dbname', 'id', 'password'],
+            'database/register',
+            this.logger,
+        );
 
         return await this.databaseService.saveDatabaseProfile(
             userId,
@@ -183,6 +154,44 @@ export class DatabaseController {
             body.id,
             body.password,
         );
+    }
+
+    /**
+     * Get database volume/space information for a database on a host.
+     * Returns domain-only data (CMS envelope removed).
+     *
+     * 특정 호스트의 데이터베이스 볼륨/공간 정보를 조회합니다.
+     * CMS 메타 필드를 제거한 순수 데이터만 반환합니다.
+     *
+     * @route POST /database/volume-info
+     * @param req Express request (contains authenticated user)
+     * @param body DatabaseVolumeInfoRequest — `hostUid`, `dbname`
+     * @returns DatabaseVolumeInfoClientResponse 데이터베이스 볼륨/공간 정보
+     */
+    @Post('volume-info')
+    async getDatabaseVolumeInfo(
+        @Request() req,
+        @Body() body: DatabaseVolumeInfoRequest,
+    ): Promise<DatabaseVolumeInfoClientResponse> {
+        const userId = req.user.sub;
+
+        validateRequiredFields(
+            body,
+            ['hostUid', 'dbname'],
+            'database/volume-info',
+            this.logger,
+        );
+
+        Logger.log(
+            `Getting volume info for database: ${body.dbname} on host: ${body.hostUid}`,
+            'DatabaseController',
+        );
+        const response = await this.databaseService.getDBSpaceInfo(
+            userId,
+            body.hostUid,
+            body.dbname,
+        );
+        return response;
     }
 }
 

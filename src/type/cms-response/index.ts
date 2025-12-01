@@ -7,3 +7,4 @@ export * from './get-broker-status-cms-response';
 export * from './get-env-cms-response';
 export * from './start-info-cms-response';
 export * from './paramdump-cms-response';
+export * from './db-space-info-cms-response';

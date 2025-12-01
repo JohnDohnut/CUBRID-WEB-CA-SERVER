@@ -2,6 +2,7 @@ import { Body, Controller, Logger, Post, Request } from '@nestjs/common';
 import { BaseCmsResponse, BrokerListClientResponse, BrokerClientRequest, HostUidRequest, GetBrokerStatusClientResponse } from '@type';
 import { BrokerService } from './broker.service';
 import { ValidationError } from '@error/validation/validation-error';
+import { validateRequiredFields } from '@util';
 
 /**
  * Controller for handling broker-related operations.
@@ -19,6 +20,7 @@ import { ValidationError } from '@error/validation/validation-error';
  */
 @Controller('broker')
 export class BrokerController {
+    private readonly logger = new Logger(BrokerController.name);
 
     constructor(private readonly brokerService: BrokerService) {}
 
@@ -37,6 +39,9 @@ export class BrokerController {
         @Body() body: HostUidRequest,
     ): Promise<BrokerListClientResponse> {
         const userId = req.user.sub;
+        
+        validateRequiredFields(body, ['hostUid'], 'broker/list', this.logger);
+        
         const response = await this.brokerService.getBrokers(userId, body.hostUid);
         return response;
     }
@@ -54,14 +59,7 @@ export class BrokerController {
     async stopBroker(@Request() req, @Body() body : BrokerClientRequest) : Promise<BaseCmsResponse>{
         const userId = req.user.sub;
         
-        // body 유효성 검사
-        if (!body || !body.bname || !body.hostUid) {
-            const missingFields: string[] = [];
-            if (!body?.hostUid) missingFields.push('hostUid');
-            if (!body?.bname) missingFields.push('bname');
-            Logger.error(`Missing required fields: ${missingFields.join(', ')}`, 'BrokerController');
-            throw ValidationError.MissingRequiredField(missingFields, { endpoint: 'broker/stop' });
-        }
+        validateRequiredFields(body, ['hostUid', 'bname'], 'broker/stop', this.logger);
         
         Logger.log(`Stopping broker: ${body.bname}`, 'BrokerController');
         const response = await this.brokerService.stopBroker(userId, body.hostUid, body.bname);
@@ -81,14 +79,7 @@ export class BrokerController {
     async startBroker(@Request() req, @Body() body : BrokerClientRequest) : Promise<BaseCmsResponse>{
         const userId = req.user.sub;
         
-        // body 유효성 검사
-        if (!body || !body.bname || !body.hostUid) {
-            const missingFields: string[] = [];
-            if (!body?.hostUid) missingFields.push('hostUid');
-            if (!body?.bname) missingFields.push('bname');
-            Logger.error(`Missing required fields: ${missingFields.join(', ')}`, 'BrokerController');
-            throw ValidationError.MissingRequiredField(missingFields, { endpoint: 'broker/start' });
-        }
+        validateRequiredFields(body, ['hostUid', 'bname'], 'broker/start', this.logger);
         
         Logger.log(`Starting broker: ${body.bname}`, 'BrokerController');
         const response = await this.brokerService.startBroker(userId, body.hostUid, body.bname);
@@ -108,14 +99,7 @@ export class BrokerController {
     async restartBroker(@Request() req, @Body() body : BrokerClientRequest) : Promise<boolean>{
         const userId = req.user.sub;
         
-        // body 유효성 검사
-        if (!body || !body.bname || !body.hostUid) {
-            const missingFields: string[] = [];
-            if (!body?.hostUid) missingFields.push('hostUid');
-            if (!body?.bname) missingFields.push('bname');
-            Logger.error(`Missing required fields: ${missingFields.join(', ')}`, 'BrokerController');
-            throw ValidationError.MissingRequiredField(missingFields, { endpoint: 'broker/restart' });
-        }
+        validateRequiredFields(body, ['hostUid', 'bname'], 'broker/restart', this.logger);
         
         Logger.log(`Restarting broker: ${body.bname}`, 'BrokerController');
         const response : boolean = await this.brokerService.restartBroker(userId, body.hostUid, body.bname);
@@ -138,14 +122,7 @@ export class BrokerController {
     ): Promise<GetBrokerStatusClientResponse> {
         const userId = req.user.sub;
         
-        // body 유효성 검사
-        if (!body || !body.bname || !body.hostUid) {
-            const missingFields: string[] = [];
-            if (!body?.hostUid) missingFields.push('hostUid');
-            if (!body?.bname) missingFields.push('bname');
-            Logger.error(`Missing required fields: ${missingFields.join(', ')}`, 'BrokerController');
-            throw ValidationError.MissingRequiredField(missingFields, { endpoint: 'broker/status' });
-        }
+        validateRequiredFields(body, ['hostUid', 'bname'], 'broker/status', this.logger);
         
         Logger.log(`Getting broker status: ${body.bname}`, 'BrokerController');
         const response = await this.brokerService.getBrokerStatus(userId, body.hostUid, body.bname);

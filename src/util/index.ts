@@ -10,3 +10,4 @@ export { getOrCreateSSLCert } from './ssl-util';
 export { getStoragePath, resolveUserFilePath } from './resolve-storage-path';
 export { isValidIPv4, isValidIPv6 } from './ip-checker';
 export { DBAuthResolver, ResolvedDBAuth } from './db-auth-resolver';
+export { validateRequiredFields } from './validate-required-fields';

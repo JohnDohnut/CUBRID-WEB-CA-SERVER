@@ -12,3 +12,4 @@ export * from './start-database-cms-request';
 export * from './stop-database-cms-request';
 export * from './restart-database-cms-request';
 export * from './paramdump-cms-request';
+export * from './db-space-info-cms-request';

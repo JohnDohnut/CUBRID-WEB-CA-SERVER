@@ -2,6 +2,7 @@ import { Body, Controller, Get, Logger, Post, Request } from '@nestjs/common';
 import { DatabaseUserService } from './database-user.service';
 import { DatabaseLoginClientRequest } from '@type';
 import { ValidationError } from '@error/validation/validation-error';
+import { validateRequiredFields } from '@util';
 
 /**
  * Controller for managing database users.
@@ -13,6 +14,8 @@ import { ValidationError } from '@error/validation/validation-error';
  */
 @Controller('database/users')
 export class DatabaseUserController {
+    private readonly logger = new Logger(DatabaseUserController.name);
+
     constructor(
         private readonly databaseUserService: DatabaseUserService
     ) {}
@@ -52,13 +55,12 @@ export class DatabaseUserController {
     ): Promise<boolean> {
         const userId = req.user.sub;
         
-        if (!body || !body.hostUid || !body.dbname) {
-            const missingFields: string[] = [];
-            if (!body?.hostUid) missingFields.push('hostUid');
-            if (!body?.dbname) missingFields.push('dbname');
-            Logger.error(`Missing required fields: ${missingFields.join(', ')}`, 'DatabaseUserController');
-            throw ValidationError.MissingRequiredField(missingFields, { endpoint: 'database/users/login' });
-        }
+        validateRequiredFields(
+            body,
+            ['hostUid', 'dbname'],
+            'database/users/login',
+            this.logger,
+        );
         
         Logger.log(`Logging in to database: ${body.dbname} on host: ${body.hostUid}`, 'DatabaseUserController');
         const result = await this.databaseUserService.loginDatabase(

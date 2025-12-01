@@ -18,6 +18,23 @@ export class DatabaseError extends AppError {
     ) {
         super(kind, code, additionalData, originalError);
     }
+
+    /**
+     * Creates an error indicating that the specified database does not exist.
+     * 
+     * 지정한 데이터베이스가 존재하지 않음을 나타내는 오류를 생성합니다.
+     */
+    static NoSuchDatabase(
+        additionalData?: Record<string, any>,
+        originalError?: Error,
+    ) {
+        return new DatabaseError(
+            'DATABASE',
+            DatabaseErrorCode.NO_SUCH_DATABASE,
+            additionalData,
+            originalError,
+        );
+    }
     
     /**
      * Creates an error indicating that getting start info failed.
@@ -99,6 +116,23 @@ export class DatabaseError extends AppError {
         return new DatabaseError(
             'DATABASE',
             DatabaseErrorCode.LOGIN_DATABASE_FAILED,
+            additionalData,
+            originalError,
+        );
+    }
+
+    /**
+     * Creates an error indicating that getting database space info failed.
+     * 
+     * 데이터베이스 공간 정보 조회 실패를 나타내는 오류를 생성합니다.
+     */
+    static GetDBSpaceInfoFailed(
+        additionalData?: Record<string, any>,
+        originalError?: Error,
+    ) {
+        return new DatabaseError(
+            'DATABASE',
+            DatabaseErrorCode.GET_DB_SPACE_INFO_FAILED,
             additionalData,
             originalError,
         );

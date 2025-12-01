@@ -2,6 +2,7 @@ import { Body, Controller, Logger, Post, Request } from '@nestjs/common';
 import { CmsConfigService } from './cms-config.service';
 import { HostUidRequest, GetEnvClientResponse } from '@type';
 import { ValidationError } from '@error/validation/validation-error';
+import { validateRequiredFields } from '@util';
 
 /**
  * Controller for handling CMS environment configuration operations.
@@ -19,6 +20,7 @@ import { ValidationError } from '@error/validation/validation-error';
  */
 @Controller('cms-config')
 export class CmsConfigController {
+    private readonly logger = new Logger(CmsConfigController.name);
 
     constructor(private readonly cmsConfigService: CmsConfigService) {}
 
@@ -44,11 +46,7 @@ export class CmsConfigController {
     ): Promise<GetEnvClientResponse> {
         const userId = req.user.sub;
 
-        // body 유효성 검사
-        if (!body || !body.hostUid) {
-            Logger.error('hostUid is required in request body', 'CmsConfigController');
-            throw ValidationError.MissingRequiredField('hostUid', { endpoint: 'cms-config/env' });
-        }
+        validateRequiredFields(body, ['hostUid'], 'cms-config/env', this.logger);
 
         Logger.log(`Getting environment info for host: ${body.hostUid}`, 'CmsConfigController');
         const response = await this.cmsConfigService.getEnv(userId, body.hostUid);
