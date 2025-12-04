@@ -1,6 +1,6 @@
 import { HandleHostErrors } from '@common';
 import { HostError } from '@error/index';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { UserRepositoryService } from '@repository';
 import { EncryptionService } from '@security';
 import {
@@ -28,9 +28,10 @@ import { v4 as uuidv4 } from 'uuid';
  */
 @Injectable()
 export class HostService {
+    private readonly logger = new Logger(HostService.name);
+
     constructor(
         private readonly repository: UserRepositoryService,
-        private readonly encrytionService: EncryptionService,
     ) {}
 
     /**
@@ -50,8 +51,11 @@ export class HostService {
      */
     @HandleHostErrors()
     async getHostList(userId: string): Promise<GetHostsResponse> {
+        this.logger.log(`Getting host list for user: ${userId}`);
         const user: User = await this.repository.loadUserById(userId);
         const hosts = user.host_list;
+        const hostCount = Object.keys(hosts).length;
+        this.logger.log(`Found ${hostCount} hosts for user: ${userId}`);
 
         return {
             host_list: omitHashMap(hosts, ['password', 'token', 'dbProfiles']) as SafeHostList,
@@ -82,10 +86,12 @@ export class HostService {
      */
     @HandleHostErrors()
     async addHost(userId: string, hostInfo: AddHostRequest): Promise<SafeHostList> {
+        this.logger.log(`Adding host for user: ${userId}, address: ${hostInfo.address}, port: ${hostInfo.port}, id: ${hostInfo.id}`);
         const updatedUser = await this.repository.atomicUpdateUser(
             userId,
             async (user: User) => {
                 if (Object.keys(user.host_list).length >= 50) {
+                    this.logger.warn(`Host limit exceeded for user: ${userId}, current count: ${Object.keys(user.host_list).length}`);
                     throw HostError.ExceedMaxHosts({
                         'current host count': 50,
                     });
@@ -99,6 +105,7 @@ export class HostService {
                 );
 
                 if (duplicate) {
+                    this.logger.warn(`Duplicate host detected for user: ${userId}, duplicate hostUid: ${duplicate.uid}`);
                     throw HostError.DuplicatedHost({
                         duplicatedHostId: duplicate.uid,
                     });
@@ -112,12 +119,14 @@ export class HostService {
                 };
 
                 user.host_list[newHost.uid] = newHost;
+                this.logger.log(`Host added successfully for user: ${userId}, hostUid: ${newHost.uid}`);
                 return user;
             },
         );
 
         const rv = omitHashMap(updatedUser.host_list, ['token', 'password', 'dbProfiles']);
-        return rv;    }
+        return rv;
+    }
 
     /**
      * Removes a host from the user's host list.
@@ -130,13 +139,16 @@ export class HostService {
      */
     @HandleHostErrors()
     async removeHost(userId: string, hostUid: string): Promise<SafeHostList> {
+        this.logger.log(`Removing host for user: ${userId}, hostUid: ${hostUid}`);
         const updatedUser = await this.repository.atomicUpdateUser(
             userId,
             async (user: User) => {
                 if (!user.host_list[hostUid]) {
+                    this.logger.warn(`Host not found for removal: userId: ${userId}, hostUid: ${hostUid}`);
                     throw HostError.NoSuchHost({ hostUid });
                 }
                 delete user.host_list[hostUid];
+                this.logger.log(`Host removed successfully for user: ${userId}, hostUid: ${hostUid}`);
                 return user;
             },
         );
@@ -161,35 +173,47 @@ export class HostService {
         hostUid: string,
         hostInfo: UpdateHostRequest,
     ): Promise<SafeHostList> {
+        const updateFields = Object.keys(hostInfo).filter(key => hostInfo[key as keyof UpdateHostRequest] !== undefined);
+        this.logger.log(`Updating host for user: ${userId}, hostUid: ${hostUid}, fields: ${updateFields.join(', ')}`);
+        
         const updatedUser = await this.repository.atomicUpdateUser(
             userId,
             async (user: User) => {
                 if (!user.host_list[hostUid]) {
+                    this.logger.warn(`Host not found for update: userId: ${userId}, hostUid: ${hostUid}`);
                     throw HostError.NoSuchHost({ hostUid });
                 }
 
-                const duplicate = Object.values(user.host_list).find(
-                    (host) =>
-                        host.address === hostInfo.address &&
-                        host.port === hostInfo.port &&
-                        host.id === hostInfo.id,
-                );
+                const existingHost = user.host_list[hostUid];
 
+                const duplicate = Object.values(user.host_list).find((host) => 
+                host.address === hostInfo.address &&
+                host.port === hostInfo.port &&
+                host.id === hostInfo.id &&
+                host.uid != hostUid
+            )
                 if (duplicate) {
+                    this.logger.warn(`Duplicate host detected during update: userId: ${userId}, hostUid: ${hostUid}, duplicate hostUid: ${duplicate.uid}`);
                     throw HostError.DuplicatedHost({
                         duplicatedHostId: duplicate.uid,
                     });
                 }
-
-                const existingHost = user.host_list[hostUid];
+                
+                // 기존 호스트 정보를 유지하면서 hostInfo에 제공된 필드만 업데이트
                 const updatedHost: HostInfo = {
                     uid: hostUid, // Keep the original UID
-                    ...hostInfo,
+                    id: hostInfo.id ?? existingHost.id,
+                    address: hostInfo.address ?? existingHost.address,
+                    port: hostInfo.port ?? existingHost.port,
+                    password: hostInfo.password ?? existingHost.password,
+                    alias: hostInfo.alias ?? existingHost.alias,
+                    token: hostInfo.token ?? existingHost.token,
                     // hostInfo에 dbProfiles가 있으면 덮어쓰기, 없으면 기존 것 유지
                     dbProfiles: hostInfo.dbProfiles ?? existingHost.dbProfiles ?? {},
                 };
 
                 user.host_list[hostUid] = updatedHost;
+                this.logger.log(`Host updated successfully for user: ${userId}, hostUid: ${hostUid}`);
                 return user;
             },
         );
@@ -214,10 +238,12 @@ export class HostService {
      */
     @HandleHostErrors()
     async findHostInternal(userId: string, hostUid: string): Promise<HostInfo> {
+        this.logger.debug(`Finding host (internal) for user: ${userId}, hostUid: ${hostUid}`);
         const user = await this.repository.loadUserById(userId);
         const host = user.host_list[hostUid];
 
         if (!host) {
+            this.logger.warn(`Host not found (internal): userId: ${userId}, hostUid: ${hostUid}`);
             throw HostError.NoSuchHost({ hostUid });
         }
 
@@ -225,43 +251,51 @@ export class HostService {
     }
 
     /**
-     * Finds and returns a single host by its UID (external use without password).
+     * Finds and returns a single host by its UID (external use without password, token, and dbProfiles).
      *
      * @param {string} userId - The unique identifier of the user.
      * @param {string} hostUid - The unique identifier of the host to find.
-     * @returns {Promise<HostResponse>} The found host object without password.
+     * @returns {Promise<HostResponse>} The found host object without password, token, and dbProfiles.
      * @throws {HostError.NoSuchHost} If no host with the given UID is found.
      * @throws {UserError} When user is not found.
      */
     async findHost(userId: string, hostUid: string): Promise<HostResponse> {
+        this.logger.log(`Finding host for user: ${userId}, hostUid: ${hostUid}`);
         const user = await this.repository.loadUserById(userId);
         const host = user.host_list[hostUid];
 
         if (!host) {
+            this.logger.warn(`Host not found: userId: ${userId}, hostUid: ${hostUid}`);
             throw HostError.NoSuchHost({ hostUid });
         }
 
-        return omitPassword(host);
+        const { password, token, dbProfiles, ...hostResponse } = host;
+        return hostResponse as HostResponse;
     }
     /**
+     * Deletes a host and returns updated host list.
      *
-     * @param {string} userId
-     * @param {string} hostUid
-     * @returns {Promise<SafeHostList>}
-     * @throws {HostError.NoSuchHost}
+     * @param {string} userId - The unique identifier of the user.
+     * @param {string} hostUid - The unique identifier of the host to delete.
+     * @returns {Promise<SafeHostList>} Updated host list without password, token, and dbProfiles.
+     * @throws {HostError.NoSuchHost} If no host with the given UID is found.
+     * @throws {UserError} When user is not found.
      */
     @HandleHostErrors()
     async deleteHost(userId: string, hostUid: string): Promise<SafeHostList> {
+        this.logger.log(`Deleting host for user: ${userId}, hostUid: ${hostUid}`);
         const updatedUser = await this.repository.atomicUpdateUser(
             userId,
             async (user: User) => {
                 if (!user.host_list[hostUid]) {
+                    this.logger.warn(`Host not found for deletion: userId: ${userId}, hostUid: ${hostUid}`);
                     throw HostError.NoSuchHost({ hostUid });
                 }
                 delete user.host_list[hostUid];
+                this.logger.log(`Host deleted successfully for user: ${userId}, hostUid: ${hostUid}`);
                 return user;
             },
         );
-        return omitPasswordHashMap(updatedUser.host_list);
+        return omitHashMap(updatedUser.host_list, ['password', 'token', 'dbProfiles']) as SafeHostList;
     }
 }

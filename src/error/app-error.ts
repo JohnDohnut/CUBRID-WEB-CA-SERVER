@@ -157,6 +157,8 @@ export class AppError extends Error {
             case 'RESOURCE':
                 // Subdivide RESOURCE errors
                 switch (this.code) {
+                    case HostErrorCode.NO_SUCH_HOST:
+                        return 404; // Not Found
                     case HostErrorCode.EXCEED_MAX_HOSTS:
                     case HostErrorCode.INVALID_FORMAT:
                         return 400;
@@ -224,15 +226,18 @@ export class AppError extends Error {
             case 'DATABASE':
                 // DatabaseError의 경우 에러 코드에 따라 구체적인 HTTP 상태 반환
                 switch (this.code) {
+                    case DatabaseErrorCode.NO_SUCH_DATABASE:
+                        return 404; // Not Found
                     case DatabaseErrorCode.DUPLICATED_DATABASE_PROFILE:
                         return 409; // Conflict - resource already exists
                     case DatabaseErrorCode.INTERNAL_ERROR:
-                        return 500; // Internal Server Error
                     case DatabaseErrorCode.GET_START_INFO_FAILED:
                     case DatabaseErrorCode.START_DATABASE_FAILED:
                     case DatabaseErrorCode.STOP_DATABASE_FAILED:
                     case DatabaseErrorCode.RESTART_DATABASE_FAILED:
                     case DatabaseErrorCode.LOGIN_DATABASE_FAILED:
+                    case DatabaseErrorCode.GET_DB_SPACE_INFO_FAILED:
+                        return 500; // Internal Server Error
                     default:
                         return 500; // Internal Server Error
                 }

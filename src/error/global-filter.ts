@@ -10,6 +10,7 @@ import { BaseExceptionFilter } from '@nestjs/core';
 import { Response } from 'express';
 import { AppError } from './app-error';
 import { ValidationError } from './validation';
+import { StandardResponse } from '@type/response/standard-response';
 
 /**
  * Global exception filter for handling all unhandled exceptions across the application.
@@ -33,17 +34,26 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
         const req = ctx.getRequest();
 
         let status: number;
-        let response: any;
+        let note: string;
+        let errorData: any = null;
 
         if (exception instanceof HttpException) {
             status = exception.getStatus();
-            response = exception.getResponse();
+            const exceptionResponse = exception.getResponse();
 
-            // Ensure response is an object to add 'result' field
-            if (typeof response === 'string') {
-                response = { message: response };
+            // Ensure response is an object
+            if (typeof exceptionResponse === 'string') {
+                note = exceptionResponse;
+            } else if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
+                const responseObj = exceptionResponse as any;
+                note = responseObj.message || responseObj.detail || exception.message || 'An error occurred';
+                // 에러 상세 정보를 data에 포함 (필요한 경우)
+                if (responseObj.detail || responseObj.message) {
+                    errorData = { message: responseObj.message || responseObj.detail };
+                }
+            } else {
+                note = exception.message || 'An error occurred';
             }
-            response.result = false; // Add result: false
 
             // HttpException 로깅
             this.logger.error(
@@ -57,10 +67,14 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
             const problemDetails = exception.toProblemDetails(req.url);
 
             status = problemDetails.status;
-            response = { ...problemDetails, result: false }; // Add result: false
-
-            // RFC 7807 Content-Type 설정
-            res.setHeader('Content-Type', 'application/problem+json');
+            note = problemDetails.detail || problemDetails.title || exception.message || 'An error occurred';
+            
+            // 에러 상세 정보를 data에 포함 (보안상 안전한 필드만)
+            errorData = {
+                code: problemDetails.code,
+                type: problemDetails.type,
+                title: problemDetails.title,
+            };
 
             // AppError 로깅 (내부 정보 포함)
             const logDetails = exception.toLogDetails(req.url);
@@ -73,13 +87,7 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
         }
         else {
             status = HttpStatus.INTERNAL_SERVER_ERROR;
-            response = {
-                title: 'Internal Server Error',
-                status: 500,
-                detail: 'An unexpected error occurred',
-                result: false, // Add result: false
-            };
-            res.setHeader('Content-Type', 'application/problem+json');
+            note = exception?.message || 'An unexpected error occurred';
 
             // 알 수 없는 에러 로깅 (스택 정보 포함)
             this.logger.error(
@@ -90,6 +98,12 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
             );
         }
 
-        res.status(status).json(response);
+        const standardResponse: StandardResponse = {
+            data: errorData,
+            status: status,
+            note: note,
+        };
+
+        res.status(status).json(standardResponse);
     }
 }

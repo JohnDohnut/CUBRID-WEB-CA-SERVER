@@ -10,6 +10,6 @@ import { HostInfo } from '@type/host-info';
  * @category Requests
  * @since 1.0.0
  */
-export type UpdateHostClientRequest = Omit<HostInfo, 'uid'> & {
+export type UpdateHostClientRequest = Omit<HostInfo, 'uid' | 'token'> & {
     hostUid: string;
 };

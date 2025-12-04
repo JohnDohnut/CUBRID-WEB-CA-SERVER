@@ -5,6 +5,7 @@ export * from './get-hosts-response';
 export * from './host-response';
 export * from './login-response';
 export * from './user-response';
+export * from './standard-response';
 // Client response aliases
 export * from './host-client-response';
 export * from './broker-client-response';

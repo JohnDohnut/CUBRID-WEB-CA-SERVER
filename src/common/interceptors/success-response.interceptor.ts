@@ -1,10 +1,11 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor, HttpStatus } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { StandardResponse } from '@type/response/standard-response';
 
 /**
- * Interceptor that wraps successful responses with a `result: true` property.
- * 성공적인 응답을 `result: true` 속성으로 래핑하는 인터셉터입니다.
+ * Interceptor that wraps successful responses with a standard format.
+ * 성공적인 응답을 표준 형식으로 래핑하는 인터셉터입니다.
  *
  * This ensures a consistent API response structure where clients can easily
  * check the success status of an operation.
@@ -17,14 +18,21 @@ import { map } from 'rxjs/operators';
  */
 @Injectable()
 export class SuccessResponseInterceptor implements NestInterceptor {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<StandardResponse> {
+    const response = context.switchToHttp().getResponse();
+    
     return next.handle().pipe(
       map(data => {
-        if (typeof data === 'object' && data !== null) {
-          return { result: true, ...data }; // Merge result with data
-        } else {
-          return { result: true, data: data }; // Fallback for non-object data
-        }
+        const statusCode = response.statusCode || HttpStatus.OK;
+        
+        // void 반환 또는 undefined인 경우 null로 변환
+        const responseData = data === undefined ? null : data;
+        
+        return {
+          data: responseData,
+          status: statusCode,
+          note: 'success',
+        };
       }),
     );
   }
