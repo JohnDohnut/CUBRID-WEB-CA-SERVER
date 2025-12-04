@@ -117,7 +117,7 @@ describe('StorageService', () => {
         });
 
         describe('deleteUnsafe', () => {
-            it('should delete a file using fs.rm', async () => {
+             it('should delete a file using fs.rm', async () => {
                 mockedFs.rm.mockResolvedValue(undefined);
                 await service.deleteUnsafe('test.txt');
                 expect(mockedFs.rm).toHaveBeenCalledWith(

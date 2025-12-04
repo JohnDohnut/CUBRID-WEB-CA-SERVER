@@ -39,15 +39,15 @@ export class HostController {
      *
      * @param request - Express request object containing user payload
      * @param hostInfo - Host information without UID
-     * @returns Promise<void>
+     * @returns Promise<GetHostsResponse> Updated host list without passwords
      */
     @Post()
     async addHost(
         @Request() request,
         @Body() hostInfo: AddHostRequest,
-    ): Promise<void> {
+    ): Promise<GetHostsResponse> {
         const userId = request.user.sub;
-        await this.hostService.addHost(userId, hostInfo);
+        return { host_list: await this.hostService.addHost(userId, hostInfo) };
     }
 
     /**

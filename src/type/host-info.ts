@@ -14,7 +14,7 @@ import { HashMap } from "./collections";
  * @category Types
  * @since 1.0.0
  */
-export type HostInfo = {
+export type  HostInfo = {
     uid: string;
     id: string;
     token?: string;

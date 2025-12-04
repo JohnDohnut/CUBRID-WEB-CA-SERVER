@@ -35,7 +35,13 @@ describe('UserService', () => {
                 }
             ],
         }).compile();
+
+        service = module.get<UserService>(UserService),
+        repository = module.get(UserRepositoryService),
+        passwordService = module.get(PasswordService)
     });
 
     // TODO: 테스트 케이스 작성
+
+    
 });
