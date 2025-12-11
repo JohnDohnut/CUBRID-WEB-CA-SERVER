@@ -19,3 +19,4 @@ export * from './get-host-client-request';
 export * from './delete-host-client-request';
 export * from './update-host-client-request';
 export * from './check-file-client-request';
+export * from './view-log-client-request';

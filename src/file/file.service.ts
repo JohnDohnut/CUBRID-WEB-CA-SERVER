@@ -10,6 +10,7 @@ import {
 import { HostError } from '@error/index';
 import { HandleCmsHttpsClientErrors } from '@decorators/handle-cms-https-client-errors.decorator';
 import { CmsError } from '@error/cms/cms-error';
+import { checkCmsTokenError, checkCmsStatusError } from '@common';
 
 /**
  * Service for file operations.
@@ -65,8 +66,14 @@ export class FileService {
                     token: host.token,
                 };
 
-                const response = await this.cmsHttpsClient.postAuthenticated(authUrl, checkFileRequest);
-                return response as CheckFileCmsResponse;
+                const response = await this.cmsHttpsClient.postAuthenticated<CheckFileCmsRequest, CheckFileCmsResponse>(authUrl, checkFileRequest);
+                
+                // CMS token 에러 체크
+                checkCmsTokenError(response);
+                // CMS status 에러 체크 (status === 'fail'인 경우)
+                checkCmsStatusError(response, `Failed to check file: ${response.note || 'Unknown error'}`);
+                
+                return response;
             } catch (error) {
                 Logger.warn(`Token invalid for host ${hostUid}:`, error.message);
                 // Clear invalid token

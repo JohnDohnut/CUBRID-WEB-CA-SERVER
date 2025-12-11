@@ -3,14 +3,13 @@ import {
     Controller,
     Delete,
     Get,
+    Param,
     Post,
     Put,
     Request,
 } from '@nestjs/common';
 import {
     AddHostRequest,
-    DeleteHostClientRequest,
-    GetHostClientRequest,
     GetHostsResponse,
     HostResponse,
     UpdateHostClientRequest,
@@ -26,6 +25,7 @@ import { HostService } from './host.service';
  *
  * 호스트 추가, 업데이트, 조회, 삭제를 포함한 호스트 관리를 위한
  * HTTP 요청을 처리합니다. 모든 작업은 사용자 인증이 필요합니다.
+ * - RESTful 패턴 준수: /host (목록/추가), /host/:hostUid (조회/수정/삭제)
  *
  * @category Controllers
  * @since 1.0.0
@@ -65,50 +65,60 @@ export class HostController {
     /**
      * Get a specific host by UID.
      *
+     * @route GET /host/:hostUid
      * @param request - Express request object containing user payload
-     * @param body - Request body containing hostUid
+     * @param hostUid - Host unique identifier from path parameter
      * @returns Promise<HostResponse> Host information without password
+     * @example
+     * // GET /host/host-uid
      */
-    @Post('get')
+    @Get(':hostUid')
     async getHost(
         @Request() request,
-        @Body() body: GetHostClientRequest,
+        @Param('hostUid') hostUid: string,
     ): Promise<HostResponse> {
         const userId = request.user.sub;
-        return await this.hostService.findHost(userId, body.hostUid);
+        return await this.hostService.findHost(userId, hostUid);
     }
 
     /**
      * Update an existing host.
      *
+     * @route PUT /host/:hostUid
      * @param request - Express request object containing user payload
-     * @param hostInfo - Updated host information including hostUid
-     * @returns Promise<void>
+     * @param hostUid - Host unique identifier from path parameter
+     * @param hostInfo - Updated host information (without hostUid)
+     * @returns Promise<GetHostsResponse> Updated host list
+     * @example
+     * // PUT /host/host-uid
+     * // Body: { "name": "new-name", "address": "192.168.1.1", ... }
      */
-    @Put()
+    @Put(':hostUid')
     async updateHost(
         @Request() request,
-        @Body() hostInfo: UpdateHostClientRequest,
+        @Param('hostUid') hostUid: string,
+        @Body() hostInfo: Omit<UpdateHostClientRequest, 'hostUid'>,
     ): Promise<GetHostsResponse> {
         const userId = request.user.sub;
-        // hostUid를 제외한 나머지 정보를 서비스에 전달
-        const { hostUid, ...updateData } = hostInfo;
-        return {host_list : await this.hostService.updateHost(userId, hostUid, updateData)};
+        return {host_list : await this.hostService.updateHost(userId, hostUid, hostInfo)};
     }
 
     /**
      * Delete a host and return updated host list.
      *
+     * @route DELETE /host/:hostUid
      * @param request - Express request object containing user payload
-     * @param body - Request body containing hostUid
-     * @returns Promise<SafeHostList> Updated host list without passwords
+     * @param hostUid - Host unique identifier from path parameter
+     * @returns Promise<GetHostsResponse> Updated host list without passwords
+     * @example
+     * // DELETE /host/host-uid
      */
-    @Delete()
+    @Delete(':hostUid')
     async deleteHost(
         @Request() request,
-        @Body() body: DeleteHostClientRequest,
+        @Param('hostUid') hostUid: string,
     ): Promise<GetHostsResponse> {
         const userId = request.user.sub;
-        return {host_list : await this.hostService.deleteHost(userId, body.hostUid)};
+        return {host_list : await this.hostService.deleteHost(userId, hostUid)};
     }
 }

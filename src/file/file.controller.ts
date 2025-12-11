@@ -1,6 +1,6 @@
-import { Body, Controller, Post, Request } from '@nestjs/common';
+import { Controller, Get, Param, Request } from '@nestjs/common';
 import { FileService } from './file.service';
-import { CheckFileClientRequest, CheckFileClientResponse } from '@type/index';
+import { CheckFileClientResponse } from '@type/index';
 
 /**
  * Controller for file operations.
@@ -11,11 +11,13 @@ import { CheckFileClientRequest, CheckFileClientResponse } from '@type/index';
  * 
  * CMS 호스트에서 파일 존재 확인, 업로드, 다운로드, 목록 조회를 포함한
  * 파일 관리를 위한 HTTP 요청을 처리합니다.
+ * - 모든 엔드포인트는 경로 파라미터로 `hostUid`를 받습니다
+ * - RESTful 패턴 준수: /:hostUid/file/{action}
  * 
  * @category Controllers
  * @since 1.0.0
  */
-@Controller('file')
+@Controller(':hostUid/file')
 export class FileController {
     constructor(private readonly fileService: FileService) {}
 
@@ -23,17 +25,20 @@ export class FileController {
      * Check if a file exists on the specified CMS host.
      * 지정된 CMS 호스트에서 파일이 존재하는지 확인합니다.
      * 
+     * @route GET /:hostUid/file/checkfile
      * @param request - Express request object containing user payload
-     * @param body - Request body containing hostUid
-     * @returns Promise<CheckFileCmsResponse> File check information
+     * @param hostUid - Host unique identifier from path parameter
+     * @returns Promise<CheckFileClientResponse> File check information
+     * @example
+     * // POST /host-uid/file/checkfile
      */
-    @Post('checkfile')
+    @Get('checkfile')
     async checkFile(
         @Request() request: any,
-        @Body() body: CheckFileClientRequest
+        @Param('hostUid') hostUid: string
     ): Promise<CheckFileClientResponse> {
         const userId = request.user.sub;
-        return await this.fileService.checkFile(userId, body.hostUid);
+        return await this.fileService.checkFile(userId, hostUid);
     }
 }
 

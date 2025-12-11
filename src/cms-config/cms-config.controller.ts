@@ -1,8 +1,6 @@
-import { Body, Controller, Logger, Post, Request } from '@nestjs/common';
+import { Controller, Get, Logger, Param, Request } from '@nestjs/common';
 import { CmsConfigService } from './cms-config.service';
-import { HostUidRequest, GetEnvClientResponse } from '@type';
-import { ValidationError } from '@error/validation/validation-error';
-import { validateRequiredFields } from '@util';
+import { GetEnvClientResponse } from '@type';
 
 /**
  * Controller for handling CMS environment configuration operations.
@@ -14,11 +12,13 @@ import { validateRequiredFields } from '@util';
  *
  * CUBRID 버전, 브로커 버전, 데이터베이스 경로, 시스템 정보 등
  * CMS 호스트의 환경 정보를 조회하는 REST API 엔드포인트를 제공합니다.
+ * - 모든 엔드포인트는 경로 파라미터로 `hostUid`를 받습니다
+ * - RESTful 패턴 준수: /:hostUid/cms-config/{action}
  *
  * @category Controllers
  * @since 1.0.0
  */
-@Controller('cms-config')
+@Controller(':hostUid/cms-config')
 export class CmsConfigController {
     private readonly logger = new Logger(CmsConfigController.name);
 
@@ -31,25 +31,22 @@ export class CmsConfigController {
      * CMS 호스트의 환경 정보를 조회합니다.
      * CMS 메타 필드를 제거한 환경 변수 및 시스템 정보를 반환합니다.
      *
-     * @route POST /cms-config/env
+     * @route GET /:hostUid/cms-config/env
      * @param req - Express request (contains authenticated user)
-     * @param body - HostUidRequest — must include `hostUid`
+     * @param hostUid - Host unique identifier from path parameter
      * @returns GetEnvClientResponse Environment information without CMS envelope fields
      * @example
-     * // Request body
-     * { "hostUid": "host-uid" }
+     * // POST /host-uid/cms-config/env
      */
-    @Post('env')
+    @Get('env')
     async getEnv(
         @Request() req,
-        @Body() body: HostUidRequest
+        @Param('hostUid') hostUid: string
     ): Promise<GetEnvClientResponse> {
         const userId = req.user.sub;
 
-        validateRequiredFields(body, ['hostUid'], 'cms-config/env', this.logger);
-
-        Logger.log(`Getting environment info for host: ${body.hostUid}`, 'CmsConfigController');
-        const response = await this.cmsConfigService.getEnv(userId, body.hostUid);
+        Logger.log(`Getting environment info for host: ${hostUid}`, 'CmsConfigController');
+        const response = await this.cmsConfigService.getEnv(userId, hostUid);
         return response;
     }
 }

@@ -14,3 +14,7 @@ export * from './cms-file-client-response';
 export * from './database-client-response';
 export * from './database-volume-info-client-response';
 export * from './get-env-client-response';
+export * from './get-broker-log-list-client-response';
+export * from './get-database-log-list-client-response';
+export * from './load-access-log-client-response';
+export * from './view-log-client-response';

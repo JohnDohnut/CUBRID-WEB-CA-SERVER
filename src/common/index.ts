@@ -8,6 +8,7 @@ export { HandleStorageFsErrors } from './decorators/handle-storage-fs-errors.dec
 export { HandleUserRepoErrors } from './decorators/handle-user-repo-errors.decorator';
 export { HandleCmsTokenErrors, checkCmsTokenError } from './decorators/handle-cms-token-errors.decorator';
 export { HandleCmsHttpsClientErrors } from './decorators/handle-cms-https-client-errors.decorator';
+export { HandleCmsStatusErrors, checkCmsStatusError } from './decorators/handle-cms-status-errors.decorator';
 export { HandleDatabaseErrors } from './decorators/handle-database-errors.decorator';
 
 // Export interceptors

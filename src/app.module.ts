@@ -52,6 +52,7 @@ import { CmsHttpsClientModule } from '@cms-https-client/cms-https-client.module'
         FileModule,
         DatabaseModule,
         CmsHttpsClientModule,
+        LogModule,
     ],
     controllers: [AppController],
     providers: [
@@ -67,3 +68,4 @@ export class AppModule {}
 // Export controllers and services for documentation
 export { AppController } from './app.controller';
 export { AppService } from './app.service';
+import { LogModule } from './log/log.module';

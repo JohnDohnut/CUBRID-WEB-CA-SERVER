@@ -6,6 +6,27 @@ import { BaseCmsRequest, CmsForwardClientRequest } from '@type/index';
 import * as https from 'https';
 import { HostService } from '@host';
 import { EncryptionService } from '@security';
+import { checkCmsTokenError, checkCmsStatusError } from '@common';
+
+/**
+ * Callback function to determine whether status check should be skipped.
+ * Returns true if status check should be skipped, false otherwise.
+ * 
+ * status 체크를 스킵할지 결정하는 콜백 함수입니다.
+ * true를 반환하면 status 체크를 스킵하고, false를 반환하면 체크를 수행합니다.
+ * 
+ * @param task - The task name from the request
+ * @param response - The CMS response (before status check)
+ * @returns true if status check should be skipped, false otherwise
+ * 
+ * @param task - 요청의 task 이름
+ * @param response - CMS 응답 (status 체크 전)
+ * @returns status 체크를 스킵해야 하면 true, 아니면 false
+ */
+export type ShouldSkipStatusCheckCallback = (
+    task: string,
+    response: any
+) => boolean;
 
 /**
  * Service for handling secure HTTPS client communications with CMS (Central Management System).
@@ -127,18 +148,24 @@ export class CmsHttpsClientService {
      *
      * @param sub - The subject (user ID) from the authentication token, used to find the host.
      * @param requestBody - The original request payload from the client, containing hostUid and task.
+     * @param shouldSkipStatusCheck - Optional callback to determine if status check should be skipped (for CMS bug workarounds).
      * @returns A Promise that resolves with the response data from the CMS API.
      * @throws HostError.NoSuchHost if the specified host is not found.
      * @throws CmsError if the forwarded request fails or an unexpected error occurs.
      *
      * @param sub - 인증 토큰의 주체(사용자 ID)로, 호스트를 찾는 데 사용됩니다.
      * @param requestBody - hostUid와 task를 포함한 클라이언트의 원본 요청 페이로드.
+     * @param shouldSkipStatusCheck - status 체크를 스킵할지 결정하는 선택적 콜백 (CMS 버그 우회용).
      * @returns CMS API의 응답 데이터를 포함하는 Promise.
      * @throws 지정된 호스트를 찾을 수 없는 경우 HostError.NoSuchHost.
      * @throws 전달된 요청이 실패하거나 예기치 않은 오류 발생 시 CmsError.
      */
     @HandleCmsHttpsClientErrors()
-    public async forwardAuthenticated<T extends CmsForwardClientRequest, P>(sub : string, requestBody : T) : Promise<P>{
+    public async forwardAuthenticated<T extends CmsForwardClientRequest, P>(
+        sub: string,
+        requestBody: T,
+        shouldSkipStatusCheck?: ShouldSkipStatusCheckCallback
+    ): Promise<P> {
         const hostUid = requestBody.hostUid;
         const host = await this.hostService.findHostInternal(sub, hostUid);
         const url = `https://${host.address}:${host.port}/cm_api`;
@@ -148,7 +175,24 @@ export class CmsHttpsClientService {
             ...requestBody
         };
         Logger.log(request);
-        const rv = await this.postAuthenticated(url, request) as any
+        const rv = await this.postAuthenticated(url, request) as any;
+        
+        // 1. CMS token 에러 체크 (항상 수행)
+        // CMS에서 토큰이 유효하지 않으면 에러를 던집니다
+        checkCmsTokenError(rv);
+        
+        // 2. CMS status 에러 체크 (조건부로 스킵 가능)
+        // CMS는 HTTP 201로 응답하지만, body의 status 필드가 'fail'일 수 있습니다.
+        // 하지만 일부 task(예: lockdb)는 CMS 버그로 인해 항상 'fail'을 반환하지만
+        // 실제로는 성공한 경우가 있어서, 콜백으로 스킵 여부를 결정할 수 있습니다.
+        const task = requestBody.task;
+        const shouldSkip = shouldSkipStatusCheck ? shouldSkipStatusCheck(task, rv) : false;
+        
+        if (!shouldSkip) {
+            // status 필드가 'fail'이면 에러를 던집니다
+            checkCmsStatusError(rv, `CMS request failed: ${rv.note || 'Unknown error'}`);
+        }
+        
         return rv;
     }
 }
