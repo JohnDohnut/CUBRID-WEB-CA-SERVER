@@ -646,6 +646,23 @@
 					"response": []
 				},
 				{
+					"name": "Get Stat Dump",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/{{hostUid}}/cms-config/stat-dump/{{dbname}}",
+							"host": ["{{base_url}}"],
+							"path": ["{{hostUid}}", "cms-config", "stat-dump", "{{dbname}}"]
+						},
+						"description": {
+							"content": "Get database statistics dump (statdump) from a CMS host. Returns database statistics without CMS envelope fields.\n\n**URI:**\n```\nGET /:hostUid/cms-config/stat-dump/:dbname\n```\n**Example:**\n```\nGET /host-uid-1/cms-config/stat-dump/demodb\n```\n\n**Authentication:** Required\n**Headers:**\n```\nAuthorization: Bearer <JWT_TOKEN>\n```\n\n**Path Parameters:**\n- `hostUid` - Host unique identifier\n- `dbname` - Database name\n\n**Success Response (200 OK):**\n```json\n{\n  \"dbname\": \"create-test\",\n  \"data_page_buffer_hit_ratio\": \"0\",\n  \"num_network_requests\": \"17\",\n  \"num_query_selects\": \"0\",\n  \"time\": \"2025/12/15 16:08:45\",\n  \"time_ha_replication_delay\": \"0\",\n  \"status\": \"success\",\n  \"task\": \"statdump\"\n}\n```\n\n**Error Response (404 Not Found):**\n```json\n{\n  \"statusCode\": 404,\n  \"message\": \"Database not found\",\n  \"error\": \"Not Found\"\n}\n```",
+							"type": "text/markdown"
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Get All System Parameters",
 					"request": {
 						"method": "GET",

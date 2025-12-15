@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Logger, Param, Post, Request } from '@nestjs/common';
 import { CmsConfigService } from './cms-config.service';
-import { GetEnvClientResponse, GetAllSysParamClientResponse, ParamdumpClientResponse, SetSysParamClientResponse } from '@type';
+import { GetEnvClientResponse, GetAllSysParamClientResponse, ParamdumpClientResponse, SetSysParamClientResponse, StatdumpClientResponse } from '@type';
 
 /**
  * Controller for handling CMS environment configuration operations.
@@ -82,6 +82,37 @@ export class CmsConfigController {
             hostUid,
             dbname,
         );
+        return response;
+    }
+
+    /**
+     * Get database statistics dump from a CMS host.
+     * Returns database statistics without CMS envelope fields.
+     *
+     * CMS 호스트의 데이터베이스 통계 덤프(statdump)를 조회합니다.
+     * CMS 메타 필드를 제거한 통계 정보를 반환합니다.
+     *
+     * @route GET /:hostUid/cms-config/stat-dump/:dbname
+     * @param req - Express request (contains authenticated user)
+     * @param hostUid - Host unique identifier from path parameter
+     * @param dbname - Database name from path parameter
+     * @returns StatdumpClientResponse Database statistics without CMS envelope fields
+     * @example
+     * // GET /host-uid/cms-config/stat-dump/demodb
+     */
+    @Get('stat-dump/:dbname')
+    async statdump(
+        @Request() req,
+        @Param('hostUid') hostUid: string,
+        @Param('dbname') dbname: string,
+    ): Promise<StatdumpClientResponse> {
+        const userId = req.user.sub;
+
+        Logger.log(
+            `Getting statdump info for host: ${hostUid}, dbname: ${dbname}`,
+            'CmsConfigController',
+        );
+        const response = await this.cmsConfigService.getStatDump(userId, hostUid, dbname);
         return response;
     }
 
