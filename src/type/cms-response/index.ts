@@ -12,3 +12,4 @@ export * from './get-log-file-info-cms-response';
 export * from './get-database-log-info-cms-response';
 export * from './load-access-log-cms-response';
 export * from './view-log-cms-response';
+export * from './get-all-sys-param-cms-response';

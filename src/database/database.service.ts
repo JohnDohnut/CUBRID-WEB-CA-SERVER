@@ -438,4 +438,9 @@ export class DatabaseService {
             throw DatabaseError.GetDBSpaceInfoFailed({ response, dbname });
         }
     }
+
+    @HandleDatabaseErrors()
+    async createDatabase(){
+        //
+    }
 }

@@ -614,7 +614,7 @@
 				{
 					"name": "Get Environment Info",
 					"request": {
-						"method": "POST",
+						"method": "GET",
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/{{hostUid}}/cms-config/env",
@@ -623,6 +623,73 @@
 						},
 						"description": {
 							"content": "Get environment information from a CMS host. Returns environment variables and system information without CMS envelope fields.\n\n**URI:**\n```\nGET /:hostUid/cms-config/env\n```\n**Example:**\n```\nGET /host-uid-1/cms-config/env\n```\n\n**Authentication:** Required\n**Headers:**\n```\nAuthorization: Bearer <JWT_TOKEN>\n```\n\n**Path Parameters:**\n- `hostUid` - Host unique identifier\n\n**Success Response (200 OK):**\n```json\n{\n  \"CUBRID\": \"/opt/cubrid\",\n  \"CUBRIDVER\": \"11.2\",\n  \"BROKERVER\": \"11.2\",\n  \"CUBRID_DATABASES\": \"/home/cubrid/databases\",\n  \"CUBRID_DBMT\": \"/opt/cubrid/dbmt\",\n  \"HOSTMONTAB0\": \"/etc/hostmon.conf\",\n  \"HOSTMONTAB1\": \"/etc/hostmon.conf\",\n  \"HOSTMONTAB2\": \"/etc/hostmon.conf\",\n  \"HOSTMONTAB3\": \"/etc/hostmon.conf\",\n  \"osinfo\": \"Linux x86_64\"\n}\n```\n\n**Error Response (404 Not Found):**\n```json\n{\n  \"statusCode\": 404,\n  \"message\": \"Host not found\",\n  \"error\": \"Not Found\"\n}\n```",
+							"type": "text/markdown"
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Param Dump",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/{{hostUid}}/cms-config/param-dump/{{dbname}}",
+							"host": ["{{base_url}}"],
+							"path": ["{{hostUid}}", "cms-config", "param-dump", "{{dbname}}"]
+						},
+						"description": {
+							"content": "Get database parameters dump from a CMS host. Returns database server parameters without CMS envelope fields.\n\n**URI:**\n```\nGET /:hostUid/cms-config/param-dump/:dbname\n```\n**Example:**\n```\nGET /host-uid-1/cms-config/param-dump/demodb\n```\n\n**Authentication:** Required\n**Headers:**\n```\nAuthorization: Bearer <JWT_TOKEN>\n```\n\n**Path Parameters:**\n- `hostUid` - Host unique identifier\n- `dbname` - Database name\n\n**Success Response (200 OK):**\n```json\n{\n  \"dbname\": \"demodb\",\n  \"server\": [\n    {\n      \"data_buffer_size\": \"512M\",\n      \"log_buffer_size\": \"256M\",\n      \"max_clients\": \"100\",\n      \"cubrid_port_id\": \"1523\",\n      ...\n    }\n  ]\n}\n```\n\n**Error Response (404 Not Found):**\n```json\n{\n  \"statusCode\": 404,\n  \"message\": \"Database not found\",\n  \"error\": \"Not Found\"\n}\n```",
+							"type": "text/markdown"
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All System Parameters",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/{{hostUid}}/cms-config/all-sys-param?confname=cubridconf",
+							"host": ["{{base_url}}"],
+							"path": ["{{hostUid}}", "cms-config", "all-sys-param"],
+							"query": [
+								{
+									"key": "confname",
+									"value": "cubridconf",
+									"description": "Configuration file name (e.g., 'cubridconf', 'broker.conf')"
+								}
+							]
+						},
+						"description": {
+							"content": "Get all system parameters from a configuration file on a CMS host. Returns configuration file content without CMS envelope fields.\n\n**URI:**\n```\nGET /:hostUid/cms-config/all-sys-param?confname=cubridconf\n```\n**Example:**\n```\nGET /host-uid-1/cms-config/all-sys-param?confname=cubridconf\n```\n\n**Authentication:** Required\n**Headers:**\n```\nAuthorization: Bearer <JWT_TOKEN>\n```\n\n**Path Parameters:**\n- `hostUid` - Host unique identifier\n\n**Query Parameters:**\n- `confname` - Configuration file name (e.g., \"cubridconf\", \"broker.conf\")\n\n**Success Response (200 OK):**\n```json\n{\n  \"confname\": \"cubridconf\",\n  \"conflist\": [\n    {\n      \"confdata\": [\n        \"#\",\n        \"# Copyright ...\",\n        \"[service]\",\n        \"service=server,broker,manager\",\n        \"[common]\",\n        \"data_buffer_size=512M\",\n        ...\n      ]\n    }\n  ]\n}\n```\n\n**Error Response (404 Not Found):**\n```json\n{\n  \"statusCode\": 404,\n  \"message\": \"Host not found\",\n  \"error\": \"Not Found\"\n}\n```",
+							"type": "text/markdown"
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set System Parameters",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"confname\": \"cubridconf\",\n  \"confdata\": [\n    \"#\",\n    \"# Copyright (C) 2009 Search Solution Corporation. All rights reserved by Search Solution.\",\n    \"#\",\n    \"[service]\",\n    \"service=server,broker,manager\",\n    \"server=demodb\",\n    \"\",\n    \"[common]\",\n    \"data_buffer_size=512M\",\n    \"log_buffer_size=4M\",\n    \"sort_buffer_size=2M\",\n    \"max_clients=100\",\n    \"cubrid_port_id=1523\"\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/{{hostUid}}/cms-config/set-sys-param",
+							"host": ["{{base_url}}"],
+							"path": ["{{hostUid}}", "cms-config", "set-sys-param"]
+						},
+						"description": {
+							"content": "Set system parameters in a configuration file on a CMS host. Updates configuration file with provided data.\n\n**URI:**\n```\nPOST /:hostUid/cms-config/set-sys-param\n```\n**Example:**\n```\nPOST /host-uid-1/cms-config/set-sys-param\n```\n\n**Authentication:** Required\n**Headers:**\n```\nAuthorization: Bearer <JWT_TOKEN>\nContent-Type: application/json\n```\n\n**Path Parameters:**\n- `hostUid` - Host unique identifier\n\n**Request Body:**\n```json\n{\n  \"confname\": \"cubridconf\",\n  \"confdata\": [\n    \"#\",\n    \"# Copyright ...\",\n    \"[service]\",\n    \"service=server,broker,manager\",\n    \"server=demodb\",\n    \"\",\n    \"[common]\",\n    \"data_buffer_size=512M\",\n    \"log_buffer_size=4M\",\n    \"sort_buffer_size=2M\",\n    \"max_clients=100\",\n    \"cubrid_port_id=1523\"\n  ]\n}\n```\n\n**Success Response (200 OK):**\n```json\n{}\n```\n\n**Error Response (400 Bad Request):**\n```json\n{\n  \"statusCode\": 400,\n  \"message\": \"Failed to set system parameters: Invalid configuration\",\n  \"error\": \"Bad Request\"\n}\n```",
 							"type": "text/markdown"
 						}
 					},

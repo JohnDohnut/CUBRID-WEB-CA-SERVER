@@ -1,6 +1,6 @@
-import { Controller, Get, Logger, Param, Request } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Param, Post, Request } from '@nestjs/common';
 import { CmsConfigService } from './cms-config.service';
-import { GetEnvClientResponse } from '@type';
+import { GetEnvClientResponse, GetAllSysParamClientResponse, ParamdumpClientResponse, SetSysParamClientResponse } from '@type';
 
 /**
  * Controller for handling CMS environment configuration operations.
@@ -47,6 +47,113 @@ export class CmsConfigController {
 
         Logger.log(`Getting environment info for host: ${hostUid}`, 'CmsConfigController');
         const response = await this.cmsConfigService.getEnv(userId, hostUid);
+        return response;
+    }
+
+    /**
+     * Get database parameters dump from a CMS host.
+     * Returns database server parameters without CMS envelope fields.
+     *
+     * CMS 호스트의 데이터베이스 파라미터 덤프를 조회합니다.
+     * CMS 메타 필드를 제거한 데이터베이스 서버 파라미터를 반환합니다.
+     *
+     * @route GET /:hostUid/cms-config/param-dump
+     * @param req - Express request (contains authenticated user)
+     * @param hostUid - Host unique identifier from path parameter
+     * @param dbname - Database name from query parameter
+     * @returns ParamdumpClientResponse Database parameters without CMS envelope fields
+     * @example
+     * // GET /host-uid/cms-config/param-dump?dbname=demodb
+     */
+    @Get('param-dump/:dbname')
+    async paramdump(
+        @Request() req,
+        @Param('hostUid') hostUid: string,
+        @Param('dbname') dbname: string
+    ): Promise<ParamdumpClientResponse> {
+        const userId = req.user.sub;
+
+        Logger.log(
+            `Getting paramdump info for host: ${hostUid}, dbname: ${dbname}`,
+            'CmsConfigController',
+        );
+        const response = await this.cmsConfigService.getParamDump(
+            userId,
+            hostUid,
+            dbname,
+        );
+        return response;
+    }
+
+    /**
+     * Get all system parameters from a configuration file on a CMS host.
+     * Returns configuration file content without CMS envelope fields.
+     *
+     * CMS 호스트의 설정 파일에서 모든 시스템 파라미터를 조회합니다.
+     * CMS 메타 필드를 제거한 설정 파일 내용을 반환합니다.
+     *
+     * @route GET /:hostUid/cms-config/all-sys-param
+     * @param req - Express request (contains authenticated user)
+     * @param hostUid - Host unique identifier from path parameter
+     * @param confname - Configuration file name from query parameter (e.g., "cubridconf")
+     * @returns GetAllSysParamClientResponse System parameters without CMS envelope fields
+     * @example
+     * // GET /host-uid/cms-config/all-sys-param?confname=cubridconf
+     */
+    @Get('all-sys-param')
+    async getAllSystemParam(
+        @Request() req,
+        @Param('hostUid') hostUid: string,
+    ): Promise<GetAllSysParamClientResponse> {
+        const userId = req.user.sub;
+        const confname = req.query.confname as string;
+
+        Logger.log(
+            `Getting all system parameters for host: ${hostUid}, confname: ${confname}`,
+            'CmsConfigController',
+        );
+        const response = await this.cmsConfigService.getAllSystemParam(
+            userId,
+            hostUid,
+            confname,
+        );
+        return response;
+    }
+
+    /**
+     * Set system parameters in a configuration file on a CMS host.
+     * Updates configuration file with provided data.
+     *
+     * CMS 호스트의 설정 파일에 시스템 파라미터를 설정합니다.
+     * 제공된 데이터로 설정 파일을 업데이트합니다.
+     *
+     * @route POST /:hostUid/cms-config/set-sys-param
+     * @param req - Express request (contains authenticated user)
+     * @param hostUid - Host unique identifier from path parameter
+     * @param body - Request body containing confname and confdata
+     * @returns SetSysParamClientResponse Empty object on success (CMS envelope fields removed)
+     * @example
+     * // POST /host-uid/cms-config/set-sys-param
+     * // Body: { "confname": "cubridconf", "confdata": ["# comment", "[section]", "key=value"] }
+     */
+    @Post('set-sys-param')
+    async setSystemParam(
+        @Request() req,
+        @Param('hostUid') hostUid: string,
+        @Body() body: { confname: string; confdata: string[] },
+    ): Promise<SetSysParamClientResponse> {
+        const userId = req.user.sub;
+
+        Logger.log(
+            `Setting system parameters for host: ${hostUid}, confname: ${body.confname}`,
+            'CmsConfigController',
+        );
+        const response = await this.cmsConfigService.setSystemParam(
+            userId,
+            hostUid,
+            body.confname,
+            body.confdata,
+        );
         return response;
     }
 }

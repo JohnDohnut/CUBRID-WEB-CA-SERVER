@@ -1,8 +1,12 @@
 import { HostService } from '@host';
 import { Injectable } from '@nestjs/common';
 import { CmsHttpsClientService } from '@cms-https-client/cms-https-client.service';
-import { CmsForwardClientRequest, GetEnvClientResponse } from '@type';
+import { CmsForwardClientRequest, GetEnvClientResponse, GetAllSysParamClientResponse, ParamdumpCmsRequest, ParamdumpClientResponse, SetSysParamCmsRequest, SetSysParamClientResponse } from '@type';
 import { GetEnvCmsResponse } from '@type/cms-response/get-env-cms-response';
+import { GetAllSysParamCmsRequest } from '@type/cms-request/get-all-sys-param-cms-request';
+import { GetAllSysParamCmsResponse } from '@type/cms-response/get-all-sys-param-cms-response';
+import { ParamdumpCmsResponse } from '@type/cms-response/paramdump-cms-response';
+import { BaseCmsResponse } from '@type/cms-response/base-cms-response';
 import { HandleHostErrors, HandleCmsHttpsClientErrors } from '@common';
 
 /**
@@ -61,6 +65,147 @@ export class CmsConfigService {
 
         // status가 "fail"인 경우 에러 던지기
         throw new Error(`Failed to get environment info: ${response.note || 'Unknown error'}`);
+    }
+
+    /**
+     * Get database parameters dump from a CMS host.
+     * Returns domain-only data (CMS envelope removed).
+     *
+     * CMS 호스트의 데이터베이스 파라미터 덤프를 조회합니다.
+     * CMS 메타 필드를 제거한 순수 데이터만 반환합니다.
+     *
+     * @param userId - User ID from JWT
+     * @param hostUid - Host unique identifier
+     * @param dbname - Database name
+     * @returns ParamdumpClientResponse Database parameters without CMS envelope fields
+     * @throws Error if the request fails or CMS status is not success
+     */
+    @HandleHostErrors()
+    @HandleCmsHttpsClientErrors()
+    async getParamDump(
+        userId: string,
+        hostUid: string,
+        dbname: string,
+    ): Promise<ParamdumpClientResponse> {
+        const token = (await this.hostService.findHostInternal(userId, hostUid))
+            .token;
+        const request: ParamdumpCmsRequest = {
+            hostUid: hostUid,
+            token: token || '',
+            task: 'paramdump',
+            both: 'n',
+            dbname: dbname,
+        };
+
+        const response =
+            await this.cmsClient.forwardAuthenticated<
+                ParamdumpCmsRequest,
+                ParamdumpCmsResponse
+            >(userId, request);
+
+        // CMS는 항상 200/201 HTTP status를 반환하므로 body의 status 필드로 성공 여부 판단
+        if (response.status === 'success') {
+            // BaseCmsResponse 필드 제외하고 순수 데이터만 반환
+            const { __EXEC_TIME, note, status, task, ...dataOnly } = response;
+            return dataOnly;
+        }
+
+        // status가 "fail"인 경우 에러 던지기
+        throw new Error(
+            `Failed to get paramdump: ${response.note || 'Unknown error'}`,
+        );
+    }
+
+    /**
+     * Get all system parameters from a configuration file on a CMS host.
+     * Returns domain-only data (CMS envelope removed).
+     *
+     * CMS 호스트의 설정 파일에서 모든 시스템 파라미터를 조회합니다.
+     * CMS 메타 필드를 제거한 순수 데이터만 반환합니다.
+     *
+     * @param userId - User ID from JWT
+     * @param hostUid - Host unique identifier
+     * @param confname - Configuration file name (e.g., "cubridconf", "broker.conf")
+     * @returns GetAllSysParamClientResponse System parameters without CMS envelope fields
+     * @throws Error if the request fails or CMS status is not success
+     */
+    @HandleHostErrors()
+    @HandleCmsHttpsClientErrors()
+    async getAllSystemParam(
+        userId: string,
+        hostUid: string,
+        confname: string,
+    ): Promise<GetAllSysParamClientResponse> {
+        const request: CmsForwardClientRequest & { confname: string } = {
+            hostUid: hostUid,
+            task: 'getallsysparam',
+            confname: confname,
+        };
+
+        const response =
+            await this.cmsClient.forwardAuthenticated<
+                CmsForwardClientRequest & { confname: string },
+                GetAllSysParamCmsResponse
+            >(userId, request);
+
+        // CMS는 항상 200/201 HTTP status를 반환하므로 body의 status 필드로 성공 여부 판단
+        if (response.status === 'success') {
+            // BaseCmsResponse 필드 제외하고 순수 데이터만 반환
+            const { __EXEC_TIME, note, status, task, ...dataOnly } = response;
+            return dataOnly;
+        }
+
+        // status가 "fail"인 경우 에러 던지기
+        throw new Error(
+            `Failed to get all system parameters: ${response.note || 'Unknown error'}`,
+        );
+    }
+
+    /**
+     * Set system parameters in a configuration file on a CMS host.
+     * Returns domain-only data (CMS envelope removed).
+     *
+     * CMS 호스트의 설정 파일에 시스템 파라미터를 설정합니다.
+     * CMS 메타 필드를 제거한 순수 데이터만 반환합니다.
+     *
+     * @param userId - User ID from JWT
+     * @param hostUid - Host unique identifier
+     * @param confname - Configuration file name (e.g., "cubridconf", "broker.conf")
+     * @param confdata - Configuration data as array of lines
+     * @returns SetSysParamClientResponse Empty object on success (CMS envelope fields removed)
+     * @throws Error if the request fails or CMS status is not success
+     */
+    @HandleHostErrors()
+    @HandleCmsHttpsClientErrors()
+    async setSystemParam(
+        userId: string,
+        hostUid: string,
+        confname: string,
+        confdata: string[],
+    ): Promise<SetSysParamClientResponse> {
+        const request: CmsForwardClientRequest & { confname: string; confdata: string[] } = {
+            hostUid: hostUid,
+            task: 'setsysparam',
+            confname: confname,
+            confdata: confdata,
+        };
+
+        const response =
+            await this.cmsClient.forwardAuthenticated<
+                CmsForwardClientRequest & { confname: string; confdata: string[] },
+                BaseCmsResponse
+            >(userId, request);
+
+        // CMS는 항상 200/201 HTTP status를 반환하므로 body의 status 필드로 성공 여부 판단
+        if (response.status === 'success') {
+            // BaseCmsResponse 필드 제외하고 빈 객체 반환
+            return {};
+        }
+
+        // status가 "fail"인 경우 에러 던지기
+        throw new Error(
+            `Failed to set system parameters: ${response.note || 'Unknown error'}`,
+        );
     }
 }
 

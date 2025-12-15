@@ -1,222 +1,122 @@
+# WebCA Server Deployment Script
+# 배포 스크립트
+
 param(
-    [ValidateSet("linux", "win", "both")]
-    [string] $Platform = "linux",
-  
-    [ValidateSet("docs", "server", "both")]
-    [string] $Deploy = "both"
+    [string]$Seed = "seed",
+    [string]$Salt = "salt",
+    [int]$Port = 8080,
+    [switch]$NoPkg
 )
 
 # --- Configuration ---
 $User = "cubrid"
-$TargetHosts = @("192.168.2.36", "192.168.2.50")
-$RemoteBaseDir = "/home/cubrid/webca_deployment"
+$TargetHost = "192.168.2.50"
+$RemoteDir = "/home/cubrid"
+$LocalBinary = "dist/webca-server-linux"
+$RemoteBinary = "$RemoteDir/webca-server-linux"
+$LogFile = "$RemoteDir/webca.log"
 
-# --- Local Artifact Paths ---
-$ArtLinux = "dist/webca-server-linux"
-$ArtWin = "dist/webca-server-win.exe"
-$DocsPath = "docs"
-
-# --- Remote Artifact Paths ---
-$RemoteBinLinux = "$RemoteBaseDir/webca-server-linux"
-$RemoteBinWin = "$RemoteBaseDir/webca-server-win.exe"
-$RemoteDocsDir = "$RemoteBaseDir/docs"
-
-# Function to check if file exists
-function Test-FileExists {
-    param([string]$FilePath)
-    if (-not (Test-Path $FilePath)) {
-        Write-Error "File not found: $FilePath"
-        exit 1
-    }
+Write-Host "=== WebCA Server Deployment ===" -ForegroundColor Cyan
+Write-Host "Target: ${User}@${TargetHost}:${RemoteDir}" -ForegroundColor Yellow
+if ($NoPkg) {
+    Write-Host "Mode: No build/packaging (using existing binary)" -ForegroundColor Yellow
 }
+Write-Host ""
 
-# Function to run command with error handling
-function Invoke-Command {
-    param([string]$Command, [string]$Description)
-    Write-Host "Running: $Description..."
-    Invoke-Expression $Command
+$StepNumber = 1
+$TotalSteps = if ($NoPkg) { 4 } else { 6 }
+
+if (-not $NoPkg) {
+    # Step 1: Build
+    Write-Host "[$StepNumber/$TotalSteps] Building project..." -ForegroundColor Green
+    npm run build
     if ($LASTEXITCODE -ne 0) {
-        Write-Error "ERROR: Failed: $Description"
+        Write-Error "Build failed!"
         exit 1
     }
-    Write-Host "SUCCESS: $Description completed"
+    Write-Host "✓ Build completed" -ForegroundColor Green
+    Write-Host ""
+    $StepNumber++
+
+    # Step 2: Package for Linux
+    Write-Host "[$StepNumber/$TotalSteps] Packaging for Linux..." -ForegroundColor Green
+    npm run pkg:linux
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Packaging failed!"
+        exit 1
+    }
+    if (-not (Test-Path $LocalBinary)) {
+        Write-Error "Binary not found: $LocalBinary"
+        exit 1
+    }
+    Write-Host "✓ Packaging completed" -ForegroundColor Green
+    Write-Host ""
+    $StepNumber++
+} else {
+    # Verify binary exists when skipping build
+    if (-not (Test-Path $LocalBinary)) {
+        Write-Error "Binary not found: $LocalBinary. Cannot skip build/packaging."
+        exit 1
+    }
+    Write-Host "Skipping build and packaging (using existing binary)" -ForegroundColor Yellow
+    Write-Host ""
 }
 
-# Function to deploy to a single host
-function Deploy-ToHost {
-    param([string]$TargetHost)
-    
-    Write-Host "`n=== Deploying to $TargetHost ===" -ForegroundColor Cyan
-    
-    # --- Remote Directory Preparation ---
-    Write-Host "Connecting to $TargetHost to prepare directory..."
-    ssh.exe "$User@$TargetHost" "mkdir -p $RemoteBaseDir"
-    
-    # --- Deploy Based on Options ---
-    switch ($Deploy) {
-        "docs" {
-            Write-Host "=== DOCS ONLY DEPLOYMENT ==="
-            
-            # Deploy docs
-            Write-Host "Deploying documentation to ${User}@${TargetHost}:${RemoteDocsDir}"
-            scp.exe -r $DocsPath "${User}@${TargetHost}:${RemoteBaseDir}"
-            
-            # Stop and Start docs server
-            Write-Host "Stopping and starting documentation server on port 7777..."
-            $DocsCommands = "if pgrep -f 'http-server.*7777' >/dev/null 2>&1; then echo 'Stopping docs server...'; pkill -f 'http-server.*7777'; fi; nohup npx http-server $RemoteDocsDir -p 7777 > $RemoteBaseDir/docs.log 2>&1 & disown"
-            ssh.exe "$User@$TargetHost" $DocsCommands
-            
-            Write-Host "Documentation available at: http://${TargetHost}:7777"
-        }
-        
-        "server" {
-            Write-Host "=== SERVER ONLY DEPLOYMENT ==="
-            
-            # Platform-specific packaging and deployment
-            switch ($Platform) {
-                "linux" {
-                    Write-Host "Deploying Linux binary to ${User}@${TargetHost}:${RemoteBinLinux}"
-                    ssh.exe "$User@$TargetHost" "rm -f $RemoteBinLinux"
-                    scp.exe $ArtLinux "${User}@${TargetHost}:${RemoteBaseDir}/"
-                }
-                "win" {
-                    Write-Host "Deploying Windows binary to ${User}@${TargetHost}:${RemoteBinWin}"
-                    ssh.exe "$User@$TargetHost" "rm -f $RemoteBinWin"
-                    scp.exe $ArtWin "${User}@${TargetHost}:${RemoteBaseDir}/"
-                }
-                "both" {
-                    Write-Host "Deploying both binaries to ${User}@${TargetHost}:${RemoteBaseDir}"
-                    ssh.exe "$User@$TargetHost" "rm -f $RemoteBinLinux $RemoteBinWin"
-                    scp.exe $ArtLinux "${User}@${TargetHost}:${RemoteBaseDir}/"
-                    scp.exe $ArtWin "${User}@${TargetHost}:${RemoteBaseDir}/"
-                }
-            }
-            
-            # Stop and Start server (Linux only for now)
-            if ($Platform -eq "linux" -or $Platform -eq "both") {
-                Write-Host "Stopping and starting WebCA server on port 8080..."
-                $ServerCommands = "if pgrep -f 'webca-server-linux.*8080' >/dev/null 2>&1; then echo 'Stopping WebCA server...'; pkill -f 'webca-server-linux.*8080'; fi; chmod +x $RemoteBinLinux; nohup ./$RemoteBinLinux --SEED=seed --SALT=salt --PORT=8080 > $RemoteBaseDir/server.log 2>&1 & disown"
-                ssh.exe "$User@$TargetHost" $ServerCommands
-                
-                Write-Host "WebCA server available at: https://${TargetHost}:8080"
-            }
-        }
-        
-        "both" {
-            Write-Host "=== FULL DEPLOYMENT (DOCS + SERVER) ==="
-            
-            # Platform-specific packaging and deployment
-            switch ($Platform) {
-                "linux" {
-                    Write-Host "Deploying Linux binary to ${User}@${TargetHost}:${RemoteBinLinux}"
-                    ssh.exe "$User@$TargetHost" "rm -f $RemoteBinLinux"
-                    scp.exe $ArtLinux "${User}@${TargetHost}:${RemoteBaseDir}/"
-                }
-                "win" {
-                    Write-Host "Deploying Windows binary to ${User}@${TargetHost}:${RemoteBinWin}"
-                    ssh.exe "$User@$TargetHost" "rm -f $RemoteBinWin"
-                    scp.exe $ArtWin "${User}@${TargetHost}:${RemoteBaseDir}/"
-                }
-                "both" {
-                    Write-Host "Deploying both binaries to ${User}@${TargetHost}:${RemoteBaseDir}"
-                    ssh.exe "$User@$TargetHost" "rm -f $RemoteBinLinux $RemoteBinWin"
-                    scp.exe $ArtLinux "${User}@${TargetHost}:${RemoteBaseDir}/"
-                    scp.exe $ArtWin "${User}@${TargetHost}:${RemoteBaseDir}/"
-                }
-            }
-            
-            # Deploy documentation
-            Write-Host "Deploying documentation to ${User}@${TargetHost}:${RemoteDocsDir}"
-            scp.exe -r $DocsPath "${User}@${TargetHost}:${RemoteBaseDir}"
-            
-            # Stop existing servers
-            Write-Host "Stopping existing servers on ports 7777 and 8080..."
-            $StopCommands = "if pgrep -f 'http-server.*7777' >/dev/null 2>&1; then echo 'Stopping docs server...'; pkill -f 'http-server.*7777'; fi; if pgrep -f 'webca-server-linux.*8080' >/dev/null 2>&1; then echo 'Stopping WebCA server...'; pkill -f 'webca-server-linux.*8080'; fi"
-            ssh.exe "$User@$TargetHost" $StopCommands
-            
-            # Start servers
-            Write-Host "Starting documentation server on port 7777 and WebCA server on port 8080..."
-            if ($Platform -eq "linux" -or $Platform -eq "both") {
-                $StartCommands = "nohup npx http-server $RemoteDocsDir -p 7777 > $RemoteBaseDir/docs.log 2>&1 & disown; chmod +x $RemoteBinLinux; nohup $RemoteBinLinux --SEED=seed --SALT=salt --PORT=8080 > $RemoteBaseDir/server.log 2>&1 & disown"
-            } else {
-                $StartCommands = "nohup npx http-server $RemoteDocsDir -p 7777 > $RemoteBaseDir/docs.log 2>&1 & disown"
-            }
-            ssh.exe "$User@$TargetHost" $StartCommands
-            
-            # Final Summary
-            Write-Host "--- Deployment Summary for $TargetHost ---"
-            if ($Platform -eq "linux" -or $Platform -eq "both") {
-                Write-Host "WebCA server available at: https://${TargetHost}:8080"
-            }
-            Write-Host "Documentation available at: http://${TargetHost}:7777"
-        }
-    }
-}
+# Step 3: Stop existing server (before copying)
+Write-Host "[$StepNumber/$TotalSteps] Stopping existing server on port $Port..." -ForegroundColor Green
 
-# --- Main Execution Block ---
-try {
-    # Build phase (only once, before deploying to all hosts)
-    switch ($Deploy) {
-        "docs" {
-            Write-Host "=== BUILDING DOCS ===" -ForegroundColor Green
-            Invoke-Command "npm run docs" "Building TypeDoc documentation"
-            Test-FileExists $DocsPath
-        }
-        
-        "server" {
-            Write-Host "=== BUILDING SERVER ===" -ForegroundColor Green
-            Invoke-Command "npm run build" "Building project"
-            
-            switch ($Platform) {
-                "linux" {
-                    Invoke-Command "npm run pkg:linux" "Packaging for Linux"
-                    Test-FileExists $ArtLinux
-                }
-                "win" {
-                    Invoke-Command "npm run pkg:win" "Packaging for Windows"
-                    Test-FileExists $ArtWin
-                }
-                "both" {
-                    Invoke-Command "npm run pkg:all" "Packaging for both platforms"
-                    Test-FileExists $ArtLinux
-                    Test-FileExists $ArtWin
-                }
-            }
-        }
-        
-        "both" {
-            Write-Host "=== BUILDING EVERYTHING ===" -ForegroundColor Green
-            Invoke-Command "npm run build" "Building project"
-            Invoke-Command "npm run docs" "Building TypeDoc documentation"
-            Test-FileExists $DocsPath
-            
-            switch ($Platform) {
-                "linux" {
-                    Invoke-Command "npm run pkg:linux" "Packaging for Linux"
-                    Test-FileExists $ArtLinux
-                }
-                "win" {
-                    Invoke-Command "npm run pkg:win" "Packaging for Windows"
-                    Test-FileExists $ArtWin
-                }
-                "both" {
-                    Invoke-Command "npm run pkg:all" "Packaging for both platforms"
-                    Test-FileExists $ArtLinux
-                    Test-FileExists $ArtWin
-                }
-            }
-        }
-    }
-    
-    # Deploy to all hosts
-    foreach ($TargetHost in $TargetHosts) {
-        Deploy-ToHost -TargetHost $TargetHost
-    }
-    
-    Write-Host "`n=== DEPLOYMENT COMPLETE ===" -ForegroundColor Green
-    Write-Host "Deployed to: $($TargetHosts -join ', ')"
-}
-catch {
-    Write-Error "ERROR: Deploy failed: $($_.Exception.Message)"
+# Stop processes running on port 8080
+Write-Host "Killing processes on port $Port..." -ForegroundColor Yellow
+$KillPortCommand = "if lsof -ti :$Port >/dev/null 2>&1; then echo 'Killing processes on port $Port...'; lsof -ti :$Port | xargs kill -9 2>/dev/null; sleep 1; fi"
+ssh.exe "${User}@${TargetHost}" $KillPortCommand
+
+# Stop existing webca-server-linux if running (fallback)
+$StopCommand = "if pgrep -f 'webca-server-linux.*$Port' >/dev/null 2>&1; then echo 'Stopping webca-server-linux...'; pkill -f 'webca-server-linux.*$Port'; sleep 2; fi"
+ssh.exe "${User}@${TargetHost}" $StopCommand
+Write-Host "✓ Server stopped" -ForegroundColor Green
+Write-Host ""
+$StepNumber++
+
+# Step 4: Copy to remote server
+Write-Host "[$StepNumber/$TotalSteps] Copying binary to ${User}@${TargetHost}:${RemoteDir}..." -ForegroundColor Green
+scp.exe $LocalBinary "${User}@${TargetHost}:${RemoteDir}/"
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "SCP failed!"
     exit 1
 }
+Write-Host "✓ File copied successfully" -ForegroundColor Green
+Write-Host ""
+$StepNumber++
+
+# Step 5: Make executable
+Write-Host "[$StepNumber/$TotalSteps] Making binary executable..." -ForegroundColor Green
+ssh.exe "${User}@${TargetHost}" "chmod +x $RemoteBinary"
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "chmod failed!"
+    exit 1
+}
+Write-Host "✓ Binary is now executable" -ForegroundColor Green
+Write-Host ""
+$StepNumber++
+
+# Step 6: Start new server
+Write-Host "[$StepNumber/$TotalSteps] Starting new server..." -ForegroundColor Green
+$StartCommand = "cd $RemoteDir; nohup ./webca-server-linux --SEED=$Seed --SALT=$Salt --PORT=$Port > $LogFile 2>&1 & disown"
+ssh.exe "${User}@${TargetHost}" $StartCommand
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Failed to start server!"
+    exit 1
+}
+Write-Host "✓ Server started" -ForegroundColor Green
+Write-Host ""
+
+# Summary
+Write-Host "=== Deployment Complete ===" -ForegroundColor Green
+Write-Host "Server: https://${TargetHost}:${Port}" -ForegroundColor Cyan
+Write-Host "Log file: ${User}@${TargetHost}:${LogFile}" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "To check server status:" -ForegroundColor Yellow
+Write-Host "  ssh ${User}@${TargetHost} 'ps aux | grep webca-server-linux'" -ForegroundColor Gray
+Write-Host ""
+Write-Host "To view logs:" -ForegroundColor Yellow
+Write-Host "  ssh ${User}@${TargetHost} 'tail -f $LogFile'" -ForegroundColor Gray
