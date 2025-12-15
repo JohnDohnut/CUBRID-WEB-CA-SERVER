@@ -1,0 +1,597 @@
+{
+	"info": {
+		"name": "WebCA Server API",
+		"description": "Complete API collection for WebCA Server - Database and Broker management system",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200 || pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData && jsonData.token) {",
+									"        pm.collectionVariables.set('token', jsonData.token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": \"user123\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "https://{{Server}}/auth/login",
+							"host": [
+								"{{Server}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					}
+				},
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": \"newuser\",\n  \"password\": \"newpassword123\"\n}"
+						},
+						"url": {
+							"raw": "https://{{Server}}/auth/register",
+							"host": ["{{Server}}"],
+							"path": ["auth", "register"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Get User Data",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://{{Server}}/user",
+							"host": ["{{Server}}"],
+							"path": ["user"]
+						}
+					}
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"oldPassword\": \"old123\",\n  \"newPassword\": \"new456\"\n}"
+						},
+						"url": {
+							"raw": "https://{{Server}}/user/credential",
+							"host": ["{{Server}}"],
+							"path": ["user", "credential"]
+						}
+					}
+				},
+				{
+					"name": "Update User Info",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"department\": \"Engineering\"\n}"
+						},
+						"url": {
+							"raw": "https://{{Server}}/user/account",
+							"host": ["{{Server}}"],
+							"path": ["user", "account"]
+						}
+					}
+				},
+				{
+					"name": "Delete User Account",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://{{Server}}/user/account",
+							"host": ["{{Server}}"],
+							"path": ["user", "account"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Host",
+			"item": [
+				{
+					"name": "Get All Hosts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://{{Server}}/host",
+							"host": ["{{Server}}"],
+							"path": ["host"]
+						}
+					}
+				},
+				{
+					"name": "Add Host",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"address\": \"192.168.1.100\",\n  \"port\": \"8001\",\n  \"name\": \"Production Server\",\n  \"password\": \"host_password\"\n}"
+						},
+						"url": {
+							"raw": "https://{{Server}}/host",
+							"host": ["{{Server}}"],
+							"path": ["host"]
+						}
+					}
+				},
+				{
+					"name": "Get Host by UID",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"hostUid\": \"{{HostUid}}\"\n}"
+						},
+						"url": {
+							"raw": "https://{{Server}}/host/get",
+							"host": ["{{Server}}"],
+							"path": ["host", "get"]
+						}
+					}
+				},
+				{
+					"name": "Update Host",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"uid\": \"{{HostUid}}\",\n  \"address\": \"192.168.1.200\",\n  \"port\": \"8001\",\n  \"name\": \"Updated Server Name\",\n  \"password\": \"new_password\"\n}"
+						},
+						"url": {
+							"raw": "https://{{Server}}/host",
+							"host": ["{{Server}}"],
+							"path": ["host"]
+						}
+					}
+				},
+				{
+					"name": "Delete Host",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"hostUid\": \"{{HostUid}}\"\n}"
+						},
+						"url": {
+							"raw": "https://{{Server}}/host",
+							"host": ["{{Server}}"],
+							"path": ["host"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Broker",
+			"item": [
+				{
+					"name": "Get Broker List",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"hostUid\": \"{{HostUid}}\"\n}"
+						},
+						"url": {
+							"raw": "https://{{Server}}/broker/list",
+							"host": ["{{Server}}"],
+							"path": ["broker", "list"]
+						}
+					}
+				},
+				{
+					"name": "Stop Broker",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"hostUid\": \"{{HostUid}}\",\n  \"bname\": \"{{bname}}\"\n}"
+						},
+						"url": {
+							"raw": "https://{{Server}}/broker/stop",
+							"host": ["{{Server}}"],
+							"path": ["broker", "stop"]
+						}
+					}
+				},
+				{
+					"name": "Start Broker",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"hostUid\": \"{{HostUid}}\",\n  \"bname\": \"{{bname}}\"\n}"
+						},
+						"url": {
+							"raw": "https://{{Server}}/broker/start",
+							"host": ["{{Server}}"],
+							"path": ["broker", "start"]
+						}
+					}
+				},
+				{
+					"name": "Restart Broker",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"hostUid\": \"{{HostUid}}\",\n  \"bname\": \"{{bname}}\"\n}"
+						},
+						"url": {
+							"raw": "https://{{Server}}/broker/restart",
+							"host": ["{{Server}}"],
+							"path": ["broker", "restart"]
+						}
+					}
+				},
+				{
+					"name": "Get Broker Status",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"hostUid\": \"{{HostUid}}\",\n  \"bname\": \"{{bname}}\"\n}"
+						},
+						"url": {
+							"raw": "https://{{Server}}/broker/status",
+							"host": ["{{Server}}"],
+							"path": ["broker", "status"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Database",
+			"item": [
+				{
+					"name": "Get Database Start Info",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"hostUid\": \"{{HostUid}}\"\n}"
+						},
+						"url": {
+							"raw": "https://{{Server}}/cms-database/start-info",
+							"host": ["{{Server}}"],
+							"path": ["cms-database", "start-info"]
+						}
+					}
+				},
+				{
+					"name": "Start Database",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"hostUid\": \"{{HostUid}}\",\n  \"dbname\": \"{{dbname}}\"\n}"
+						},
+						"url": {
+							"raw": "https://{{Server}}/cms-database/start",
+							"host": ["{{Server}}"],
+							"path": ["cms-database", "start"]
+						}
+					}
+				},
+				{
+					"name": "Stop Database",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"hostUid\": \"{{HostUid}}\",\n  \"dbname\": \"{{dbname}}\"\n}"
+						},
+						"url": {
+							"raw": "https://{{Server}}/cms-database/stop",
+							"host": ["{{Server}}"],
+							"path": ["cms-database", "stop"]
+						}
+					}
+				},
+				{
+					"name": "Restart Database",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"hostUid\": \"{{HostUid}}\",\n  \"dbname\": \"{{dbname}}\"\n}"
+						},
+						"url": {
+							"raw": "https://{{Server}}/cms-database/restart",
+							"host": ["{{Server}}"],
+							"path": ["cms-database", "restart"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "File",
+			"item": [
+				{
+					"name": "Check File",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"hostUid\": \"{{HostUid}}\"\n}"
+						},
+						"url": {
+							"raw": "https://{{Server}}/cms/file/checkfile",
+							"host": ["{{Server}}"],
+							"path": ["cms", "file", "checkfile"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "CMS Config",
+			"item": [
+				{
+					"name": "Get Environment Info",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"hostUid\": \"{{HostUid}}\"\n}"
+						},
+						"url": {
+							"raw": "https://{{Server}}/cms-config/env",
+							"host": ["{{Server}}"],
+							"path": ["cms-config", "env"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "CMS Auth",
+			"item": [
+				{
+					"name": "CMS Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"uid\": \"{{HostUid}}\"\n}"
+						},
+						"url": {
+							"raw": "https://{{Server}}/cms-auth/login",
+							"host": ["{{Server}}"],
+							"path": ["cms-auth", "login"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "CMS HTTPS Client",
+			"item": [
+				{
+					"name": "Forward Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"hostUid\": \"{{HostUid}}\",\n  \"task\": \"getenv\"\n}"
+						},
+						"url": {
+							"raw": "https://{{Server}}/cms-https-client/forward",
+							"host": ["{{Server}}"],
+							"path": ["cms-https-client", "forward"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Auto-set Authorization header from token variable",
+					"const token = pm.collectionVariables.get('token');",
+					"if (token) {",
+					"    pm.request.headers.add({",
+					"        key: 'Authorization',",
+					"        value: 'Bearer ' + token",
+					"    });",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "Server",
+			"value": "192.168.2.50:8080",
+			"type": "string"
+		},
+		{
+			"key": "HostUid",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "dbname",
+			"value": "demodb",
+			"type": "string"
+		},
+		{
+			"key": "bname",
+			"value": "query_editor",
+			"type": "string"
+		}
+	]
+}
