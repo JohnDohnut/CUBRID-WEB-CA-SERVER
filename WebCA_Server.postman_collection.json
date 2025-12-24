@@ -849,6 +849,23 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get Admin Log Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/{{hostUid}}/log/admin",
+							"host": ["{{base_url}}"],
+							"path": ["{{hostUid}}", "log", "admin"]
+						},
+						"description": {
+							"content": "Get admin log information from a CMS host. Returns admin log file information without CMS envelope fields.\n\n**URI:**\n```\nGET /:hostUid/log/admin\n```\n**Example:**\n```\nGET /host-uid-1/log/admin\n```\n\n**Authentication:** Required\n**Headers:**\n```\nAuthorization: Bearer <JWT_TOKEN>\n```\n\n**Path Parameters:**\n- `hostUid` - Host unique identifier\n\n**Success Response (200 OK):**\n```json\n{\n  \"adminloginfo\": [\n    {\n      \"lastupdate\": \"2025.12.17\",\n      \"owner\": \"cubrid\",\n      \"path\": \"/home/cubrid/CUBRID-11.4.2.1824-0f0e990-Linux.x86_64/log/broker/cubrid_broker.log\",\n      \"size\": \"573\"\n    }\n  ]\n}\n```\n\n**Error Response (404 Not Found):**\n```json\n{\n  \"statusCode\": 404,\n  \"message\": \"Host not found\",\n  \"error\": \"Not Found\"\n}\n```",
+							"type": "text/markdown"
+						}
+					},
+					"response": []
 				}
 			]
 		}

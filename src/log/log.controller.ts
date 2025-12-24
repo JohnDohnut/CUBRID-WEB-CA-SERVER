@@ -6,6 +6,7 @@ import {
     LoadAccessLogClientResponse,
     ViewLogClientResponse,
     ViewLogClientRequest,
+    GetAdminLogInfoClientResponse,
 } from '../type';
 import { validateRequiredFields } from '@util';
 
@@ -65,18 +66,18 @@ export class LogController {
      * @example
      * // GET /host-uid-1/log/database/demodb
      */
-    @Get('database/:dname')
+    @Get('database/:dbname')
     async getDatabaseLogList(
         @Request() req,
         @Param('hostUid') hostUid: string,
-        @Param('dname') dname: string,
+        @Param('dbname') dbname: string,
     ): Promise<GetDatabaseLogListClientResponse> {
         const userId = req.user.sub;
         Logger.log(
-            `Getting database log list: ${dname} on host: ${hostUid}`,
+            `Getting database log list: ${dbname} on host: ${hostUid}`,
             'LogController',
         );
-        return await this.logService.getDatabaseLogList(userId, hostUid, dname);
+        return await this.logService.getDatabaseLogList(userId, hostUid, dbname);
     }
 
     /**
@@ -99,6 +100,28 @@ export class LogController {
         const userId = req.user.sub;
         Logger.log(`Getting CMS log list for host: ${hostUid}`, 'LogController');
         return await this.logService.getCMSLogList(userId, hostUid);
+    }
+
+    /**
+     * Get admin log information.
+     *
+     * 관리자 로그 정보를 조회합니다.
+     *
+     * @route GET /:hostUid/log/admin
+     * @param req Express request (contains authenticated user)
+     * @param hostUid Host unique identifier from path parameter
+     * @returns GetAdminLogInfoClientResponse Admin log information without CMS envelope fields
+     * @example
+     * // GET /host-uid-1/log/admin
+     */
+    @Get('admin')
+    async getAdminLogInfo(
+        @Request() req,
+        @Param('hostUid') hostUid: string,
+    ): Promise<GetAdminLogInfoClientResponse> {
+        const userId = req.user.sub;
+        Logger.log(`Getting admin log info for host: ${hostUid}`, 'LogController');
+        return await this.logService.getAdminLogInfo(userId, hostUid);
     }
 
     /**

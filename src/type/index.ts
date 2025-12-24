@@ -3,6 +3,7 @@ export * from './user';
 export * from './host-info';
 export * from './db-info';
 export * from './collections';
+export * from './user-preferencs';
 
 // DTOs
 export * from './dto';

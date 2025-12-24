@@ -1,3 +1,5 @@
 export type UserPreference = {
-    dashboard_interval : Number;
+    dashboardInterval : Number;
+    brokerStatusInterval :  Number;
+
 }

@@ -9,6 +9,8 @@ import {
     ChangePasswordRequest,
     UpdateUserInfoRequest,
     UserResponse,
+    UpdateUserDto,
+    UserPreference,
 } from '@type/index';
 
 /**
@@ -91,6 +93,26 @@ export class UserService {
     }
 
     /**
+     * Retrieves user preferences.
+     *
+     * Loads user information and returns only the `user_preference` object.
+     *
+     * @param {string} userId - The unique identifier of the user
+     * @returns {Promise<UserPreference>} User preferences
+     * @throws {UserError} When user is not found
+     * @example
+     * ```typescript
+     * const preferences = await userService.getUserPreferences("user123");
+     * console.log(preferences.dashboardInterval); // 10
+     * ```
+     */
+    @HandleUserErrors()
+    async getUserPreferences(userId: string): Promise<UserPreference> {
+        const user = await this.repository.loadUserById(userId);
+        return user.user_preference;
+    }
+
+    /**
      * Permanently deletes a user account.
      *
      * Removes the user and all associated data from the repository.
@@ -108,6 +130,49 @@ export class UserService {
     @HandleUserErrors()
     async deleteUser(userId: string): Promise<void> {
         await this.repository.deleteUser(userId);
+    }
+
+    /**
+     * Updates user's non-credential information with provided data.
+     *
+     * Updates specific user fields based on the provided update object.
+     * This method supports nested updates for `user_preference`.
+     * Uses atomic update to ensure data consistency.
+     *
+     * @param {string} userId - The unique identifier of the user
+     * @param {UpdateUserDto} update - Object containing fields to update
+     * @returns {Promise<User>} The updated user object
+     * @throws {UserError} When user is not found or update fails
+     * @example
+     * ```typescript
+     * const updatedUser = await userService.updateProfile("user123", {
+     *   department: "Engineering",
+     *   user_preference: { dashboardInterval: 30 }
+     * });
+     * console.log(updatedUser.department); // "Engineering"
+     * console.log(updatedUser.user_preference.dashboardInterval); // 30
+     * ```
+     */
+    @HandleUserErrors()
+    async updateProfile(
+        userId: string,
+        update: UpdateUserDto,
+    ): Promise<User> {
+        return await this.repository.atomicUpdateUser(
+            userId,
+            async (user: User) => {
+                if (update.department) {
+                    user.department = update.department;
+                }
+                if (update.user_preference) {
+                    user.user_preference = {
+                        ...user.user_preference,
+                        ...update.user_preference,
+                    };
+                }
+                return user;
+            },
+        );
     }
 
     /**

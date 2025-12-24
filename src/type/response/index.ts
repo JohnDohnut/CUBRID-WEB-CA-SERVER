@@ -22,3 +22,4 @@ export * from './paramdump-client-response';
 export * from './statdump-client-response';
 export * from './get-all-sys-param-client-response';
 export * from './set-sys-param-client-response';
+export * from './get-admin-log-info-client-response';

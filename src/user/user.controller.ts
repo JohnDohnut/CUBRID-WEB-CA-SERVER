@@ -1,9 +1,11 @@
-import { Body, Controller, Delete, Get, Post, Request } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Request, Patch, Put } from '@nestjs/common';
 import { UserService } from './user.service';
 import {
     ChangePasswordRequest,
     UpdateUserInfoRequest,
     UserResponse,
+    UpdateUserDto,
+    UserPreference,
 } from '@type/index';
 
 /**
@@ -39,6 +41,27 @@ export class UserController {
     async getUserData(@Request() req): Promise<UserResponse> {
         const userId = req.user.sub;
         return await this.userService.getUserData(userId);
+    }
+
+    /**
+     * Retrieves the current user's preferences.
+     *
+     * Returns the user's preference object.
+     * The user ID is extracted from the JWT token in the request.
+     *
+     * @param {any} req - Express request object containing JWT payload
+     * @returns {Promise<UserPreference>} User preference data
+     * @throws {UserError} When user is not found
+     * @example
+     * ```typescript
+     * // GET /user/preferences
+     * // Returns: { dashboardInterval: 10, brokerStatusInterval: 20 }
+     * ```
+     */
+    @Get('preferences')
+    async getUserPreferences(@Request() req): Promise<UserPreference> {
+        const userId = req.user.sub;
+        return await this.userService.getUserPreferences(userId);
     }
 
     /**
@@ -85,6 +108,31 @@ export class UserController {
     async deleteUser(@Request() req): Promise<boolean> {
         await this.userService.deleteUser(req.user.sub);
         return true;
+    }
+
+    /**
+     * Updates user's non-credential information.
+     *
+     * Updates specific user fields based on the provided request body.
+     * Only non-credential fields can be updated (e.g., department, user_preference).
+     *
+     * @param {any} req - Express request object containing JWT payload
+     * @param {UpdateUserDto} body - User information to update
+     * @returns {Promise<void>} No return value on success
+     * @throws {UserError} When user is not found or update fails
+     * @example
+     * ```typescript
+     * // PATCH /user/profile
+     * // Body: { department: "Engineering", user_preference: { dashboardInterval: 30 } }
+     * ```
+     */
+    @Put('profile')
+    async updateProfile(
+        @Request() req,
+        @Body() body: UpdateUserDto,
+    ): Promise<void> {
+        const userId = req.user.sub;
+        await this.userService.updateProfile(userId, body);
     }
 
     /**
