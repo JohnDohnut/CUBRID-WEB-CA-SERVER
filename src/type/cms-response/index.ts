@@ -15,3 +15,4 @@ export * from './load-access-log-cms-response';
 export * from './view-log-cms-response';
 export * from './get-all-sys-param-cms-response';
 export * from './get-admin-log-info-cms-response';
+export * from './get-host-stat-cms-response';

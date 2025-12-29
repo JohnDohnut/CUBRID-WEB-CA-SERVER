@@ -1,15 +1,32 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get, Param, Request } from '@nestjs/common';
+import { ResourceMonitoringService } from './resource-monitoring.service';
+import { BaseCmsResponse, CmsGetHostStatResponse } from '@type/cms-response';
 
 /**
  * Controller for handling resource monitoring operations.
- * Currently a placeholder.
- *
- * 리소스 모니터링 작업을 처리하기 위한 컨트롤러입니다.
- * 현재는 플레이스홀더입니다.
  *
  * @category Controllers
  * @since 1.0.0
  */
-@Controller('resource')
-export class ResourceMonitoringController {}
+@Controller(':hostUid/resource-monitoring') // Base path for this controller
+export class ResourceMonitoringController {
+    constructor(private readonly resourceMonitoringService: ResourceMonitoringService) {}
+
+    /**
+     * Retrieves raw host statistics (gethoststat) from the CMS API.
+     * The client is expected to perform further calculations.
+     *
+     * @param hostUid The UID of the host.
+     * @param req The request object containing user information.
+     * @returns A promise that resolves with the raw CmsGetHostStatResponse.
+     */
+    @Get('get-host-stat') // Specific endpoint for get-host-stat
+    async getHostStat(
+        @Param('hostUid') hostUid: string,
+        @Request() req,
+    ): Promise<Omit<CmsGetHostStatResponse, keyof BaseCmsResponse>> {
+        const userId = req.user.sub;
+        return await this.resourceMonitoringService.getHostStat(userId, hostUid);
+    }
+}
 

@@ -12,7 +12,9 @@ import {
     LoadAccessLogClientResponse,
     GetAdminLogInfoCmsResponse,
     GetAdminLogInfoClientResponse,
+    BaseCmsRequest,
 } from '../type';
+import { checkCmsTokenError, checkCmsStatusError } from '@common';
 
 @Injectable()
 export class LogService {
@@ -22,12 +24,22 @@ export class LogService {
     ) {}
 
     async getBrokerLogList(userId: string, hostUid: string, bname: string) {
-        const cmsResponse: LogFileInfoCmsResponse =
-            await this.client.forwardAuthenticated(userId, {
-                hostUid: hostUid,
-                task: 'getlogfileinfo',
-                broker: bname,
-            });
+        const host = await this.hostService.findHostInternal(userId, hostUid);
+        const url = `https://${host.address}:${host.port}/cm_api`;
+        const body: BaseCmsRequest & { broker: string } = {
+            task: 'getlogfileinfo',
+            token: host.token || '',
+            broker: bname,
+        };
+
+        const cmsResponse = await this.client.postAuthenticated<BaseCmsRequest & { broker: string }, LogFileInfoCmsResponse>(url, body);
+
+        // CMS token 에러 체크
+        checkCmsTokenError(cmsResponse);
+
+        // CMS status 에러 체크
+        checkCmsStatusError(cmsResponse);
+
         Logger.debug(cmsResponse);
         const response: GetBrokerLogListClientResponse = {
             broker: cmsResponse.broker,
@@ -37,12 +49,21 @@ export class LogService {
     }
 
     async getDatabaseLogList(userId: string, hostUid: string, dbname: string) {
-        const cmsResponse: LogInfoCmsResponse =
-            await this.client.forwardAuthenticated(userId, {
-                hostUid: hostUid,
-                task: 'getloginfo',
-                dbname: dbname,
-            });
+        const host = await this.hostService.findHostInternal(userId, hostUid);
+        const url = `https://${host.address}:${host.port}/cm_api`;
+        const body: BaseCmsRequest & { dbname: string } = {
+            task: 'getloginfo',
+            token: host.token || '',
+            dbname: dbname,
+        };
+
+        const cmsResponse = await this.client.postAuthenticated<BaseCmsRequest & { dbname: string }, LogInfoCmsResponse>(url, body);
+
+        // CMS token 에러 체크
+        checkCmsTokenError(cmsResponse);
+
+        // CMS status 에러 체크
+        checkCmsStatusError(cmsResponse);
 
         const response: GetDatabaseLogListClientResponse = {
             dbname: cmsResponse.dbname,
@@ -55,11 +76,20 @@ export class LogService {
         userId: string,
         hostUid: string,
     ): Promise<LoadAccessLogClientResponse> {
-        const cmsResponse: LoadAccessLogCmsResponse =
-            await this.client.forwardAuthenticated(userId, {
-                hostUid: hostUid,
-                task: 'loadaccesslog',
-            });
+        const host = await this.hostService.findHostInternal(userId, hostUid);
+        const url = `https://${host.address}:${host.port}/cm_api`;
+        const body: BaseCmsRequest = {
+            task: 'loadaccesslog',
+            token: host.token || '',
+        };
+
+        const cmsResponse = await this.client.postAuthenticated<BaseCmsRequest, LoadAccessLogCmsResponse>(url, body);
+
+        // CMS token 에러 체크
+        checkCmsTokenError(cmsResponse);
+
+        // CMS status 에러 체크
+        checkCmsStatusError(cmsResponse);
 
         const response: LoadAccessLogClientResponse = {
             accesslog: cmsResponse.accesslog,
@@ -89,14 +119,23 @@ export class LogService {
         start: string,
         end: string,
     ): Promise<ViewLogClientResponse> {
-        const cmsResponse: ViewLogCmsResponse =
-            await this.client.forwardAuthenticated(userId, {
-                hostUid: hostUid,
-                task: 'viewlog',
-                path: path,
-                start: start,
-                end: end,
-            });
+        const host = await this.hostService.findHostInternal(userId, hostUid);
+        const url = `https://${host.address}:${host.port}/cm_api`;
+        const body: BaseCmsRequest & { path: string; start: string; end: string } = {
+            task: 'viewlog',
+            token: host.token || '',
+            path: path,
+            start: start,
+            end: end,
+        };
+
+        const cmsResponse = await this.client.postAuthenticated<BaseCmsRequest & { path: string; start: string; end: string }, ViewLogCmsResponse>(url, body);
+
+        // CMS token 에러 체크
+        checkCmsTokenError(cmsResponse);
+
+        // CMS status 에러 체크
+        checkCmsStatusError(cmsResponse);
 
         // BaseCmsResponse 필드 제외하고 순수 데이터만 반환
         const { __EXEC_TIME, note, status, task, ...dataOnly } = cmsResponse;
@@ -118,11 +157,20 @@ export class LogService {
         userId: string,
         hostUid: string,
     ): Promise<GetAdminLogInfoClientResponse> {
-        const cmsResponse: GetAdminLogInfoCmsResponse =
-            await this.client.forwardAuthenticated(userId, {
-                hostUid: hostUid,
-                task: 'getadminloginfo',
-            });
+        const host = await this.hostService.findHostInternal(userId, hostUid);
+        const url = `https://${host.address}:${host.port}/cm_api`;
+        const body: BaseCmsRequest = {
+            task: 'getadminloginfo',
+            token: host.token || '',
+        };
+
+        const cmsResponse = await this.client.postAuthenticated<BaseCmsRequest, GetAdminLogInfoCmsResponse>(url, body);
+
+        // CMS token 에러 체크
+        checkCmsTokenError(cmsResponse);
+
+        // CMS status 에러 체크
+        checkCmsStatusError(cmsResponse);
 
         // BaseCmsResponse 필드 제외하고 순수 데이터만 반환
         const { __EXEC_TIME, note, status, task, ...dataOnly } = cmsResponse;

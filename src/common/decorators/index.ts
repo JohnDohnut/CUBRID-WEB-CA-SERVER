@@ -6,3 +6,4 @@ export * from './handle-lock-fs-errors.decorator';
 export * from './handle-storage-fs-errors.decorator';
 export * from './handle-user-errors.decorator';
 export * from './handle-user-repo-errors.decorator';
+export * from './handle-resource-monitoring-errors.decorator';

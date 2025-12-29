@@ -8,9 +8,6 @@ import { EncryptionService } from '@security/encryption/encryption.service';
 import { PasswordService } from '@security/password/password.service';
 import { StorageService } from '@storage/storage.service';
 
-import { StorageError, StorageErrorCode } from '@error/storage/storage-error';
-import { UserError } from '@error/user/user-error';
-import { LockError, LockErrorCode } from '@error/lock/lock-error';
 import { HandleUserRepoErrors } from '@decorators/handle-user-repo-errors.decorator';
 
 /**

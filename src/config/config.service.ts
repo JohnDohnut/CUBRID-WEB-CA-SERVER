@@ -58,7 +58,8 @@ export class ConfigService {
 
         // 3. Set environment and CORS origins
         this.environment = args.ENVIRONMENT || 'development';
-        this.setAllowedOrigins();
+        console.log('[ConfigService] Environment:', this.environment); // DEBUG
+        this.setAllowedOrigins(args.ALLOWED_ORIGINS);
 
         // 4. Derive secret key
         const derived = crypto.pbkdf2Sync(
@@ -114,14 +115,18 @@ export class ConfigService {
     /**
      * Sets allowed origins based on environment.
      */
-    private setAllowedOrigins(): void {
+    private setAllowedOrigins(allowedOrigins?: string): void {
         if (this.environment === 'production') {
-            // 내부 툴용 - 동적 origin 검증으로 내부 네트워크 허용
-            this.allowedOrigins = ['internal-tool']; // 특별한 값으로 표시
+            if (allowedOrigins) {
+                this.allowedOrigins = allowedOrigins.split(',');
+            } else {
+                this.allowedOrigins = []; // Default to no origins in production if not specified
+            }
         } else {
             // 개발 환경에서는 모든 origin 허용
             this.allowedOrigins = ['*'];
         }
+        console.log('[ConfigService] Allowed Origins:', this.allowedOrigins); // DEBUG
     }
 }
 

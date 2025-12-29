@@ -1,14 +1,14 @@
 import { HostService } from '@host';
 import { Injectable } from '@nestjs/common';
 import { CmsHttpsClientService } from '@cms-https-client/cms-https-client.service';
-import { CmsForwardClientRequest, GetEnvClientResponse, GetAllSysParamClientResponse, ParamdumpCmsRequest, ParamdumpClientResponse, SetSysParamCmsRequest, SetSysParamClientResponse, StatdumpCmsRequest, StatdumpClientResponse } from '@type';
+import { CmsForwardClientRequest, GetEnvClientResponse, GetAllSysParamClientResponse, ParamdumpCmsRequest, ParamdumpClientResponse, SetSysParamCmsRequest, SetSysParamClientResponse, StatdumpCmsRequest, StatdumpClientResponse, BaseCmsRequest } from '@type';
 import { GetEnvCmsResponse } from '@type/cms-response/get-env-cms-response';
 import { GetAllSysParamCmsRequest } from '@type/cms-request/get-all-sys-param-cms-request';
 import { GetAllSysParamCmsResponse } from '@type/cms-response/get-all-sys-param-cms-response';
 import { ParamdumpCmsResponse } from '@type/cms-response/paramdump-cms-response';
 import { StatdumpCmsResponse } from '@type/cms-response/statdump-cms-response';
 import { BaseCmsResponse } from '@type/cms-response/base-cms-response';
-import { HandleHostErrors, HandleCmsHttpsClientErrors } from '@common';
+import { HandleCmsConfigErrors, checkCmsTokenError, checkCmsStatusError } from '@common';
 
 /**
  * Service for managing CMS environment configuration operations.
@@ -44,18 +44,19 @@ export class CmsConfigService {
      * @returns GetEnvClientResponse Environment information without CMS envelope fields
      * @throws Error if the request fails or CMS status is not success
      */
-    @HandleHostErrors()
-    @HandleCmsHttpsClientErrors()
+    @HandleCmsConfigErrors()
     async getEnv(userId: string, hostUid: string): Promise<GetEnvClientResponse> {
-        const requestBody: CmsForwardClientRequest = {
-            hostUid,
+        const host = await this.hostService.findHostInternal(userId, hostUid);
+        const url = `https://${host.address}:${host.port}/cm_api`;
+        const body: BaseCmsRequest = {
             task: 'getenv',
+            token: host.token || '',
         };
 
-        const response = await this.cmsClient.forwardAuthenticated<CmsForwardClientRequest, GetEnvCmsResponse>(
-            userId,
-            requestBody,
-        );
+        const response = await this.cmsClient.postAuthenticated<BaseCmsRequest, GetEnvCmsResponse>(url, body);
+
+        // CMS token 에러 체크
+        checkCmsTokenError(response);
 
         // CMS는 항상 200/201 HTTP status를 반환하므로 body의 status 필드로 성공 여부 판단
         if (response.status === 'success') {
@@ -65,6 +66,7 @@ export class CmsConfigService {
         }
 
         // status가 "fail"인 경우 에러 던지기
+        checkCmsStatusError(response, `Failed to get environment info: ${response.note || 'Unknown error'}`);
         throw new Error(`Failed to get environment info: ${response.note || 'Unknown error'}`);
     }
 
@@ -81,28 +83,25 @@ export class CmsConfigService {
      * @returns ParamdumpClientResponse Database parameters without CMS envelope fields
      * @throws Error if the request fails or CMS status is not success
      */
-    @HandleHostErrors()
-    @HandleCmsHttpsClientErrors()
+    @HandleCmsConfigErrors()
     async getParamDump(
         userId: string,
         hostUid: string,
         dbname: string,
     ): Promise<ParamdumpClientResponse> {
-        const token = (await this.hostService.findHostInternal(userId, hostUid))
-            .token;
-        const request: ParamdumpCmsRequest = {
-            hostUid: hostUid,
-            token: token || '',
+        const host = await this.hostService.findHostInternal(userId, hostUid);
+        const url = `https://${host.address}:${host.port}/cm_api`;
+        const request: BaseCmsRequest & { dbname: string; both: 'n' } = {
             task: 'paramdump',
+            token: host.token || '',
             both: 'n',
             dbname: dbname,
         };
 
-        const response =
-            await this.cmsClient.forwardAuthenticated<
-                ParamdumpCmsRequest,
-                ParamdumpCmsResponse
-            >(userId, request);
+        const response = await this.cmsClient.postAuthenticated<BaseCmsRequest & { dbname: string; both: 'n' }, ParamdumpCmsResponse>(url, request);
+
+        // CMS token 에러 체크
+        checkCmsTokenError(response);
 
         // CMS는 항상 200/201 HTTP status를 반환하므로 body의 status 필드로 성공 여부 판단
         if (response.status === 'success') {
@@ -112,6 +111,7 @@ export class CmsConfigService {
         }
 
         // status가 "fail"인 경우 에러 던지기
+        checkCmsStatusError(response, `Failed to get paramdump: ${response.note || 'Unknown error'}`);
         throw new Error(
             `Failed to get paramdump: ${response.note || 'Unknown error'}`,
         );
@@ -130,32 +130,33 @@ export class CmsConfigService {
      * @returns StatdumpClientResponse Database statistics without CMS envelope fields
      * @throws Error if the request fails or CMS status is not success
      */
-    @HandleHostErrors()
-    @HandleCmsHttpsClientErrors()
+    @HandleCmsConfigErrors()
     async getStatDump(
         userId: string,
         hostUid: string,
         dbname: string,
     ): Promise<StatdumpClientResponse> {
-        const token = (await this.hostService.findHostInternal(userId, hostUid)).token;
+        const host = await this.hostService.findHostInternal(userId, hostUid);
+        const url = `https://${host.address}:${host.port}/cm_api`;
 
-        const request: StatdumpCmsRequest = {
-            hostUid,
-            token: token || '',
+        const request: BaseCmsRequest & { dbname: string } = {
             task: 'statdump',
+            token: host.token || '',
             dbname,
         };
 
-        const response = await this.cmsClient.forwardAuthenticated<
-            StatdumpCmsRequest,
-            StatdumpCmsResponse
-        >(userId, request);
+        const response = await this.cmsClient.postAuthenticated<BaseCmsRequest & { dbname: string }, StatdumpCmsResponse>(url, request);
+
+        // CMS token 에러 체크
+        checkCmsTokenError(response);
 
         if (response.status === 'success') {
             const { __EXEC_TIME, note, status, task, ...dataOnly } = response;
             return dataOnly;
         }
 
+        // status가 "fail"인 경우 에러 던지기
+        checkCmsStatusError(response, `Failed to get statdump: ${response.note || 'Unknown error'}`);
         throw new Error(`Failed to get statdump: ${response.note || 'Unknown error'}`);
     }
 
@@ -172,24 +173,24 @@ export class CmsConfigService {
      * @returns GetAllSysParamClientResponse System parameters without CMS envelope fields
      * @throws Error if the request fails or CMS status is not success
      */
-    @HandleHostErrors()
-    @HandleCmsHttpsClientErrors()
+    @HandleCmsConfigErrors()
     async getAllSystemParam(
         userId: string,
         hostUid: string,
         confname: string,
     ): Promise<GetAllSysParamClientResponse> {
-        const request: CmsForwardClientRequest & { confname: string } = {
-            hostUid: hostUid,
+        const host = await this.hostService.findHostInternal(userId, hostUid);
+        const url = `https://${host.address}:${host.port}/cm_api`;
+        const request: GetAllSysParamCmsRequest = {
             task: 'getallsysparam',
+            token: host.token || '',
             confname: confname,
         };
 
-        const response =
-            await this.cmsClient.forwardAuthenticated<
-                CmsForwardClientRequest & { confname: string },
-                GetAllSysParamCmsResponse
-            >(userId, request);
+        const response = await this.cmsClient.postAuthenticated<GetAllSysParamCmsRequest, GetAllSysParamCmsResponse>(url, request);
+
+        // CMS token 에러 체크
+        checkCmsTokenError(response);
 
         // CMS는 항상 200/201 HTTP status를 반환하므로 body의 status 필드로 성공 여부 판단
         if (response.status === 'success') {
@@ -199,6 +200,7 @@ export class CmsConfigService {
         }
 
         // status가 "fail"인 경우 에러 던지기
+        checkCmsStatusError(response, `Failed to get all system parameters: ${response.note || 'Unknown error'}`);
         throw new Error(
             `Failed to get all system parameters: ${response.note || 'Unknown error'}`,
         );
@@ -218,26 +220,26 @@ export class CmsConfigService {
      * @returns SetSysParamClientResponse Empty object on success (CMS envelope fields removed)
      * @throws Error if the request fails or CMS status is not success
      */
-    @HandleHostErrors()
-    @HandleCmsHttpsClientErrors()
+    @HandleCmsConfigErrors()
     async setSystemParam(
         userId: string,
         hostUid: string,
         confname: string,
         confdata: string[],
     ): Promise<SetSysParamClientResponse> {
-        const request: CmsForwardClientRequest & { confname: string; confdata: string[] } = {
-            hostUid: hostUid,
+        const host = await this.hostService.findHostInternal(userId, hostUid);
+        const url = `https://${host.address}:${host.port}/cm_api`;
+        const request: SetSysParamCmsRequest = {
             task: 'setsysparam',
+            token: host.token || '',
             confname: confname,
             confdata: confdata,
         };
 
-        const response =
-            await this.cmsClient.forwardAuthenticated<
-                CmsForwardClientRequest & { confname: string; confdata: string[] },
-                BaseCmsResponse
-            >(userId, request);
+        const response = await this.cmsClient.postAuthenticated<SetSysParamCmsRequest, BaseCmsResponse>(url, request);
+
+        // CMS token 에러 체크
+        checkCmsTokenError(response);
 
         // CMS는 항상 200/201 HTTP status를 반환하므로 body의 status 필드로 성공 여부 판단
         if (response.status === 'success') {
@@ -246,6 +248,7 @@ export class CmsConfigService {
         }
 
         // status가 "fail"인 경우 에러 던지기
+        checkCmsStatusError(response, `Failed to set system parameters: ${response.note || 'Unknown error'}`);
         throw new Error(
             `Failed to set system parameters: ${response.note || 'Unknown error'}`,
         );

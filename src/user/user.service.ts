@@ -11,6 +11,7 @@ import {
     UserResponse,
     UpdateUserDto,
     UserPreference,
+    UserPreferenceDto,
 } from '@type/index';
 
 /**
@@ -170,6 +171,41 @@ export class UserService {
                         ...update.user_preference,
                     };
                 }
+                return user;
+            },
+        );
+    }
+
+    /**
+     * Updates user's preferences with provided data.
+     *
+     * Updates specific user preference fields based on the provided update object.
+     * Uses atomic update to ensure data consistency.
+     *
+     * @param {string} userId - The unique identifier of the user
+     * @param {UserPreferenceDto} update - Object containing preference fields to update
+     * @returns {Promise<User>} The updated user object
+     * @throws {UserError} When user is not found or update fails
+     * @example
+     * ```typescript
+     * const updatedUser = await userService.updateUserPreferences("user123", {
+     *   dashboardInterval: 30
+     * });
+     * console.log(updatedUser.user_preference.dashboardInterval); // 30
+     * ```
+     */
+    @HandleUserErrors()
+    async updateUserPreferences(
+        userId: string,
+        update: UserPreferenceDto,
+    ): Promise<User> {
+        return await this.repository.atomicUpdateUser(
+            userId,
+            async (user: User) => {
+                user.user_preference = {
+                    ...user.user_preference,
+                    ...update,
+                };
                 return user;
             },
         );

@@ -14,9 +14,11 @@ async function bootstrap() {
     
     // CORS 설정 - 환경별로 다르게 적용
     const allowedOrigins = configService.getAllowedOrigins();
-    
+    console.log('[main.ts] Allowed Origins from ConfigService:', allowedOrigins); // DEBUG
+
     if (allowedOrigins.includes('*')) {
         // 개발 환경 - 모든 origin 허용
+        console.log('[main.ts] Enabling CORS for all origins.'); // DEBUG
         app.enableCors({
             origin: true,
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -24,42 +26,16 @@ async function bootstrap() {
             credentials: true,
         });
     } else {
-        // 내부 툴용 - 내부 네트워크 허용
+        // 프로덕션 환경 - 설정된 origin 목록 허용
+        const whitelist = [...allowedOrigins, 'http://localhost:5173']; // Add localhost for client dev
+        console.log('[main.ts] Production CORS whitelist:', whitelist); // DEBUG
         app.enableCors({
             origin: (origin, callback) => {
-                // origin이 없거나 내부 네트워크인 경우 허용
-                if (!origin) {
-                    return callback(null, true);
-                }
-                
-                // 내부 네트워크 IP 대역 체크
-                const isInternalNetwork = 
-                    origin.startsWith('http://localhost') ||
-                    origin.startsWith('http://127.0.0.1') ||
-                    origin.startsWith('http://192.168.') ||
-                    origin.startsWith('http://10.') ||
-                    origin.startsWith('http://172.16.') ||
-                    origin.startsWith('http://172.17.') ||
-                    origin.startsWith('http://172.18.') ||
-                    origin.startsWith('http://172.19.') ||
-                    origin.startsWith('http://172.20.') ||
-                    origin.startsWith('http://172.21.') ||
-                    origin.startsWith('http://172.22.') ||
-                    origin.startsWith('http://172.23.') ||
-                    origin.startsWith('http://172.24.') ||
-                    origin.startsWith('http://172.25.') ||
-                    origin.startsWith('http://172.26.') ||
-                    origin.startsWith('http://172.27.') ||
-                    origin.startsWith('http://172.28.') ||
-                    origin.startsWith('http://172.29.') ||
-                    origin.startsWith('http://172.30.') ||
-                    origin.startsWith('http://172.31.');
-                
-                if (isInternalNetwork) {
+                console.log('[main.ts] Received Origin header:', origin); // DEBUG
+                if (!origin || whitelist.includes(origin)) {
                     callback(null, true);
-                }
-                else {
-                    callback(new Error('Not allowed by CORS - Internal tool only'));
+                } else {
+                    callback(new Error('Not allowed by CORS'));
                 }
             },
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],

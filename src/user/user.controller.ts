@@ -6,6 +6,7 @@ import {
     UserResponse,
     UpdateUserDto,
     UserPreference,
+    UserPreferenceDto,
 } from '@type/index';
 
 /**
@@ -126,13 +127,29 @@ export class UserController {
      * // Body: { department: "Engineering", user_preference: { dashboardInterval: 30 } }
      * ```
      */
-    @Put('profile')
-    async updateProfile(
+
+    /**
+     * Updates user's preferences.
+     *
+     * Updates specific user preference fields based on the provided request body.
+     *
+     * @param {any} req - Express request object containing JWT payload
+     * @param {UserPreferenceDto} body - User preferences to update
+     * @returns {Promise<void>} No return value on success
+     * @throws {UserError} When user is not found or update fails
+     * @example
+     * ```typescript
+     * // PATCH /user/preferences
+     * // Body: { dashboardInterval: 30 }
+     * ```
+     */
+    @Put('preferences')
+    async updateUserPreferences(
         @Request() req,
-        @Body() body: UpdateUserDto,
+        @Body() body: UserPreferenceDto,
     ): Promise<void> {
         const userId = req.user.sub;
-        await this.userService.updateProfile(userId, body);
+        await this.userService.updateUserPreferences(userId, body);
     }
 
     /**

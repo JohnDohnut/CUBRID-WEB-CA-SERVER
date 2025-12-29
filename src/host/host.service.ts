@@ -272,6 +272,7 @@ export class HostService {
         const { password, token, dbProfiles, ...hostResponse } = host;
         return hostResponse as HostResponse;
     }
+    
     /**
      * Deletes a host and returns updated host list.
      *
