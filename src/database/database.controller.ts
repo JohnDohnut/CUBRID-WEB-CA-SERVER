@@ -1,5 +1,16 @@
 import { Body, Controller, Get, Logger, Param, Post, Request } from '@nestjs/common';
-import { DatabaseVolumeInfoClientResponse, StartInfoClientResponse } from '@type';
+import {
+    DatabaseVolumeInfoClientResponse,
+    StartInfoClientResponse,
+    AddBackupInfoClientRequest,
+    AddBackupInfoClientResponse,
+    GetBackupInfoClientRequest,
+    GetBackupInfoClientResponse,
+    SetAutoExecQueryClientRequest,
+    SetAutoExecQueryClientResponse,
+    GetAutoExecQueryClientRequest,
+    GetAutoExecQueryClientResponse,
+} from '@type';
 import { SaveDatabaseProfileRequest } from '@type/request/sava-database-profile';
 import { validateRequiredFields } from '@util';
 import { DatabaseService } from './database.service';
@@ -200,6 +211,146 @@ export class DatabaseController {
             dbname,
         );
         return response;
+    }
+
+    /**
+     * Add backup information for a database.
+     * Returns empty object on success.
+     *
+     * 데이터베이스의 백업 정보를 추가합니다.
+     * 성공 시 빈 객체를 반환합니다.
+     *
+     * @route POST /:hostUid/database/backup/:dbname
+     * @param req Express request (contains authenticated user)
+     * @param hostUid Host unique identifier from path parameter
+     * @param dbname Database name from path parameter
+     * @param body Request body containing backup information
+     * @returns AddBackupInfoClientResponse Empty object on success
+     * @example
+     * // POST /host-uid/database/backup/demodb
+     * // Body: { "backupid": "test_backup", "path": "/path/to/backup", ... }
+     */
+    @Post('backup/:dbname')
+    async addBackupInfo(
+        @Request() req,
+        @Param('hostUid') hostUid: string,
+        @Param('dbname') dbname: string,
+        @Body() body: AddBackupInfoClientRequest,
+    ): Promise<AddBackupInfoClientResponse> {
+        const userId = req.user.sub;
+
+        validateRequiredFields(
+            body,
+            ['backupid', 'path', 'period_type', 'period_date', 'time', 'level'],
+            'database/backup',
+            this.logger,
+        );
+
+        Logger.log(
+            `Adding backup info for database: ${dbname} on host: ${hostUid}`,
+            'DatabaseController',
+        );
+        return await this.databaseService.addBackupInfo(userId, hostUid, dbname, body);
+    }
+
+    /**
+     * Get backup information for a database.
+     * Returns domain-only data (CMS envelope removed).
+     *
+     * 데이터베이스의 백업 정보를 조회합니다.
+     * CMS 메타 필드를 제거한 순수 데이터만 반환합니다.
+     *
+     * @route GET /:hostUid/database/backup/:dbname
+     * @param req Express request (contains authenticated user)
+     * @param hostUid Host unique identifier from path parameter
+     * @param dbname Database name from path parameter
+     * @returns GetBackupInfoClientResponse Backup information
+     * @example
+     * // GET /host-uid/database/backup/demodb
+     */
+    @Get('backup/:dbname')
+    async getBackupInfo(
+        @Request() req,
+        @Param('hostUid') hostUid: string,
+        @Param('dbname') dbname: string,
+    ): Promise<GetBackupInfoClientResponse> {
+        const userId = req.user.sub;
+
+        Logger.log(
+            `Getting backup info for database: ${dbname} on host: ${hostUid}`,
+            'DatabaseController',
+        );
+        return await this.databaseService.getBackupInfo(userId, hostUid, dbname);
+    }
+
+    /**
+     * Set auto-execution query for a database.
+     * Returns empty object on success.
+     *
+     * 데이터베이스의 자동 실행 쿼리를 설정합니다.
+     * 성공 시 빈 객체를 반환합니다.
+     *
+     * @route POST /:hostUid/database/auto-exec-query/:dbname
+     * @param req Express request (contains authenticated user)
+     * @param hostUid Host unique identifier from path parameter
+     * @param dbname Database name from path parameter
+     * @param body Request body containing auto-execution query plan
+     * @returns SetAutoExecQueryClientResponse Empty object on success
+     * @example
+     * // POST /host-uid/database/auto-exec-query/demodb
+     * // Body: { "planlist": [{ "queryplan": [...] }] }
+     */
+    @Post('auto-exec-query/:dbname')
+    async setAutoExecQuery(
+        @Request() req,
+        @Param('hostUid') hostUid: string,
+        @Param('dbname') dbname: string,
+        @Body() body: SetAutoExecQueryClientRequest,
+    ): Promise<SetAutoExecQueryClientResponse> {
+        const userId = req.user.sub;
+
+        validateRequiredFields(
+            body,
+            ['planlist'],
+            'database/auto-exec-query',
+            this.logger,
+        );
+
+        Logger.log(
+            `Setting auto-exec query for database: ${dbname} on host: ${hostUid}`,
+            'DatabaseController',
+        );
+        return await this.databaseService.setAutoExecQuery(userId, hostUid, dbname, body);
+    }
+
+    /**
+     * Get auto-execution query for a database.
+     * Returns domain-only data (CMS envelope removed).
+     *
+     * 데이터베이스의 자동 실행 쿼리를 조회합니다.
+     * CMS 메타 필드를 제거한 순수 데이터만 반환합니다.
+     *
+     * @route GET /:hostUid/database/auto-exec-query/:dbname
+     * @param req Express request (contains authenticated user)
+     * @param hostUid Host unique identifier from path parameter
+     * @param dbname Database name from path parameter
+     * @returns GetAutoExecQueryClientResponse Auto-execution query information
+     * @example
+     * // GET /host-uid/database/auto-exec-query/demodb
+     */
+    @Get('auto-exec-query/:dbname')
+    async getAutoExecQuery(
+        @Request() req,
+        @Param('hostUid') hostUid: string,
+        @Param('dbname') dbname: string,
+    ): Promise<GetAutoExecQueryClientResponse> {
+        const userId = req.user.sub;
+
+        Logger.log(
+            `Getting auto-exec query for database: ${dbname} on host: ${hostUid}`,
+            'DatabaseController',
+        );
+        return await this.databaseService.getAutoExecQuery(userId, hostUid, dbname);
     }
 
 }

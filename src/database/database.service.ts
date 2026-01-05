@@ -1,30 +1,46 @@
+import { CmsHttpsClientService } from '@cms-https-client/cms-https-client.service';
 import {
     checkCmsTokenError,
-    HandleCmsHttpsClientErrors,
-    HandleDatabaseErrors,
-    HandleHostErrors,
-    HandleUserRepoErrors,
+    checkCmsStatusError,
+    HandleDatabaseErrors
 } from '@common';
 import { DatabaseError } from '@error/database/database-error';
+import { HostError } from '@error/index';
 import { ValidationError } from '@error/validation/validation-error';
 import { HostService } from '@host';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UserRepositoryService } from '@repository';
-import { CmsHttpsClientService } from '@cms-https-client/cms-https-client.service';
 import {
     BaseCmsRequest,
     BaseCmsResponse,
-    StartInfoClientResponse,
     DatabaseVolumeInfoClientResponse,
+    StartInfoClientResponse,
+    AddBackupInfoClientRequest,
+    AddBackupInfoClientResponse,
+    GetBackupInfoClientRequest,
+    GetBackupInfoClientResponse,
+    SetAutoExecQueryClientRequest,
+    SetAutoExecQueryClientResponse,
+    GetAutoExecQueryClientRequest,
+    GetAutoExecQueryClientResponse,
 } from '@type';
 import {
     DbSpaceInfoCmsRequest,
     StartDatabaseCmsRequest,
     StopDatabaseCmsRequest,
+    AddBackupInfoCmsRequest,
+    GetBackupInfoCmsRequest,
+    SetAutoExecQueryCmsRequest,
+    GetAutoExecQueryCmsRequest,
 } from '@type/cms-request';
-import { StartInfoCmsResponse } from '@type/cms-response/start-info-cms-response';
-import { DbSpaceInfoCmsResponse } from '@type/cms-response/db-space-info-cms-response';
-import { HostError } from '@error/index';
+import {
+    DbSpaceInfoCmsResponse,
+    StartInfoCmsResponse,
+    AddBackupInfoCmsResponse,
+    GetBackupInfoCmsResponse,
+    SetAutoExecQueryCmsResponse,
+    GetAutoExecQueryCmsResponse,
+} from '@type/cms-response';
 
 /**
  * Service for managing database operations.
@@ -438,9 +454,225 @@ export class DatabaseService {
             throw DatabaseError.GetDBSpaceInfoFailed({ response, dbname });
         }
     }
+    
+
+    /**
+     * Add backup information for a database.
+     * Returns empty object on success (CMS envelope fields removed).
+     *
+     * 데이터베이스의 백업 정보를 추가합니다.
+     * 성공 시 빈 객체를 반환합니다 (CMS 메타 필드 제거).
+     *
+     * @param userId 사용자 ID (JWT)
+     * @param hostUid 호스트 UID
+     * @param dbname 데이터베이스 이름
+     * @param backupInfo 백업 정보
+     * @returns AddBackupInfoClientResponse 성공 시 빈 객체
+     * @throws DatabaseError 요청 실패 또는 CMS status가 fail인 경우
+     */
+    @HandleDatabaseErrors()
+    async addBackupInfo(
+        userId: string,
+        hostUid: string,
+        dbname: string,
+        backupInfo: AddBackupInfoClientRequest,
+    ): Promise<AddBackupInfoClientResponse> {
+        const host = await this.hostService.findHostInternal(userId, hostUid);
+        const url = `https://${host.address}:${host.port}/cm_api`;
+        const request: AddBackupInfoCmsRequest = {
+            task: 'addbackupinfo',
+            token: host.token || '',
+            dbname: dbname,
+            backupid: backupInfo.backupid,
+            path: backupInfo.path,
+            period_type: backupInfo.period_type,
+            period_date: backupInfo.period_date,
+            time: backupInfo.time,
+            level: backupInfo.level,
+            archivedel: backupInfo.archivedel,
+            updatestatus: backupInfo.updatestatus,
+            storeold: backupInfo.storeold,
+            onoff: backupInfo.onoff,
+            zip: backupInfo.zip,
+            check: backupInfo.check,
+            mt: backupInfo.mt,
+            bknum: backupInfo.bknum,
+        };
+
+        const response = await this.cmsClient.postAuthenticated<AddBackupInfoCmsRequest, AddBackupInfoCmsResponse>(url, request);
+
+        // CMS token 에러 체크
+        checkCmsTokenError(response);
+
+        // CMS status 에러 체크
+        checkCmsStatusError(response);
+
+        // 성공 시 빈 객체 반환
+        return {};
+    }
+
+    /**
+     * Get backup information for a database.
+     * Returns domain-only data (CMS envelope removed).
+     *
+     * 데이터베이스의 백업 정보를 조회합니다.
+     * CMS 메타 필드를 제거한 순수 데이터만 반환합니다.
+     *
+     * @param userId 사용자 ID (JWT)
+     * @param hostUid 호스트 UID
+     * @param dbname 데이터베이스 이름
+     * @returns GetBackupInfoClientResponse 백업 정보
+     * @throws DatabaseError 요청 실패 또는 CMS status가 fail인 경우
+     */
+    @HandleDatabaseErrors()
+    async getBackupInfo(
+        userId: string,
+        hostUid: string,
+        dbname: string,
+    ): Promise<GetBackupInfoClientResponse> {
+        const host = await this.hostService.findHostInternal(userId, hostUid);
+        const url = `https://${host.address}:${host.port}/cm_api`;
+        const request: GetBackupInfoCmsRequest = {
+            task: 'getbackupinfo',
+            token: host.token || '',
+            dbname: dbname,
+        };
+
+        const response = await this.cmsClient.postAuthenticated<GetBackupInfoCmsRequest, GetBackupInfoCmsResponse>(url, request);
+
+        // CMS token 에러 체크
+        checkCmsTokenError(response);
+
+        // CMS status 에러 체크
+        checkCmsStatusError(response);
+
+        // CMS 응답에서 동적 키로 저장된 백업 정보 추출
+        const { __EXEC_TIME, note, status, task, dbname: responseDbname, ...rest } = response;
+        const backupArray = rest[dbname] as any[];
+
+        // 클라이언트 응답 형식으로 변환
+        return {
+            dbname: responseDbname,
+            backups: backupArray || [],
+        };
+    }
+
+    /**
+     * Set auto-execution query for a database.
+     * Returns empty object on success (CMS envelope fields removed).
+     *
+     * 데이터베이스의 자동 실행 쿼리를 설정합니다.
+     * 성공 시 빈 객체를 반환합니다 (CMS 메타 필드 제거).
+     *
+     * @param userId 사용자 ID (JWT)
+     * @param hostUid 호스트 UID
+     * @param dbname 데이터베이스 이름
+     * @param autoExecQuery 자동 실행 쿼리 설정
+     * @returns SetAutoExecQueryClientResponse 성공 시 빈 객체
+     * @throws DatabaseError 요청 실패 또는 CMS status가 fail인 경우
+     */
+    @HandleDatabaseErrors()
+    async setAutoExecQuery(
+        userId: string,
+        hostUid: string,
+        dbname: string,
+        autoExecQuery: SetAutoExecQueryClientRequest,
+    ): Promise<SetAutoExecQueryClientResponse> {
+        const host = await this.hostService.findHostInternal(userId, hostUid);
+        const url = `https://${host.address}:${host.port}/cm_api`;
+        const request: SetAutoExecQueryCmsRequest = {
+            task: 'setautoexecquery',
+            token: host.token || '',
+            dbname: dbname,
+            planlist: autoExecQuery.planlist,
+        };
+
+        const response = await this.cmsClient.postAuthenticated<SetAutoExecQueryCmsRequest, SetAutoExecQueryCmsResponse>(url, request);
+
+        // CMS token 에러 체크
+        checkCmsTokenError(response);
+
+        // CMS status 에러 체크
+        checkCmsStatusError(response);
+
+        // 성공 시 빈 객체 반환
+        return {};
+    }
+
+    /**
+     * Get auto-execution query for a database.
+     * Returns domain-only data (CMS envelope removed).
+     *
+     * 데이터베이스의 자동 실행 쿼리를 조회합니다.
+     * CMS 메타 필드를 제거한 순수 데이터만 반환합니다.
+     *
+     * @param userId 사용자 ID (JWT)
+     * @param hostUid 호스트 UID
+     * @param dbname 데이터베이스 이름
+     * @returns GetAutoExecQueryClientResponse 자동 실행 쿼리 정보
+     * @throws DatabaseError 요청 실패 또는 CMS status가 fail인 경우
+     */
+    @HandleDatabaseErrors()
+    async getAutoExecQuery(
+        userId: string,
+        hostUid: string,
+        dbname: string,
+    ): Promise<GetAutoExecQueryClientResponse> {
+        const host = await this.hostService.findHostInternal(userId, hostUid);
+        const url = `https://${host.address}:${host.port}/cm_api`;
+        const request: GetAutoExecQueryCmsRequest = {
+            task: 'getautoexecquery',
+            token: host.token || '',
+            dbname: dbname,
+        };
+
+        const response = await this.cmsClient.postAuthenticated<GetAutoExecQueryCmsRequest, GetAutoExecQueryCmsResponse>(url, request);
+
+        // CMS token 에러 체크
+        checkCmsTokenError(response);
+
+        // CMS status 에러 체크
+        checkCmsStatusError(response);
+
+        // BaseCmsResponse 필드 제외하고 순수 데이터만 반환
+        const { __EXEC_TIME, note, status, task, ...dataOnly } = response;
+
+        // CMS 응답에서 @username 필드를 username으로 변환
+        // CMS API가 실제로 @username으로 응답을 보내므로, 클라이언트 타입(username)에 맞게 변환
+        const planlist = dataOnly.planlist.map(plan => {
+            const queryplan = plan.queryplan.map(query => {
+                const queryAny = query as any;
+                
+                // CMS가 @username으로 보내므로 이를 username으로 변환
+                if (queryAny['@username'] !== undefined) {
+                    const { '@username': atUsername, ...rest } = queryAny;
+                    return {
+                        ...rest,
+                        username: atUsername || '',
+                    };
+                }
+                
+                // 이미 username으로 온 경우 그대로 사용
+                return queryAny;
+            });
+
+            return {
+                dbname: plan.dbname,
+                queryplan: queryplan,
+            };
+        });
+
+        return {
+            planlist: planlist,
+        };
+    }
 
     @HandleDatabaseErrors()
     async createDatabase(){
-        //
+        //getenv - get default directory
+        //checkfile - db duplication check 
+        //checkdir - db directory check
+        //createdb - create db
+        //setautoaddvol - set auto scale of db.
     }
 }

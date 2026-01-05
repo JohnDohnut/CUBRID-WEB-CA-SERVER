@@ -1,20 +1,12 @@
-import { BaseCmsRequest } from './base-cms-request';
-
 /**
- * Request type for creating a database.
+ * Client request type for creating a database.
  * 
- * 데이터베이스를 생성하기 위한 요청 타입입니다.
+ * 데이터베이스를 생성하기 위한 클라이언트 요청 타입입니다.
  * 
- * @category CMS Requests
+ * @category Client Requests
  * @since 1.0.0
  */
-export type CreateDatabaseCmsRequest = BaseCmsRequest & {
-    /**
-     * Task type - must be 'createdb'
-     * 작업 타입 - 'createdb'로 고정
-     */
-    task: 'createdb';
-
+export type CreateDatabaseClientRequest = {
     /**
      * Database name to create
      * 생성할 데이터베이스 이름

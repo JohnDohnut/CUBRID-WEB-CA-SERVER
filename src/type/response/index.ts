@@ -23,3 +23,8 @@ export * from './statdump-client-response';
 export * from './get-all-sys-param-client-response';
 export * from './set-sys-param-client-response';
 export * from './get-admin-log-info-client-response';
+export * from './add-backup-info-client-response';
+export * from './get-backup-info-client-response';
+export * from './set-auto-exec-query-client-response';
+export * from './get-auto-exec-query-client-response';
+export * from './create-database-client-response';
